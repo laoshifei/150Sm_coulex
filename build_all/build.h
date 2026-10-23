@@ -1,70 +1,36 @@
-#ifndef _build_h_
-#define _build_h_
+#ifndef SM150_BUILD_H
+#define SM150_BUILD_H
 
-#include "set.h"
+#include <cstddef>
+#include <cstdint>
+#include <filesystem>
+#include <string>
 
-#include "TH1D.h"
-#include "TH2D.h"
-#include "TFile.h"
-#include "TTree.h"
-#include "TRandom3.h"
-#include "TBenchmark.h"
+// 一轮 build 的运行设置。空路径使用 build.cpp 中的项目默认位置。
+// 能量刻度、时间修正和逐 Ge 符合窗从已有参数文件读取。
+struct BuildOptions {
+  int run = 0;
+  std::filesystem::path project, input, outdir, receipt;
+  std::filesystem::path window_file, profile_dir, source_manifest, cache_receipt;
+  // windows：现行窄/宽；cache：原始字段宽窗；replay：从宽窗重建窄/宽。
+  std::string mode = "windows", tag;
 
-#include "TSystem.h"
+  // 0 处理整轮；非零仅用于小样检查，回执会标记覆盖范围。
+  uint64_t entry_limit = 0;
+  std::size_t chunk_entries = 1000000;
+  bool inspect_parameters = false;
+};
 
-#include <iostream>
-#include <map>
-#include <vector>
-#include <set>
-
-class build
-{
+class build {
 public:
-  build(const std::string &filename_in, const std::string &filename_out, int r, double w, double j);
-  virtual ~build();
+  explicit build(const BuildOptions &options);
 
-  void Process();
-
-  void GetGeSpiderS3EventPrompt();
-  void GetGeSpiderS3EventRandom();
-  void SaveFile();
+  // 读取 → 刻度/时间修正 → 分组/匹配 → 窄宽选窗 → 写出 → 完整读回。
+  // 返回 0 表示本轮及读回核验完成；失败返回 1，并保留错误记录。
+  int Process();
 
 private:
-  std::map<int, int> map_ge_sector_id, map_ge_ring_id;
-  std::map<int, int> map_spider_sector_id, map_spider_ring_id;
-  std::map<int, int> map_s3_sector_id, map_s3_ring_id;
-
-  std::map<int, int> map_clover_id;
-  std::set<int> set_clover_id;
-
-private:
-  bool InitMapSectorRingID();
-  void PrintMapSectorRingID();
-
-private:
-  void CloverAddback(Short_t *sid, Short_t *ch, Short_t *ring_id, Short_t *sector_id, Double_t *energy, Long64_t *ts, int &n);
-
-private:
-  TBenchmark *benchmark;  
-  TRandom3 *rndm;  
-
-  double coin_width;
-  double jump_width;
-
-private:
-  Int_t run;
-  std::vector<int> v_s3_sid;
-
-private:
-  TFile *file_in;
-  TTree *tr_in;
-  Short_t cid;
-  Short_t sid;
-  Short_t ch;
-  Double_t evte;
-  Long64_t ts;
-
-  TFile *file_out;
+  BuildOptions options_;
 };
 
 #endif

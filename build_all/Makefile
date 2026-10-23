@@ -1,18 +1,18 @@
 out = build
 
-sourcefile = main.cpp build.h build.cpp set.h
+sourcefile = main.cpp build.h build.cpp ../include/sm150_time_alignment.h Makefile
 
 ROOTCFLAGS  = $(shell root-config --cflags)
 ROOTLIBS    = $(shell root-config --libs) -lSpectrum
 
-CFLAGS = -g -Wall -std=c++11 -O2 -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
+CFLAGS = -Wall -std=c++17 -O3 -ffp-contract=off -I../include -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
 
 GXX = g++
 
 all:$(out)
 
 $(out): $(sourcefile)
-	$(GXX) $(CFLAGS) $(ROOTCFLAGS) -o $@ $(filter %.cpp ,$(sourcefile)) $(ROOTLIBS)
+	$(GXX) $(ROOTCFLAGS) $(CFLAGS) -o $@ $(filter %.cpp ,$(sourcefile)) $(ROOTLIBS) -lcrypto
 
 clean:
 	rm -f *~ *.o $(out)
