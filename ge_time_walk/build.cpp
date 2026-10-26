@@ -1,1164 +1,304 @@
+// 顺序：冻结参数 -> 刻度/原生时间 -> 全候选配对 -> 双面检查 -> 分CFD时间谱。
 #include "build.h"
-
+#include "raw.h"
+#include "sm150_event_calibration.h"
+#include "sm150_time_alignment.h"
+#include <TFile.h>
+#include <TH2D.h>
+#include <TObjString.h>
+#include <TROOT.h>
+#include <TTree.h>
+#include <chrono>
+#include <deque>
 #include <iostream>
-#include <vector>
-#include <fstream>
-#include <sstream>
-#include <stdlib.h>
-
-//
-build::build(const std::string &filename_in, const std::string &filename_out, int r)
-{
-  benchmark = new TBenchmark;
-
-  run = r;
-  if((run>=457 && run<=462) || (run>=472 && run<=605) || (run>=680 && run<=718)){
-    v_s3_sid = {9, 10, 11, 12};
-  }else if((run>=616 && run<=674) || (run>=721 && run<=723)){
-    v_s3_sid = {2, 3, 11, 12};
-  }else{
-    throw std::invalid_argument("wrong run number.");
+#include <limits>
+#include <memory>
+#include <set>
+#include <tuple>
+using namespace sm150::diagnostic;
+namespace {
+const std::set<int> GE={204,205,206,209,211,212,213,214,215,304,305,306,308,310,311,506,507,508,509,510};
+constexpr double SHIFT_BOUND=1000000.; // 已校准时间与原生coarse时间的严格运行时上界/ns。
+#pragma pack(push,1)
+struct InputRecord {
+  int16_t sr;bool pileup,outofr;int16_t cid,sid,ch;uint16_t evte;int64_t ts;int16_t cfd;bool cfdft;int16_t cfds;
+};
+struct ParticleIdentityRecord {int64_t ts;uint16_t evte;int16_t sr,cid,sid,ch;uint8_t pileup,outofr;};
+#pragma pack(pop)
+static_assert(sizeof(InputRecord)==25 && sizeof(ParticleIdentityRecord)==20,"Unexpected raw hash layout");
+struct Hit {
+  int key=0,kind=0,ring=0,sector=0;
+  int64_t entry=0,coarse=0,native=0,ts=0;
+  double e=0,t=0;
+  uint16_t adc=0;
+  int16_t sr=0,cfd=0,cfds=0;
+  bool failed=false,done=false;
+};
+struct PairRecord {
+  int ge_key=0,particle_key=0,particle_kind=0,particle_ring=0,particle_sector=0,half=0;
+  int64_t ge_entry=0,particle_entry=0,sector_entry=-1,ge_ts=0,particle_ts=0;
+  int64_t ge_native_ns=0,particle_native_ns=0;
+  double ge_energy_keV=0,particle_energy_keV=0,dt_current_ns=0,dt_native_ge_ns=0,dt_native_both_ns=0;
+  double particle_corrected_ns=0,ge_corrected_ns=0;
+  uint16_t ge_adc=0,particle_adc=0;
+  int16_t ge_cfd=0,ge_cfds=0,particle_cfd=0,particle_cfds=0,ge_sr=0,particle_sr=0;
+  bool ge_failed=false,particle_failed=false,s3_unique_match=false;
+  bool ge_pileup=false,ge_outofr=false,particle_pileup=false,particle_outofr=false;
+};
+struct Writer {
+  const WalkOptions& o;TFile& file;uint64_t split;
+  std::map<std::string,std::unique_ptr<TH2D>> hist;
+  std::map<std::string,uint64_t> counts;
+  json descriptions=json::object();
+  TTree* tree=nullptr;PairRecord row;
+  Writer(const WalkOptions& opt,TFile& f,uint64_t s):o(opt),file(f),split(s) {
+    if(!o.write_pairs) return;
+    tree=new TTree("pairs","All selected raw-entry Ge-particle pairs; shared hits are correlated");
+    tree->SetAutoFlush(-8*1024*1024);
+#define BRANCH(x) tree->Branch(#x,&row.x)
+    BRANCH(ge_key);BRANCH(particle_key);BRANCH(particle_kind);BRANCH(particle_ring);BRANCH(particle_sector);BRANCH(half);
+    BRANCH(ge_entry);BRANCH(particle_entry);BRANCH(sector_entry);BRANCH(ge_ts);BRANCH(particle_ts);
+    BRANCH(ge_native_ns);BRANCH(particle_native_ns);BRANCH(ge_energy_keV);BRANCH(particle_energy_keV);
+    BRANCH(dt_current_ns);BRANCH(dt_native_ge_ns);BRANCH(dt_native_both_ns);BRANCH(particle_corrected_ns);BRANCH(ge_corrected_ns);
+    BRANCH(ge_adc);BRANCH(particle_adc);BRANCH(ge_cfd);BRANCH(ge_cfds);BRANCH(particle_cfd);BRANCH(particle_cfds);
+    BRANCH(ge_sr);BRANCH(particle_sr);BRANCH(ge_failed);BRANCH(particle_failed);BRANCH(s3_unique_match);
+    BRANCH(ge_pileup);BRANCH(ge_outofr);BRANCH(particle_pileup);BRANCH(particle_outofr);
+#undef BRANCH
   }
-
-  if(!InitMapSectorRingID()){
-    throw std::invalid_argument("can not init ring and sector id data.");
+  TH2D& book(int ge,const std::string& ref,int state,int half,const std::string& coordinate) {
+    std::string name="ge"+std::to_string(ge)+"_"+ref+(state?"_failed":"_normal")+"_half"+std::to_string(half)+"_"+coordinate;
+    auto it=hist.find(name);if(it!=hist.end()) return *it->second;
+    int ne=int(std::llround((o.ge_max-o.ge_min)/o.energy_bin_keV));
+    int nt=int(std::llround(2*o.time_range_ns/o.time_bin_ns));
+    auto h=std::make_unique<TH2D>(name.c_str(),(name+";Ge laboratory energy (keV);t_{particle}-t_{Ge} (ns)").c_str(),ne,o.ge_min,o.ge_max,nt,-o.time_range_ns,o.time_range_ns);
+    h->SetDirectory(nullptr);
+    descriptions[name]={{"ge",ge},{"reference",ref},{"failed",state!=0},{"half",half},{"coordinate",coordinate}};
+    return *hist.emplace(name,std::move(h)).first->second;
   }
-  PrintMapSectorRingID();
-
-  file_in = TFile::Open(filename_in.c_str());
-  if(file_in->IsZombie()){
-    std::cout << "open file " << filename_in << " error!" << std::endl;
-    delete file_in;
-
-    return ;
-  }
-
-  tr_in = (TTree*)file_in->Get("tree");
-  tr_in->SetBranchAddress("sr", &sr);
-  tr_in->SetBranchAddress("cid", &cid);
-  tr_in->SetBranchAddress("sid", &sid);
-  tr_in->SetBranchAddress("ch", &ch);
-  tr_in->SetBranchAddress("evte", &evte);
-  tr_in->SetBranchAddress("ts", &ts);
-  tr_in->SetBranchAddress("cfd", &cfd);
-  tr_in->SetBranchAddress("cfdft", &cfdft);
-  tr_in->SetBranchAddress("cfds", &cfds);
-
-  // read cali data
-  if(!ReadCaliData()){
-    throw std::invalid_argument("can not read cali data.");
-  }
-  PrintCaliData();
-
-  // read s3 cor
-  ReadS3CorData();
-  PrintS3CorData();
-
-  // read ts offset
-  if(!ReadTSOffset()){
-    throw std::invalid_argument("can not read ts offset data.");
-  }
-  PrintTSOffset();
-
-  rndm = new TRandom3((Long64_t)time(0));
-  file_out = TFile::Open(filename_out.c_str(), "recreate");
-}
-
-//
-build::~build()
-{
-  delete file_in;
-  delete file_out;
-}
-
-//
-void build::Process()
-{
-  benchmark->Start("build");
-
-  //
-  GetGeSpiderS3EventPrompt();
-  GetGeSpiderS3EventRandom();
-  
-  benchmark->Show("build");
-}
-
-//
-void build::GetGeSpiderS3EventPrompt()
-{
-  std::cout << "start get ge si prompt events" << std::endl;
-
-  int n_max_ge = GENUM;
-  int n_max_spider = SPIDERNUM;
-  int n_max_s3_sector = S3SECTORNUM;
-  int n_max_s3_ring = S3RINGNUM;
-
-  double cut_ge = CUTGE; 
-  double cut_si = CUTSI;
-
-  double t_win = TIMEWINDOW;
-
-  //
-  Int_t n_ge = 0;
-  Short_t ge_sid[n_max_ge];
-  Short_t ge_ch[n_max_ge];
-  Double_t ge_energy[n_max_ge];
-  Long64_t ge_ts[n_max_ge];
-
-  Int_t n_spider = 0;
-  Short_t spider_sid[n_max_spider];
-  Short_t spider_ch[n_max_spider];
-  Double_t spider_energy[n_max_spider];
-  Long64_t spider_ts[n_max_spider];
-
-  Int_t n_s3_sector = 0;
-  Short_t s3_sector_sid[n_max_s3_sector];
-  Short_t s3_sector_ch[n_max_s3_sector];
-  Short_t s3_sector_id[n_max_s3_sector];
-  Double_t s3_sector_energy[n_max_s3_sector];
-  Long64_t s3_sector_ts[n_max_s3_sector];
-  Int_t n_s3_ring = 0;
-  Short_t s3_ring_sid[n_max_s3_ring];
-  Short_t s3_ring_ch[n_max_s3_ring];
-  Short_t s3_ring_id[n_max_s3_ring];
-  Double_t s3_ring_energy[n_max_s3_ring];
-  Long64_t s3_ring_ts[n_max_s3_ring];
-
-  std::stringstream ss;
-  ss.str("");
-  ss << "coincidence window [-" << t_win << ", " << t_win << "] ns";
-  TTree *tr = new TTree("tr_event", ss.str().c_str());
-
-  //
-  memset(ge_sid, 0, sizeof(ge_sid));
-  memset(ge_ch, 0, sizeof(ge_ch));
-  memset(ge_energy, 0, sizeof(ge_energy));
-  memset(ge_ts, 0, sizeof(ge_ts));
-
-  memset(spider_sid, 0, sizeof(spider_sid));
-  memset(spider_ch, 0, sizeof(spider_ch));
-  memset(spider_energy, 0, sizeof(spider_energy));
-  memset(spider_ts, 0, sizeof(spider_ts));
-
-  memset(s3_sector_sid, 0, sizeof(s3_sector_sid));
-  memset(s3_sector_ch, 0, sizeof(s3_sector_ch));
-  memset(s3_sector_id, 0, sizeof(s3_sector_id));
-  memset(s3_sector_energy, 0, sizeof(s3_sector_energy));
-  memset(s3_sector_ts, 0, sizeof(s3_sector_ts));
-
-  memset(s3_ring_sid, 0, sizeof(s3_ring_sid));
-  memset(s3_ring_ch, 0, sizeof(s3_ring_ch));
-  memset(s3_ring_id, 0, sizeof(s3_ring_id));
-  memset(s3_ring_energy, 0, sizeof(s3_ring_energy));
-  memset(s3_ring_ts, 0, sizeof(s3_ring_ts));
-
-  //
-  tr->Branch("n_ge", &n_ge, "n_ge/I");
-  tr->Branch("ge_sid", ge_sid, "ge_sid[n_ge]/S");
-  tr->Branch("ge_ch", ge_ch, "ge_ch[n_ge]/S");
-  tr->Branch("ge_energy", ge_energy, "ge_energy[n_ge]/D");
-  tr->Branch("ge_ts", ge_ts, "ge_ts[n_ge]/L");
-
-  tr->Branch("n_spider", &n_spider, "n_spider/I");
-  tr->Branch("spider_sid", spider_sid, "spider_sid[n_spider]/S");
-  tr->Branch("spider_ch", spider_ch, "spider_ch[n_spider]/S");
-  tr->Branch("spider_energy", spider_energy, "spider_energy[n_spider]/D");
-  tr->Branch("spider_ts", spider_ts, "spider_ts[n_spider]/L");
-  
-  tr->Branch("n_s3_sector", &n_s3_sector, "n_s3_sector/I");
-  tr->Branch("s3_sector_sid", s3_sector_sid, "s3_sector_sid[n_s3_sector]/S");
-  tr->Branch("s3_sector_ch", s3_sector_ch, "s3_sector_ch[n_s3_sector]/S");
-  tr->Branch("s3_sector_id", s3_sector_id, "s3_sector_id[n_s3_sector]/S");
-  tr->Branch("s3_sector_energy", s3_sector_energy, "s3_sector_energy[n_s3_sector]/D");
-  tr->Branch("s3_sector_ts", s3_sector_ts, "s3_sector_ts[n_s3_sector]/L");
-
-  tr->Branch("n_s3_ring", &n_s3_ring, "n_s3_ring/I");
-  tr->Branch("s3_ring_sid", s3_ring_sid, "s3_ring_sid[n_s3_ring]/S");
-  tr->Branch("s3_ring_ch", s3_ring_ch, "s3_ring_ch[n_s3_ring]/S");
-  tr->Branch("s3_ring_id", s3_ring_id, "s3_ring_id[n_s3_ring]/S");
-  tr->Branch("s3_ring_energy", s3_ring_energy, "s3_ring_energy[n_s3_ring]/D");
-  tr->Branch("s3_ring_ts", s3_ring_ts, "s3_ring_ts[n_s3_ring]/L");
-  
-  //
-  Long64_t i_start = 0;
-
-  Short_t sid1 = 0;
-  Short_t ch1 = 0;
-  Double_t energy1 = 0;
-  Long64_t ts1 = 0;
-  
-  Short_t sid2 = 0;
-  Short_t ch2 = 0;
-  Double_t energy2 = 0;
-  Long64_t ts2 = 0;
-
-  while(true){//get first Ge data
-    tr_in->GetEntry(i_start);
-    energy = GetEnergy();
-    ts_ns = GetTsns();
-    i_start++;
-    if(cid==0 && energy>cut_ge){
-      break;
-    }
-  }
-  
-  Long64_t n_evt = 0;
-  Long64_t i = i_start;
-  Long64_t i_current = i-1;
-  while(true){
-    if(i==tr_in->GetEntries()) break;
-
-    tr_in->GetEntry(i_current);
-    energy = GetEnergy();
-    ts_ns = GetTsns();
-
-    sid1 = sid;
-    ch1 = ch;
-    energy1 = energy;
-    ts1 = ts_ns;
-
-    ge_sid[n_ge] = sid1;
-    ge_ch[n_ge] = ch1; 
-    ge_energy[n_ge] = energy1; 
-    ge_ts[n_ge] = ts1; 
-    n_ge++;
-
-    // std::cout << std::endl;
-    // std::cout << "info ge " << cid << " " << sid << " " << ch << " " << energy << " " << ts << std::endl;
-
-    while(true){//search backward
-      if(i_current--==0) break;
-      tr_in->GetEntry(i_current);
-      energy = GetEnergy();
-      ts_ns = GetTsns();
-      // std::cout << "info backward " << cid << " " << sid << " " << ch << " " << energy << " " << ts << std::endl;
-      // std::cout << "time diff " << abs(ts-ts1) << std::endl;
-
-      if(cid==0 && energy<=cut_ge){//if Ge data and small energy
-        continue;
-      }
-      if(cid==1 && energy<=cut_si){//if Si/S3 data and small energy
-        continue;
-      }
-
-      sid2 = sid;
-      ch2 = ch;
-      energy2 = energy;
-      ts2 = ts_ns;
-    
-      if((abs(ts2-ts1))<=t_win){//this coincidence
-        if(cid==0){
-          ge_sid[n_ge] = sid2; 
-          ge_ch[n_ge] = ch2; 
-          ge_energy[n_ge] = energy2; 
-          ge_ts[n_ge] = ts2; 
-          n_ge++;
-        }
-        if(cid==1){
-          if(!(std::find(v_s3_sid.begin(),v_s3_sid.end(),sid) != v_s3_sid.end())){// spider data
-            spider_sid[n_spider] = sid2;
-            spider_ch[n_spider] = ch2;
-            spider_energy[n_spider] = energy2;
-            spider_ts[n_spider] = ts2;
-            n_spider++;
-          }else{
-            if(sid>=11&&sid<=12){
-              s3_ring_sid[n_s3_ring] = sid2;
-              s3_ring_ch[n_s3_ring] = ch2;
-              s3_ring_id[n_s3_ring] = map_s3_ring_id[10000*cid+100*sid+ch];
-              s3_ring_energy[n_s3_ring] = energy2;
-              s3_ring_ts[n_s3_ring] = ts2;
-              n_s3_ring++;
-            }else{
-              s3_sector_sid[n_s3_sector] = sid2;
-              s3_sector_ch[n_s3_sector] = ch2;
-              s3_sector_id[n_s3_sector] = map_s3_sector_id[10000*cid+100*sid+ch];
-              s3_sector_energy[n_s3_sector] = energy2;
-              s3_sector_ts[n_s3_sector] = ts2;
-              n_s3_sector++;
-            }
-          }
-        }
-      }else break;
-    }//while search backward
-
-    while(true){//search forward
-      if(i>=tr_in->GetEntries()) break;
-      tr_in->GetEntry(i);
-      energy = GetEnergy();
-      ts_ns = GetTsns();
-      // std::cout << "info forward " << cid << " " << sid << " " << ch << " " << energy << " " << ts << std::endl;
-      // std::cout << "time diff " << abs(ts-ts1) << std::endl;
-
-      if(cid==0 && energy<=cut_ge){//if ge data and small energy
-        i++;
-        continue;
-      }
-      if(cid==1 && energy<=cut_si){//if si data and small energy
-        i++;
-        continue;
-      }
-
-      sid2 = sid;
-      ch2 = ch;
-      energy2 = energy;
-      ts2 = ts_ns;
-    
-      if((abs(ts2-ts1))<=t_win){//this coincidence
-        i++;
-        if(cid==0){
-          ge_sid[n_ge] = sid2; 
-          ge_ch[n_ge] = ch2; 
-          ge_energy[n_ge] = energy2; 
-          ge_ts[n_ge] = ts2; 
-          n_ge++;
-        }
-        if(cid==1){
-          if(!(std::find(v_s3_sid.begin(),v_s3_sid.end(),sid) != v_s3_sid.end())){// spider data
-            spider_sid[n_spider] = sid2;
-            spider_ch[n_spider] = ch2;
-            spider_energy[n_spider] = energy2;
-            spider_ts[n_spider] = ts2;
-            n_spider++;
-          }else{
-            if(sid>=11&&sid<=12){
-              s3_ring_sid[n_s3_ring] = sid2;
-              s3_ring_ch[n_s3_ring] = ch2;
-              s3_ring_id[n_s3_ring] = map_s3_ring_id[10000*cid+100*sid+ch];
-              s3_ring_energy[n_s3_ring] = energy2;
-              s3_ring_ts[n_s3_ring] = ts2;
-              n_s3_ring++;
-            }else{
-              s3_sector_sid[n_s3_sector] = sid2;
-              s3_sector_ch[n_s3_sector] = ch2;
-              s3_sector_id[n_s3_sector] = map_s3_sector_id[10000*cid+100*sid+ch];
-              s3_sector_energy[n_s3_sector] = energy2;
-              s3_sector_ts[n_s3_sector] = ts2;
-              n_s3_sector++;
-            }
-          }
-        }
-      }else break;
-    } // while search forward
-
-    // std::cout << "n_ge " << n_ge << std::endl;
-    // std::cout << " n_spider " << n_spider << std::endl;
-    // std::cout << " n_s3_sector " << n_s3_sector << " n_s3_ring " << n_s3_ring << std::endl;
-    if(n_ge*(n_spider+n_s3_sector+n_s3_ring) > 0){
-      n_evt++;
-
-      file_out->cd();
-      tr->Fill();
-
-      if(n_evt%10000==0){
-        std::cout << "\r" << n_evt << "  " << i << "/" << tr_in->GetEntries();
-        std::cout << std::flush;
-      }
-    }
-
-    n_ge = 0;
-    memset(ge_sid, 0, sizeof(ge_sid));
-    memset(ge_ch, 0, sizeof(ge_ch));
-    memset(ge_energy, 0, sizeof(ge_energy));
-    memset(ge_ts, 0, sizeof(ge_ts));
-
-    n_spider = 0;
-    memset(spider_sid, 0, sizeof(spider_sid));
-    memset(spider_ch, 0, sizeof(spider_ch));
-    memset(spider_energy, 0, sizeof(spider_energy));
-    memset(spider_ts, 0, sizeof(spider_ts));
-
-    n_s3_sector = 0;
-    memset(s3_sector_sid, 0, sizeof(s3_sector_sid));
-    memset(s3_sector_ch, 0, sizeof(s3_sector_ch));
-    memset(s3_sector_id, 0, sizeof(s3_sector_id));
-    memset(s3_sector_energy, 0, sizeof(s3_sector_energy));
-    memset(s3_sector_ts, 0, sizeof(s3_sector_ts));
-
-    n_s3_ring = 0;
-    memset(s3_ring_sid, 0, sizeof(s3_ring_sid));
-    memset(s3_ring_ch, 0, sizeof(s3_ring_ch));
-    memset(s3_ring_id, 0, sizeof(s3_ring_id));
-    memset(s3_ring_energy, 0, sizeof(s3_ring_energy));
-    memset(s3_ring_ts, 0, sizeof(s3_ring_ts));
-
-    while(true){//get next Ge data
-      if(i>=tr_in->GetEntries()) break;
-      tr_in->GetEntry(i);
-      energy = GetEnergy();
-      ts_ns = GetTsns();
-      i++;
-      if(cid==0 && energy>cut_ge){
-        break;
-      }
-    }
-    i_current = i-1;
-
-  }//while
-
-  std::cout << std::endl;
-
-  file_out->cd();
-  tr->Write();
-}
-
-
-//
-void build::GetGeSpiderS3EventRandom()
-{
-  std::cout << "start get ge si random events" << std::endl;
-
-  int n_max_ge = GENUM;
-  int n_max_spider = SPIDERNUM;
-  int n_max_s3_sector = S3SECTORNUM;
-  int n_max_s3_ring = S3RINGNUM;
-
-  double cut_ge = CUTGE; 
-  double cut_si = CUTSI;
-
-  double t_prompt = (TIMEWINDOW>TIMEJUMP) ? TIMEJUMP : TIMEWINDOW;
-  double t_min_rand = TIMEJUMP;
-  double t_max_rand = TIMEJUMP+TIMEWINDOW;
-
-  //
-  Int_t n_ge = 0;
-  Short_t ge_sid[n_max_ge];
-  Short_t ge_ch[n_max_ge];
-  Double_t ge_energy[n_max_ge];
-  Long64_t ge_ts[n_max_ge];
-
-  Int_t n_spider = 0;
-  Short_t spider_sid[n_max_spider];
-  Short_t spider_ch[n_max_spider];
-  Double_t spider_energy[n_max_spider];
-  Long64_t spider_ts[n_max_spider];
-
-  Int_t n_s3_sector = 0;
-  Short_t s3_sector_sid[n_max_s3_sector];
-  Short_t s3_sector_ch[n_max_s3_sector];
-  Short_t s3_sector_id[n_max_s3_sector];
-  Double_t s3_sector_energy[n_max_s3_sector];
-  Long64_t s3_sector_ts[n_max_s3_sector];
-  Int_t n_s3_ring = 0;
-  Short_t s3_ring_sid[n_max_s3_ring];
-  Short_t s3_ring_ch[n_max_s3_ring];
-  Short_t s3_ring_id[n_max_s3_ring];
-  Double_t s3_ring_energy[n_max_s3_ring];
-  Long64_t s3_ring_ts[n_max_s3_ring];
-
-  std::stringstream ss;
-  ss.str("");
-  ss << "random coincidence window [" << t_min_rand << ", " << t_max_rand << "] ns" ;
-  TTree *tr = new TTree("tr_bg", ss.str().c_str());
-
-  //
-  memset(ge_sid, 0, sizeof(ge_sid));
-  memset(ge_ch, 0, sizeof(ge_ch));
-  memset(ge_energy, 0, sizeof(ge_energy));
-  memset(ge_ts, 0, sizeof(ge_ts));
-
-  memset(spider_sid, 0, sizeof(spider_sid));
-  memset(spider_ch, 0, sizeof(spider_ch));
-  memset(spider_energy, 0, sizeof(spider_energy));
-  memset(spider_ts, 0, sizeof(spider_ts));
-
-  memset(s3_sector_sid, 0, sizeof(s3_sector_sid));
-  memset(s3_sector_ch, 0, sizeof(s3_sector_ch));
-  memset(s3_sector_id, 0, sizeof(s3_sector_id));
-  memset(s3_sector_energy, 0, sizeof(s3_sector_energy));
-  memset(s3_sector_ts, 0, sizeof(s3_sector_ts));
-
-  memset(s3_ring_sid, 0, sizeof(s3_ring_sid));
-  memset(s3_ring_ch, 0, sizeof(s3_ring_ch));
-  memset(s3_ring_id, 0, sizeof(s3_ring_id));
-  memset(s3_ring_energy, 0, sizeof(s3_ring_energy));
-  memset(s3_ring_ts, 0, sizeof(s3_ring_ts));
-
-  //
-  tr->Branch("n_ge", &n_ge, "n_ge/I");
-  tr->Branch("ge_sid", ge_sid, "ge_sid[n_ge]/S");
-  tr->Branch("ge_ch", ge_ch, "ge_ch[n_ge]/S");
-  tr->Branch("ge_energy", ge_energy, "ge_energy[n_ge]/D");
-  tr->Branch("ge_ts", ge_ts, "ge_ts[n_ge]/L");
-
-  tr->Branch("n_spider", &n_spider, "n_spider/I");
-  tr->Branch("spider_sid", spider_sid, "spider_sid[n_spider]/S");
-  tr->Branch("spider_ch", spider_ch, "spider_ch[n_spider]/S");
-  tr->Branch("spider_energy", spider_energy, "spider_energy[n_spider]/D");
-  tr->Branch("spider_ts", spider_ts, "spider_ts[n_spider]/L");
-  
-  tr->Branch("n_s3_sector", &n_s3_sector, "n_s3_sector/I");
-  tr->Branch("s3_sector_sid", s3_sector_sid, "s3_sector_sid[n_s3_sector]/S");
-  tr->Branch("s3_sector_ch", s3_sector_ch, "s3_sector_ch[n_s3_sector]/S");
-  tr->Branch("s3_sector_id", s3_sector_id, "s3_sector_id[n_s3_sector]/S");
-  tr->Branch("s3_sector_energy", s3_sector_energy, "s3_sector_energy[n_s3_sector]/D");
-  tr->Branch("s3_sector_ts", s3_sector_ts, "s3_sector_ts[n_s3_sector]/L");
-
-  tr->Branch("n_s3_ring", &n_s3_ring, "n_s3_ring/I");
-  tr->Branch("s3_ring_sid", s3_ring_sid, "s3_ring_sid[n_s3_ring]/S");
-  tr->Branch("s3_ring_ch", s3_ring_ch, "s3_ring_ch[n_s3_ring]/S");
-  tr->Branch("s3_ring_id", s3_ring_id, "s3_ring_id[n_s3_ring]/S");
-  tr->Branch("s3_ring_energy", s3_ring_energy, "s3_ring_energy[n_s3_ring]/D");
-  tr->Branch("s3_ring_ts", s3_ring_ts, "s3_ring_ts[n_s3_ring]/L");
-  
-  //
-  Long64_t i_start = 0;
-
-  Short_t sid1 = 0;
-  Short_t ch1 = 0;
-  Double_t energy1 = 0;
-  Long64_t ts1 = 0;
-  
-  Short_t sid2 = 0;
-  Short_t ch2 = 0;
-  Double_t energy2 = 0;
-  Long64_t ts2 = 0;
-
-  while(true){//get first Ge data
-    tr_in->GetEntry(i_start);
-    energy = GetEnergy();
-    ts_ns = GetTsns();
-    i_start++;
-    if(cid==0 && energy>cut_ge){
-      break;
-    }
-  }
-  
-  Long64_t n_evt = 0;
-  Long64_t i = i_start;
-  Long64_t i_current = i-1;
-  while(true){
-    if(i==tr_in->GetEntries()) break;
-
-    tr_in->GetEntry(i_current);
-    energy = GetEnergy();
-    ts_ns = GetTsns();
-
-    sid1 = sid;
-    ch1 = ch;
-    energy1 = energy;
-    ts1 = ts_ns;
-
-    ge_sid[n_ge] = sid1;
-    ge_ch[n_ge] = ch1; 
-    ge_energy[n_ge] = energy1; 
-    ge_ts[n_ge] = ts1; 
-    n_ge++;
-
-    // std::cout << std::endl;
-    // std::cout << "info ge " << cid << " " << sid << " " << ch << " " << energy << " " << ts << std::endl;
-
-    while(true){//search backward
-      if(i_current--==0) break;
-      tr_in->GetEntry(i_current);
-      energy = GetEnergy();
-      ts_ns = GetTsns();
-      // std::cout << "info backward " << cid << " " << sid << " " << ch << " " << energy << " " << ts << std::endl;
-      // std::cout << "time diff " << abs(ts-ts1) << std::endl;
-
-      if(cid==0 && energy<=cut_ge){//if Ge data and small energy
-        continue;
-      }
-      if(cid==1 && energy<=cut_si){//if Si/S3 data and small energy
-        continue;
-      }
-
-      sid2 = sid;
-      ch2 = ch;
-      energy2 = energy;
-      ts2 = ts_ns;
-    
-      if(abs(ts2-ts1)<=t_prompt){//for ge coincidence
-        if(cid==0){
-          ge_sid[n_ge] = sid2;
-          ge_ch[n_ge] = ch2;
-          ge_energy[n_ge] = energy2;
-          ge_ts[n_ge] = ts2;
-          n_ge++;
-        }else{
-          continue;
-        }
-      }
-      else if(abs(ts2-ts1)>t_prompt && abs(ts2-ts1)<t_min_rand) continue;
-      else if((abs(ts2-ts1))>=t_min_rand && abs(ts2-ts1)<=t_max_rand){//this coincidence
-        if(cid==1){
-          if(!(std::find(v_s3_sid.begin(),v_s3_sid.end(),sid) != v_s3_sid.end())){// spider data
-            spider_sid[n_spider] = sid2;
-            spider_ch[n_spider] = ch2;
-            spider_energy[n_spider] = energy2;
-            spider_ts[n_spider] = ts2;
-            n_spider++;
-          }else{
-            if(sid>=11&&sid<=12){
-              s3_ring_sid[n_s3_ring] = sid2;
-              s3_ring_ch[n_s3_ring] = ch2;
-              s3_ring_id[n_s3_ring] = map_s3_ring_id[10000*cid+100*sid+ch];
-              s3_ring_energy[n_s3_ring] = energy2;
-              s3_ring_ts[n_s3_ring] = ts2;
-              n_s3_ring++;
-            }else{
-              s3_sector_sid[n_s3_sector] = sid2;
-              s3_sector_ch[n_s3_sector] = ch2;
-              s3_sector_id[n_s3_sector] = map_s3_sector_id[10000*cid+100*sid+ch];
-              s3_sector_energy[n_s3_sector] = energy2;
-              s3_sector_ts[n_s3_sector] = ts2;
-              n_s3_sector++;
-            }
-          }
-        }else continue;
-      }else break;
-    }//while search backward
-
-    while(true){//search forward
-      if(i>=tr_in->GetEntries()) break;
-      tr_in->GetEntry(i);
-      energy = GetEnergy();
-      ts_ns = GetTsns();
-      // std::cout << "info forward " << cid << " " << sid << " " << ch << " " << energy << " " << ts << std::endl;
-      // std::cout << "time diff " << abs(ts-ts1) << std::endl;
-
-      if(cid==0 && energy<=cut_ge){//if ge data and small energy
-        i++;
-        continue;
-      }
-      if(cid==1 && energy<=cut_si){//if si data and small energy
-        i++;
-        continue;
-      }
-
-      sid2 = sid;
-      ch2 = ch;
-      energy2 = energy;
-      ts2 = ts_ns;
-
-      if((abs(ts2-ts1))<=t_prompt){//for ge coincidence
-        i++;
-        if(cid==0){
-          ge_sid[n_ge] = sid2;
-          ge_ch[n_ge] = ch2;
-          ge_energy[n_ge] = energy2;
-          ge_ts[n_ge] = ts2;
-          n_ge++;
-        }else{
-          continue;
-        }
-      }
-      else if(abs(ts2-ts1)>t_prompt && abs(ts2-ts1)<t_min_rand){
-        i++;
-        continue;
-      }
-      else if((abs(ts2-ts1))>=t_min_rand && abs(ts2-ts1)<=t_max_rand){//this coincidence      
-        i++;
-        if(cid==1){
-          if(!(std::find(v_s3_sid.begin(),v_s3_sid.end(),sid) != v_s3_sid.end())){// spider data
-            spider_sid[n_spider] = sid2;
-            spider_ch[n_spider] = ch2;
-            spider_energy[n_spider] = energy2;
-            spider_ts[n_spider] = ts2;
-            n_spider++;
-          }else{
-            if(sid>=11&&sid<=12){
-              s3_ring_sid[n_s3_ring] = sid2;
-              s3_ring_ch[n_s3_ring] = ch2;
-              s3_ring_id[n_s3_ring] = map_s3_ring_id[10000*cid+100*sid+ch];
-              s3_ring_energy[n_s3_ring] = energy2;
-              s3_ring_ts[n_s3_ring] = ts2;
-              n_s3_ring++;
-            }else{
-              s3_sector_sid[n_s3_sector] = sid2;
-              s3_sector_ch[n_s3_sector] = ch2;
-              s3_sector_id[n_s3_sector] = map_s3_sector_id[10000*cid+100*sid+ch];
-              s3_sector_energy[n_s3_sector] = energy2;
-              s3_sector_ts[n_s3_sector] = ts2;
-              n_s3_sector++;
-            }
-          }
-        }else continue;
-      }else break;
-    } // while search forward
-
-    // std::cout << "n_ge " << n_ge << std::endl;
-    // std::cout << " n_spider " << n_spider << std::endl;
-    // std::cout << " n_s3_sector " << n_s3_sector << " n_s3_ring " << n_s3_ring << std::endl;
-    if(n_ge*(n_spider+n_s3_sector+n_s3_ring) > 0){
-      n_evt++;
-
-      file_out->cd();
-      tr->Fill();
-
-      if(n_evt%10000==0){
-        std::cout << "\r" << n_evt << "  " << i << "/" << tr_in->GetEntries();
-        std::cout << std::flush;
-      }
-    }
-
-    n_ge = 0;
-    memset(ge_sid, 0, sizeof(ge_sid));
-    memset(ge_ch, 0, sizeof(ge_ch));
-    memset(ge_energy, 0, sizeof(ge_energy));
-    memset(ge_ts, 0, sizeof(ge_ts));
-
-    n_spider = 0;
-    memset(spider_sid, 0, sizeof(spider_sid));
-    memset(spider_ch, 0, sizeof(spider_ch));
-    memset(spider_energy, 0, sizeof(spider_energy));
-    memset(spider_ts, 0, sizeof(spider_ts));
-
-    n_s3_sector = 0;
-    memset(s3_sector_sid, 0, sizeof(s3_sector_sid));
-    memset(s3_sector_ch, 0, sizeof(s3_sector_ch));
-    memset(s3_sector_id, 0, sizeof(s3_sector_id));
-    memset(s3_sector_energy, 0, sizeof(s3_sector_energy));
-    memset(s3_sector_ts, 0, sizeof(s3_sector_ts));
-
-    n_s3_ring = 0;
-    memset(s3_ring_sid, 0, sizeof(s3_ring_sid));
-    memset(s3_ring_ch, 0, sizeof(s3_ring_ch));
-    memset(s3_ring_id, 0, sizeof(s3_ring_id));
-    memset(s3_ring_energy, 0, sizeof(s3_ring_energy));
-    memset(s3_ring_ts, 0, sizeof(s3_ring_ts));
-
-    while(true){//get next Ge data
-      if(i>=tr_in->GetEntries()) break;
-      tr_in->GetEntry(i);
-      energy = GetEnergy();
-      ts_ns = GetTsns();
-      i++;
-      if(cid==0 && energy>cut_ge){
-        break;
-      }
-    }
-    i_current = i-1;
-  }//while
-
-  std::cout << std::endl;
-
-  file_out->cd();
-  tr->Write();
-}
-//
-double build::GetEnergy()
-{
-  int key = 10000*cid+100*sid+ch;
-
-  auto it = map_cali_data.find(key);
-  if(it==map_cali_data.end()){
-    return 0;
-  }
-
-  double energy = 0;
-  if(cid==0){
-    energy = map_cali_data[key][0]+evte*map_cali_data[key][1]+evte*evte*map_cali_data[key][2]+rndm->Uniform(-0.5,0.5);
-    energy *= map_k_data[key];
-  }
-
-  if(cid==1){
-    energy = map_cali_data[key][0]+evte*map_cali_data[key][1]+evte*evte*map_cali_data[key][2]+rndm->Uniform(-5.,5.);
-
-    if(map_s3_sector_id.find(key)!=map_s3_sector_id.end()){
-      energy = map_s3_sector_cor_data[map_s3_sector_id[key]][0]+energy*map_s3_sector_cor_data[map_s3_sector_id[key]][1];
-    }
-    if(map_s3_ring_id.find(key)!=map_s3_ring_id.end()){
-      energy = map_s3_ring_cor_data[map_s3_ring_id[key]][0]+energy*map_s3_ring_cor_data[map_s3_ring_id[key]][1];
-    }
-  }
-
-  return energy;
-}
-
-//
-Long64_t build::GetTsns()
-{
-  int key = 10000*cid+100*sid+ch;
-
-  Long64_t ts_ns = 0;
-  if(cid==0){
-    if(cfdft){
-      ts_ns = ts*8;
-    }else{
-      ts_ns = (ts*2-cfds+cfd/16384.)*4.;
-    }
-
-    ts_ns += map_ts_offset[key];
-  }
-
-  if(cid==1){
-    if(sr==250) ts_ns = ts*8;
-    if(sr==100) ts_ns = ts*10; 
-
-    ts_ns += map_ts_offset[key];
-    ts_ns += rndm->Uniform(-5,5);
-  }
-
-  return ts_ns;
-}
-
-//
-void build::SaveFile()
-{
-  file_out->cd();
-  file_out->Close();
-}
-
-//
-bool build::ReadCaliData()
-{
-  std::cout << "start read cali data" << std::endl;
-
-  //
-  std::ifstream fi_cali_ge;
-  fi_cali_ge.open("../pars/cali_ge.txt");
-  if(!fi_cali_ge){
-    std::cout << "can not open cali.txt" << std::endl;
-    return 0;
-  }
-
-  std::string line;
-  std::getline(fi_cali_ge, line);
-
-  int cid, sid, ch;
-  double par0, par1, par2, chi2;
-  int key = 0;
-
-  while(1){
-    fi_cali_ge >> cid >> sid >> ch >> par0 >> par1 >> par2 >> chi2;
-    if(!fi_cali_ge.good()) break;
-
-    key = 10000*cid+100*sid+ch; // ch from 0 to 15
-    std::vector<double> value;
-    value.push_back(par0);
-    value.push_back(par1);
-    value.push_back(par2);
-    value.push_back(chi2);
-
-    map_cali_data.insert(std::pair<int, std::vector<double>>(key, value));
-  }
-
-  fi_cali_ge.close();
-
-  //
-  std::ifstream fi_k;
-  fi_k.open(TString::Format("../pars/run_k/k_%04d.txt", run).Data());
-  if(!fi_k){
-    std::cout << "can not open k data" << std::endl;
-    for(int i=2;i<=5;i++){
-      for(int j=0;j<16;j++){
-        map_k_data.insert(std::pair<int, double>(100*i+j, 1.));
-      }
-    }
-  }else{
-    std::string line;
-    std::getline(fi_k, line);
-
-    double k;
-
-    while(1){
-      fi_k >> cid >> sid >> ch >> k;
-      if(!fi_k.good()) break;
-
-      key = 10000*cid+100*sid+ch; // ch from 0 to 15
-
-      map_k_data.insert(std::pair<int, double>(key, k));
-    }
-
-    fi_k.close();
-  }
-
-  //
-  std::ifstream fi_cali_si;
-  if(run==460 || (run>=472 && run<=605)){
-    fi_cali_si.open("../pars/cali_si_r460.txt");
-  }else if((run>=616 && run<=674) || run==722){
-    fi_cali_si.open("../pars/cali_si_r457_low_current.txt");
-  }else if(run==457 || (run>=680 && run<=718)){
-    fi_cali_si.open("../pars/cali_si_r457_high_current.txt");
-  }else{
-    std::cout << "wrong run number." << std::endl;
-    return 0;
-  }
-
-  if(!fi_cali_si){
-    std::cout << "can not open si cali.txt" << std::endl;
-    return 0;
-  }
-
-  std::getline(fi_cali_si, line);
-
-  while(1){
-    fi_cali_si >> cid >> sid >> ch >> par0 >> par1 >> par2 >> chi2;
-    if(!fi_cali_si.good()) break;
-
-    key = 10000*cid+100*sid+ch; // ch from 0 to 15
-    std::vector<double> value;
-    value.push_back(par0);
-    value.push_back(par1);
-    value.push_back(par2);
-    value.push_back(chi2);
-
-    map_cali_data.insert(std::pair<int, std::vector<double>>(key, value));
-  }
-
-  fi_cali_si.close();
-
-
-  return 1;
-}
-
-//
-void build::PrintCaliData()
-{
-  std::cout << "start print cali data" << std::endl;
-
-  std::map<int, std::vector<double>>::iterator it_cali = map_cali_data.begin();
-  for(;it_cali!=map_cali_data.end();it_cali++){
-    std::cout << it_cali->first << " => " << it_cali->second[0] << " " << it_cali->second[1] << " " << it_cali->second[2] << '\n';
-  }
-
-  std::map<int, double>::iterator it_k = map_k_data.begin();
-  for(;it_k!=map_k_data.end();it_k++){
-    std::cout << it_k->first << " => " << it_k->second<< '\n';
-  }
-}
-
-//
-void build::ReadS3CorData() 
-{
-  int id;
-  double par0, par1;
-
-  std::string line;
-
-  std::ifstream fi_fb_cor_sector(TString::Format("../pars/run_fb_cor/correction_sector_%04d.txt",run).Data());
-  if(!fi_fb_cor_sector){
-    std::cout << "can not open sector correction file." << std::endl;
-    for(int i=1;i<=32;i++){
-      map_s3_sector_cor_data[i] = {0, 1};
-    }
-  }else{
-    std::getline(fi_fb_cor_sector, line);
-    
-    while(1){
-      fi_fb_cor_sector >> id >> par0 >> par1;
-      if(!fi_fb_cor_sector.good()) break;
-
-      map_s3_sector_cor_data[id] = {par0, par1};
-    }
-    fi_fb_cor_sector.close();
-  }
-
-  std::ifstream fi_fb_cor_ring(TString::Format("../pars/run_fb_cor/correction_ring_%04d.txt",run).Data());
-  if(!fi_fb_cor_ring){
-    std::cout << "can not open ring correction file." << std::endl;
-    for(int i=1;i<=24;i++){
-      map_s3_ring_cor_data[i] = {0, 1};
-    }
-  }else{
-    std::getline(fi_fb_cor_ring, line);
-    
-    while(1){
-      fi_fb_cor_ring >> id >> par0 >> par1;
-      if(!fi_fb_cor_ring.good()) break;
-
-      map_s3_ring_cor_data[id] = {par0, par1};
-    }
-    fi_fb_cor_ring.close();
-  }
-}
-
-//
-void build::PrintS3CorData()
-{
-  std::cout << "\nstart print s3 cor data" << std::endl;
-
-  std::cout << "\nfor sector ..." << std::endl;
-  std::map<int, std::vector<double>>::iterator it_sector = map_s3_sector_cor_data.begin();
-  for(;it_sector!=map_s3_sector_cor_data.end();it_sector++){
-    std::cout << it_sector->first << " => " << it_sector->second[0] << " " << it_sector->second[1] << '\n';
-  }
-
-  std::cout << "\nfor ring ..." << std::endl;
-  std::map<int, std::vector<double>>::iterator it_ring = map_s3_ring_cor_data.begin();
-  for(;it_ring!=map_s3_ring_cor_data.end();it_ring++){
-    std::cout << it_ring->first << " => " << it_ring->second[0] << " " << it_ring->second[1] << '\n';
-  }
-}
-
-//
-bool build::ReadTSOffset()
-{
-  std::cout << "start read ts offset data" << std::endl;
-
-  std::ifstream fi;
-  if((run>=457 && run<=462) || (run>=472 && run<=605)){
-    fi.open("../pars/ts_offset_r472_r605.txt");
-  }else if((run>=616 && run<=674) || (run>=721 && run<=723)){
-    fi.open("../pars/ts_offset_r616_r674.txt");
-  }else if(run>=680 && run<=718){
-    fi.open("../pars/ts_offset_r680_r718.txt");
-  }else{
-    std::cout << "wrong run number." << std::endl;
-    return 0;
-  }
-  
-  if(!fi){
-    std::cout << "can not open ts offset data" << std::endl;
-    return 0;
-  }
-
-  std::string line;
-  std::getline(fi, line);
-
-  int cid, sid, ch;
-  double ts_offset, chi2;
-  int key = 0;
-
-  while(1){
-    fi >> cid >> sid >> ch >> ts_offset >> chi2;
-    if(!fi.good()) break;
-
-    key = 10000*cid+100*sid+ch; // ch from 0 to 15
-
-    map_ts_offset.insert(std::pair<int, double>(key, ts_offset));
-  }
-
-  fi.close();
-
-  return 1;
-}
-
-//
-void build::PrintTSOffset()
-{
-  std::cout << "start print ts offset data" << std::endl;
-
-  std::map<int, double>::iterator it = map_ts_offset.begin();
-  for(;it!=map_ts_offset.end();it++){
-    std::cout << it->first << " => " << it->second << '\n';
-  }
-}
-
-//
-bool build::InitMapSectorRingID()
-{
-  std::cout << "start init ring and sector id." << std::endl;
-
-  if((run>=457 && run<=462) || (run>=472 && run<=605) || (run>=680 && run<=718)){
-    map_s3_sector_id = {
-      {10900, 10},
-      {10901, 12},
-      {10902, 14},
-      {10903, 16},
-      {10904, 18},
-      {10905, 20},
-      {10906, 22},
-      {10907, 24},
-      {10908, 26},
-      {10909, 28},
-      {10910, 30},
-      {10911, 32},
-      {10912, 2},
-      {10913, 4},
-      {10914, 6},
-      {10915, 8},
-      {11000, 11},
-      {11001, 13},
-      {11002, 15},
-      {11003, 17},
-      {11004, 19},
-      {11005, 21},
-      {11006, 23},
-      {11007, 25},
-      {11008, 27},
-      {11009, 29},
-      {11010, 31},
-      {11011, 1},
-      {11012, 3},
-      {11013, 5},
-      {11014, 7},
-      {11015, 9}
+  void fill(const Hit& g,const Hit& p,const Hit* sector) {
+    const int half=uint64_t(g.entry)>=split;
+    std::string ref=p.kind==2?"si":p.kind==3?"s3_ring_all":"s3_sector";
+    auto view=[&](const std::string& r) {
+      book(g.key,r,g.failed,half,"current").Fill(g.e,p.t-g.t);
+      book(g.key,r,g.failed,half,"native_ge").Fill(g.e,p.t-double(g.native));
+      ++counts[std::to_string(g.key)+":"+r+":"+std::to_string(g.failed)+":"+std::to_string(half)];
     };
-  }else if((run>=616 && run<=674) || (run>=721 && run<=723)){
-    map_s3_sector_id = {
-      {10200, 10},
-      {10201, 12},
-      {10202, 14},
-      {10203, 16},
-      {10204, 18},
-      {10205, 20},
-      {10206, 22},
-      {10207, 24},
-      {10208, 26},
-      {10209, 28},
-      {10210, 30},
-      {10211, 32},
-      {10212, 2},
-      {10213, 4},
-      {10214, 6},
-      {10215, 8},
-      {10300, 11},
-      {10301, 13},
-      {10302, 15},
-      {10303, 17},
-      {10304, 19},
-      {10305, 21},
-      {10306, 23},
-      {10307, 25},
-      {10308, 27},
-      {10309, 29},
-      {10310, 31},
-      {10311, 1},
-      {10312, 3},
-      {10313, 5},
-      {10314, 7},
-      {10315, 9}
+    view(ref);if(p.kind==3 && sector) view("s3_matched");
+    if(!tree) return;
+    row.ge_key=g.key;row.particle_key=p.key;row.particle_kind=p.kind;row.particle_ring=p.ring;row.particle_sector=p.sector;row.half=half;
+    row.ge_entry=g.entry;row.particle_entry=p.entry;row.sector_entry=sector?sector->entry:-1;row.ge_ts=g.ts;row.particle_ts=p.ts;
+    row.ge_native_ns=g.native;row.particle_native_ns=p.native;row.ge_energy_keV=g.e;row.particle_energy_keV=p.e;
+    row.dt_current_ns=p.t-g.t;row.dt_native_ge_ns=p.t-double(g.native);row.dt_native_both_ns=double(p.native-g.native);
+    row.particle_corrected_ns=p.t;row.ge_corrected_ns=g.t;row.ge_adc=g.adc;row.particle_adc=p.adc;
+    row.ge_cfd=g.cfd;row.ge_cfds=g.cfds;row.particle_cfd=p.cfd;row.particle_cfds=p.cfds;row.ge_sr=g.sr;row.particle_sr=p.sr;
+    row.ge_failed=g.failed;row.particle_failed=p.failed;row.s3_unique_match=sector!=nullptr;
+    require(tree->Fill()>0,"Cannot fill pair tree");
+  }
+  void write() {
+    file.cd();if(tree) require(tree->Write()>0,"Cannot write pairs");
+    // 未测得分支也保留空谱；空谱不等于零修正。
+    for(int g:GE) for(const std::string ref:{"si","s3_ring_all","s3_matched","s3_sector"})
+      for(int s=0;s<2;++s) for(int h=0;h<2;++h) for(const std::string c:{"current","native_ge"}) book(g,ref,s,h,c);
+    for(const auto& h:hist) require(h.second->Write()>0,"Cannot write histogram "+h.first);
+  }
+};
+struct Engine {
+  const WalkOptions& o;const Parameters& parameters;Writer& writer;
+  std::vector<Hit> buffer;size_t peak_buffer=0;uint64_t ge_processed=0,matched_rings=0;
+  Engine(const WalkOptions& x,const Parameters& p,Writer& w):o(x),parameters(p),writer(w) {}
+  void process(double last,bool final) {
+    peak_buffer=std::max(peak_buffer,buffer.size());
+    require(buffer.size()<=o.max_buffer_hits,"Rolling buffer budget exceeded");
+    // buffer按原生coarse时间排列；匹配索引单独按修正时间排列。
+    // 唯一性要走ring->sector->另一ring两跳；相对原ring最多2个匹配窗。
+    const double context=o.native_window_ns+2*SHIFT_BOUND+2*o.s3_match_ns;
+    const double safe=final?std::numeric_limits<double>::infinity():last-context;
+    std::vector<const Hit*> rings,sectors;
+    for(const auto& h:buffer) {
+      if(h.kind==3 && (parameters.group=="low" || h.ring<=8)) rings.push_back(&h);
+      if(h.kind==4) sectors.push_back(&h);
+    }
+    auto order=[](const Hit* a,const Hit* b){return a->t<b->t || (a->t==b->t && a->entry<b->entry);};
+    std::sort(rings.begin(),rings.end(),order);std::sort(sectors.begin(),sectors.end(),order);
+    std::map<int64_t,const Hit*> cached_match;
+    auto partners=[&](const Hit& a,const std::vector<const Hit*>& list) {
+      std::vector<const Hit*> result;
+      auto first=std::upper_bound(list.begin(),list.end(),a.t-o.s3_match_ns,[](double t,const Hit* h){return t<h->t;});
+      for(auto it=first;it!=list.end() && (*it)->t<a.t+o.s3_match_ns;++it)
+        if(std::abs((*it)->e-a.e)<o.s3_match_keV) result.push_back(*it);
+      return result;
     };
-  }else{
-  std::cout << "wrong run number." << std::endl;
-    return 0;
+    auto match=[&](const Hit& ring)->const Hit* {
+      if(parameters.group!="low" && ring.ring>8) return nullptr;
+      auto old=cached_match.find(ring.entry);if(old!=cached_match.end()) return old->second;
+      const Hit* result=nullptr;auto s=partners(ring,sectors);
+      if(s.size()==1) {auto r=partners(*s[0],rings);if(r.size()==1 && r[0]->entry==ring.entry) result=s[0];}
+      cached_match[ring.entry]=result;return result;
+    };
+    for(auto& g:buffer) {
+      if(g.kind!=1 || g.done || double(g.coarse)>safe) continue;
+      const auto lo=std::upper_bound(buffer.begin(),buffer.end(),double(g.coarse)-o.native_window_ns,[](double t,const Hit& h){return t<double(h.coarse);});
+      for(auto it=lo;it!=buffer.end() && double(it->coarse)<double(g.coarse)+o.native_window_ns;++it) {
+        if(it->kind==1) continue;
+        const Hit* sector=it->kind==3?match(*it):nullptr;
+        writer.fill(g,*it,sector);if(sector) ++matched_rings;
+      }
+      g.done=true;++ge_processed;
+    }
+    if(final) {buffer.clear();return;}
+    // 保留未来Ge和S3双面匹配所需的左右上下文，不在半段边界丢配对。
+    const double discard=safe-context;
+    auto end=std::lower_bound(buffer.begin(),buffer.end(),discard,[](const Hit& h,double t){return double(h.coarse)<t;});
+    for(auto it=buffer.begin();it!=end;++it) require(it->kind!=1 || it->done,"Unprocessed Ge at buffer boundary");
+    buffer.erase(buffer.begin(),end);
   }
-
-  map_s3_ring_id = {
-    {11102, 2},
-    {11103, 4},
-    {11104, 6},
-    {11105, 8},
-    {11106, 10},
-    {11107, 12},
-    {11108, 14},
-    {11109, 16},
-    {11110, 18},
-    {11111, 20},
-    {11112, 22},
-    {11113, 24},
-    {11200, 1},
-    {11201, 3},
-    {11202, 5},
-    {11203, 7},
-    {11204, 9},
-    {11205, 11},
-    {11206, 13},
-    {11207, 15},
-    {11208, 17},
-    {11209, 19},
-    {11210, 21},
-    {11211, 23}
-  };
-
-  return 1;
+};
+void write_json_atomic(const fs::path& path,const json& value) {
+  fs::path temp=path.string()+".tmp";
+  {std::ofstream out(temp);require(bool(out),"Cannot create status");out<<value.dump(2)<<'\n';out.close();require(bool(out),"Cannot write status");}
+  fs::rename(temp,path);
+}
 }
 
-//
-void build::PrintMapSectorRingID()
-{
-  std::cout << "start print ring and sector id." << std::endl;
-
-  for(auto &it:map_s3_sector_id){
-    std::cout << it.first << " => " << it.second << std::endl;
+void build_ge_time_walk(const WalkOptions& input_options) {
+  auto o=input_options;o.project=fs::canonical(o.project);
+  require(o.ge_min>=40 && o.ge_max<=2000 && o.ge_min<o.ge_max,"Ge domain must lie in[40,2000)");
+  require(o.si_min>=0 && o.si_min<o.si_max && o.s3_min>=0 && o.s3_min<o.s3_max,"Invalid particle gates");
+  require(o.native_window_ns>0 && o.native_window_ns<=10000 && o.time_range_ns>0 && o.time_range_ns<=10000,"Invalid windows");
+  require(o.time_bin_ns>0 && o.energy_bin_keV>0 && o.s3_match_ns>0 && o.s3_match_keV>0,"Invalid bins/matching");
+  for(double n:{2*o.time_range_ns/o.time_bin_ns,(o.ge_max-o.ge_min)/o.energy_bin_keV})
+    require(n>=1 && n<=10000 && std::abs(n-std::round(n))<1e-8,"Require integral number of bins<=10000");
+  require(o.chunk>0 && o.chunk<=o.max_buffer_hits,"Invalid chunk/buffer limit");
+  Parameters p(o.project,o.run,true);
+  // ge_time_walk维护数值源；显式active保留旧流程复现，禁止隐式混用。
+  fs::path profile_dir;std::string selection_source,expected_sha;
+  if(!o.profile_dir.empty()) {
+    require(o.profile.empty(),"Choose --profile or --profile-dir, not both");
+    profile_dir=fs::canonical(o.profile_dir);o.profile=profile_dir.filename().string();
+    selection_source="explicit_directory";
+  } else if(o.profile.empty() || o.profile=="local") {
+    const auto selected=o.project/"ge_time_walk/parameters/selected_profile.json";
+    p.freeze(selected);const auto choice=json::parse(read_text(selected));
+    o.profile=choice.at("profile").get<std::string>();
+    require(!o.profile.empty() && o.profile.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_")==std::string::npos,"Invalid local profile");
+    profile_dir=fs::canonical(selected.parent_path()/o.profile);
+    expected_sha=choice.at("calibration_sha256").get<std::string>();
+    selection_source="ge_time_walk/parameters/selected_profile.json";
+  } else {
+    if(o.profile=="active") {
+      p.freeze(p.pars/"time_alignment/active.txt");
+      std::istringstream active(read_text(p.pars/"time_alignment/active.txt"));std::string extra;
+      require(bool(active>>o.profile) && !(active>>extra),"Invalid active profile");
+      selection_source="pars/time_alignment/active.txt";
+    } else selection_source="explicit_installed_version";
+    require(!o.profile.empty() && o.profile.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_")==std::string::npos,"Invalid profile");
+    profile_dir=fs::canonical(p.pars/"time_alignment/versions"/o.profile);
   }
-  std::cout << std::endl;
-
-  for(auto &it:map_s3_ring_id){
-    std::cout << it.first << " => " << it.second << std::endl;
+  for(const auto& name:{"calibration.json","metadata.json","storage_format.txt","correction_mode.txt","source_sha256.txt"}) p.freeze(profile_dir/name);
+  const auto actual_sha=p.snapshots.at((profile_dir/"calibration.json").string()).at("sha256").get<std::string>();
+  std::istringstream source_hash(read_text(profile_dir/"source_sha256.txt"));std::string declared_sha,extra;
+  require(bool(source_hash>>declared_sha) && !(source_hash>>extra) && declared_sha==actual_sha,"Calibration SHA does not match source_sha256.txt");
+  require(expected_sha.empty() || expected_sha==actual_sha,"Local selection SHA does not match calibration.json");
+  sm150::TimeAlignment timing;timing.LoadProfile(profile_dir.string(),o.run);
+  require(timing.active() && timing.total(),"Require complete timing profile covering this run");
+  json snapshots=p.snapshots;
+  for(auto it=snapshots.begin();it!=snapshots.end();++it) if(fs::path(it.key()).parent_path()==profile_dir) {
+    it.value().erase("text");it.value()["content_storage"]="versioned parameter file; SHA checked before/after processing";
   }
+  json meta={{"schema","sm150_ge_walk_v1"},{"run",rn(o.run)},{"group",p.group},{"timing_profile",o.profile},
+    {"timing_profile_directory",profile_dir.string()},{"timing_selection_source",selection_source},
+    {"profile_sha256",p.snapshots.at((profile_dir/"calibration.json").string()).at("sha256")},
+    {"parameters",p.records},{"parameter_snapshots",snapshots},{"Ge",GE},
+    {"energy_gates_keV",{{"ge",{o.ge_min,o.ge_max}},{"si",{o.si_min,o.si_max}},{"s3",{o.s3_min,o.s3_max}}}},
+    {"energy_gate_edges","Ge[min,max);particles(min,max)"},{"native_pair_window_ns",o.native_window_ns},
+    {"pair_rule","all unique raw-entry Ge-particle pairs with strict abs(coarse_particle-coarse_Ge)<window; no nearest-time selection"},
+    {"time_range_ns",o.time_range_ns},{"time_bin_ns",o.time_bin_ns},{"energy_bin_keV",o.energy_bin_keV},
+    {"dt_sign","particle_minus_Ge"},{"coordinates",{{"current","particle complete time minus Ge complete time"},{"native_ge","same corrected particle minus native decoded Ge; NO Ge offset/time-walk"}}},
+    {"quality","pileup=outofr=0; retain normal and failed"},{"random_jitter",false},
+    {"s3_match_ns",o.s3_match_ns},{"s3_match_keV",o.s3_match_keV},
+    {"s3_matching","mutually unique ring/sector within strict corrected-time and energy bounds; main matched view low ring1-24,high ring1-8; all faces also saved separately"},
+    {"half_rule","Ge entry in first/second half of processed interval; sum both for final fit; boundary pairs retained"},
+    {"production_active",false},{"ROOT_version",gROOT->GetVersion()}};
+  if(o.inspect_parameters) {p.verify();std::cout<<meta.dump(2)<<'\n';return;}
+  require(!o.input.empty() && !o.output.empty(),"Specify --input and --output");
+  o.input=fs::canonical(o.input);o.output=fs::absolute(o.output).lexically_normal();
+  require(!fs::exists(o.output) && !fs::is_symlink(o.output),"Output already exists");
+  fs::create_directories(o.output.parent_path());
+  fs::path partial=o.output.string()+".partial",progress=o.output.string()+".status.json",receipt=o.output.string()+".json";
+  require(!fs::exists(partial) && !fs::is_symlink(partial) && !fs::exists(receipt),"Existing partial/receipt: inspect before retry");
+  Stat before(o.input);
+  std::unique_ptr<TFile> input(TFile::Open(o.input.c_str(),"READ"));require(input && !input->IsZombie(),"Cannot open raw ROOT");
+  auto* tree=dynamic_cast<TTree*>(input->Get("tree"));require(tree,"Missing raw tree");
+  const uint64_t total=tree->GetEntries();require(o.begin<=total,"Begin outside input");
+  const uint64_t count=o.entries?std::min(o.entries,total-o.begin):total-o.begin,end=o.begin+count;
+  raw reader(tree);tree->SetCacheSize(32*1024*1024);tree->AddBranchToCache("*",true);tree->StopCacheLearningPhase();
+  std::unique_ptr<TFile> output(TFile::Open(partial.c_str(),"CREATE"));require(output && !output->IsZombie(),"Cannot create partial output");
+  output->SetCompressionSettings(101);
+  Writer writer(o,*output,o.begin+count/2);Engine engine(o,p,writer);
+  Digest digest,particle_digest;std::array<InputRecord,4096> hash_records;std::array<ParticleIdentityRecord,4096> particle_records;size_t hash_used=0;
+  auto flush_hash=[&](){if(hash_used){digest.add(hash_records.data(),hash_used*sizeof(InputRecord));particle_digest.add(particle_records.data(),hash_used*sizeof(ParticleIdentityRecord));hash_used=0;}};
+  uint64_t rejected_quality=0,rejected_energy=0,unmapped=0,nonselected_ge=0;
+  std::map<int,uint64_t> accepted;int64_t previous=std::numeric_limits<int64_t>::min();
+  const auto start=std::chrono::steady_clock::now();auto last_report=start;
+  auto seconds=[&](){return std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count();};
+  for(uint64_t entry=o.begin;entry<end;++entry) {
+    reader.GetEntry(entry);
+    hash_records[hash_used]={reader.sr,reader.pileup,reader.outofr,reader.cid,reader.sid,reader.ch,reader.evte,reader.ts,reader.cfd,reader.cfdft,reader.cfds};
+    particle_records[hash_used]={reader.ts,reader.evte,reader.sr,reader.cid,reader.sid,reader.ch,uint8_t(reader.pileup),uint8_t(reader.outofr)};
+    if(++hash_used==hash_records.size())flush_hash();
+    require(reader.sr==100 || reader.sr==250,"Invalid sampling rate");
+    require(reader.ts>=0 && reader.ts<std::numeric_limits<int64_t>::max()/10,"Invalid timestamp");
+    const int64_t coarse=reader.ts*(reader.sr==250?8:10);
+    require(coarse>=previous,"Raw coarse timestamps are not monotonic");previous=coarse;
+    int key=10000*int(reader.cid)+100*int(reader.sid)+int(reader.ch);
+    auto found=p.channels.find(key);
+    if(found==p.channels.end()) ++unmapped;
+    else if(reader.pileup || reader.outofr) ++rejected_quality;
+    else if(found->second.kind==1 && !GE.count(key)) ++nonselected_ge;
+    else {
+      const auto& c=found->second;const double energy=c.energy(double(reader.evte),true);
+      require(std::isfinite(energy),"Nonfinite calibrated energy");
+      const bool keep=c.kind==1?energy>=o.ge_min && energy<o.ge_max:c.kind==2?energy>o.si_min && energy<o.si_max:energy>o.s3_min && energy<o.s3_max;
+      if(!keep) ++rejected_energy;
+      else {
+        double decoded=double(coarse);
+        if(c.kind==1) {require(reader.sr==250,"Ge sampling rate must be250");if(!reader.cfdft) decoded=(2.*reader.ts-reader.cfds+reader.cfd/16384.)*4.;}
+        require(std::abs(decoded)<9007199254740992.,"Native timestamp exceeds exact double integer precision");
+        const int64_t native=int64_t(decoded);
+        const double correction=c.kind==1?timing.TotalGeOffset(key,reader.cfdft,energy):timing.TotalParticleOffsetFromAdc(key,reader.evte);
+        const double corrected=double(native)+correction;
+        require(std::isfinite(corrected) && std::abs(corrected-double(coarse))<=SHIFT_BOUND,"Time shift exceeds declared context bound");
+        Hit h;h.key=key;h.kind=c.kind;h.ring=c.ring;h.sector=c.sector;h.entry=entry;h.coarse=coarse;h.native=native;h.ts=reader.ts;
+        h.e=energy;h.t=corrected;h.adc=reader.evte;h.sr=reader.sr;h.cfd=reader.cfd;h.cfds=reader.cfds;h.failed=reader.cfdft;
+        engine.buffer.push_back(h);++accepted[key];require(engine.buffer.size()<=o.max_buffer_hits,"Buffer budget exceeded");
+      }
+    }
+    if((entry-o.begin+1)%o.chunk==0) {
+      engine.process(double(coarse),false);
+      if(std::chrono::duration<double>(std::chrono::steady_clock::now()-last_report).count()>10) {
+        write_json_atomic(progress,{{"status","reading"},{"run",rn(o.run)},{"read_entries",entry-o.begin+1},{"requested_entries",count},{"seconds",seconds()},{"Ge_processed",engine.ge_processed}});
+        std::cout<<rn(o.run)<<" "<<entry-o.begin+1<<"/"<<count<<" entries, "<<seconds()<<" s\n"<<std::flush;last_report=std::chrono::steady_clock::now();
+      }
+    }
+  }
+  engine.process(double(previous),true);require(engine.buffer.empty(),"Buffer not exhausted");
+  flush_hash();
+  p.verify();require(before.same(Stat(o.input)),"Input changed while reading");
+  writer.write();
+  meta["status"]="complete";meta["program_sha256"]=hash(read_text(fs::canonical("/proc/self/exe")));
+  meta["source"]={{"path",o.input.string()},{"bytes",before.value.st_size},{"inode",before.value.st_ino},{"mtime_sec",before.value.st_mtim.tv_sec},{"mtime_nsec",before.value.st_mtim.tv_nsec},{"total_entries",total},{"entry_begin",o.begin},{"entry_end",end},{"full_run",o.begin==0 && end==total},{"read_fields_sha256",digest.finish()},{"hash_definition","sr,pileup,outofr,cid,sid,ch,evte,ts,cfd,cfdft,cfds in entry order; native little endian; no padding"}};
+  meta["source"]["particle_identity_sha256"]=particle_digest.finish();
+  meta["source"]["particle_identity_definition"]="packed little-endian <qHhhhhBB: ts,evte,sr,cid,sid,ch,pileup,outofr; every read record in order; matches0197 full-reader identity";
+  meta["counters"]={{"read_entries",count},{"accepted",accepted},{"rejected_quality",rejected_quality},{"rejected_energy",rejected_energy},{"unmapped",unmapped},{"nonselected_Ge",nonselected_ge},{"Ge_processed",engine.ge_processed},{"matched_ring_pairs",engine.matched_rings},{"peak_buffer_hits",engine.peak_buffer}};
+  meta["histograms"]=writer.descriptions;meta["pair_counts"]=writer.counts;meta["seconds"]=seconds();meta["write_pairs"]=o.write_pairs;meta["chunk_entries"]=o.chunk;
+  output->cd();TObjString info(meta.dump().c_str());require(info.Write("metadata_json")>0,"Cannot write metadata");
+  const int64_t saved_pair_entries=writer.tree?writer.tree->GetEntries():0;
+  output->Flush();require(!output->TestBit(TFile::kWriteError),"ROOT output error");output->Close();
+  {std::unique_ptr<TFile> check(TFile::Open(partial.c_str(),"READ"));require(check && !check->IsZombie(),"Output readback failed");
+   for(const auto& item:writer.hist) {auto* h=dynamic_cast<TH2D*>(check->Get(item.first.c_str()));require(h && h->GetEntries()==item.second->GetEntries(),"Histogram readback mismatch");}
+   if(o.write_pairs) {auto* t=dynamic_cast<TTree*>(check->Get("pairs"));require(t && t->GetEntries()==saved_pair_entries,"Pair readback mismatch");}
+  }
+  fs::create_hard_link(partial,o.output);fs::remove(partial);
+  write_json_atomic(receipt,meta);write_json_atomic(progress,{{"status","complete"},{"run",rn(o.run)},{"read_entries",count},{"seconds",seconds()}});
+  std::cout<<"COMPLETE "<<rn(o.run)<<" entries="<<count<<" Ge="<<engine.ge_processed<<" seconds="<<seconds()<<'\n';
 }
-

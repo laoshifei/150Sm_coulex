@@ -1,0 +1,9 @@
+/build
+/fit
+/*.tmp
+*.o
+__pycache__/
+*.pyc
+!parameters/**/correction_mode.txt
+!parameters/**/storage_format.txt
+!parameters/**/source_sha256.txt

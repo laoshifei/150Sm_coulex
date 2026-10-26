@@ -1,0 +1,2792 @@
+{
+  "name": "candidate",
+  "version": "s3_common_reference_20261026",
+  "status": "candidate_not_adopted",
+  "production_active": false,
+  "correction_mode": "total",
+  "storage_format": "json",
+  "source_sha256": "488d1c1df190e3bb0ae8225c56f6b7cd70164c7759f9455c8bef62dc76b772e8",
+  "prepared_at": "2026-10-26T11:58:22.937089+08:00",
+  "runs": [
+    "0472",
+    "0473",
+    "0476",
+    "0477",
+    "0478",
+    "0480",
+    "0481",
+    "0482",
+    "0483",
+    "0484",
+    "0485",
+    "0486",
+    "0487",
+    "0488",
+    "0489",
+    "0490",
+    "0491",
+    "0492",
+    "0493",
+    "0494",
+    "0495",
+    "0496",
+    "0497",
+    "0498",
+    "0499",
+    "0500",
+    "0509",
+    "0510",
+    "0511",
+    "0512",
+    "0513",
+    "0514",
+    "0515",
+    "0516",
+    "0517",
+    "0518",
+    "0519",
+    "0520",
+    "0521",
+    "0524",
+    "0525",
+    "0526",
+    "0528",
+    "0529",
+    "0530",
+    "0531",
+    "0532",
+    "0533",
+    "0534",
+    "0535",
+    "0536",
+    "0537",
+    "0538",
+    "0539",
+    "0540",
+    "0541",
+    "0542",
+    "0543",
+    "0544",
+    "0545",
+    "0546",
+    "0547",
+    "0548",
+    "0549",
+    "0550",
+    "0553",
+    "0557",
+    "0558",
+    "0559",
+    "0560",
+    "0561",
+    "0562",
+    "0563",
+    "0564",
+    "0565",
+    "0568",
+    "0574",
+    "0575",
+    "0576",
+    "0577",
+    "0578",
+    "0579",
+    "0580",
+    "0582",
+    "0583",
+    "0584",
+    "0585",
+    "0586",
+    "0587",
+    "0590",
+    "0591",
+    "0592",
+    "0593",
+    "0594",
+    "0595",
+    "0596",
+    "0597",
+    "0602",
+    "0603",
+    "0604",
+    "0605",
+    "0616",
+    "0617",
+    "0619",
+    "0620",
+    "0621",
+    "0623",
+    "0625",
+    "0626",
+    "0627",
+    "0630",
+    "0632",
+    "0633",
+    "0634",
+    "0635",
+    "0636",
+    "0639",
+    "0640",
+    "0641",
+    "0642",
+    "0643",
+    "0644",
+    "0645",
+    "0646",
+    "0647",
+    "0648",
+    "0649",
+    "0650",
+    "0653",
+    "0654",
+    "0655",
+    "0656",
+    "0657",
+    "0658",
+    "0659",
+    "0660",
+    "0661",
+    "0662",
+    "0672",
+    "0673",
+    "0674",
+    "0680",
+    "0681",
+    "0682",
+    "0683",
+    "0684",
+    "0685",
+    "0690",
+    "0691",
+    "0692",
+    "0693",
+    "0694",
+    "0697",
+    "0698",
+    "0699",
+    "0700",
+    "0701",
+    "0702",
+    "0703",
+    "0704",
+    "0705",
+    "0706",
+    "0707",
+    "0708",
+    "0709",
+    "0710",
+    "0712",
+    "0713",
+    "0714",
+    "0715",
+    "0716",
+    "0717",
+    "0718"
+  ],
+  "ge": [
+    204,
+    205,
+    206,
+    209,
+    211,
+    212,
+    213,
+    214,
+    215,
+    304,
+    305,
+    306,
+    308,
+    310,
+    311,
+    506,
+    507,
+    508,
+    509,
+    510
+  ],
+  "complete_run_Ge_CFD_functions": 6920,
+  "reference": {
+    "Ge_anchor_keV": 334,
+    "Ge_energy_anchor_keV": 334,
+    "Ge_fit_scope": "period residual added to inherited per-run full curves; no new per-run fit; run-fold consistency from cached low-full/high5percent data",
+    "Si_phase": {
+      "high1": {
+        "applied_si_shift_ns": -2.441290683042943,
+        "fold_difference_ns": 0.6828235331408279,
+        "interpretation": "Robust mean phase for fixed production gates; matched Ge/energy bins, not simultaneous Si-S3 triple coincidences or blind validation",
+        "measured_phase_ns": 2.441290683042943,
+        "status": "connected_conditional"
+      },
+      "high2": {
+        "applied_si_shift_ns": -2.920119977850452,
+        "fold_difference_ns": 1.2225265101892973,
+        "interpretation": "Robust mean phase for fixed production gates; matched Ge/energy bins, not simultaneous Si-S3 triple coincidences or blind validation",
+        "measured_phase_ns": 2.920119977850452,
+        "status": "connected_conditional"
+      },
+      "low": {
+        "applied_si_shift_ns": -11.317957603136296,
+        "fold_difference_ns": 0.4767302500900552,
+        "interpretation": "Robust mean phase for fixed production gates; matched Ge/energy bins, not simultaneous Si-S3 triple coincidences or blind validation",
+        "measured_phase_ns": 11.317957603136296,
+        "status": "connected_conditional"
+      }
+    },
+    "decomposition": "C=complete F(334); W(E)=complete F(E)-C; exact failed model remains inside full function once",
+    "definition": "equal-run/equal-ring mean complete G at40MeV=0; does not average unrelated event timestamps",
+    "detector": "S3",
+    "energy_keV": 40000,
+    "period_gauge_subtracted_ns": {
+      "high1": 319.9902317727797,
+      "high2": 340.89200227813456,
+      "low": 387.52324019497695
+    },
+    "ring_keys": [
+      11102,
+      11200,
+      11103,
+      11201,
+      11104,
+      11202,
+      11105,
+      11203
+    ],
+    "weights": [
+      0.125,
+      0.125,
+      0.125,
+      0.125,
+      0.125,
+      0.125,
+      0.125,
+      0.125
+    ]
+  },
+  "gamma_domain_keV": [
+    40,
+    2000
+  ],
+  "gamma_upper_bound": "exclusive; inherited complete channel fallback outside domain",
+  "time_definition": "particle-Ge",
+  "application": "Add COMPLETE F or G once to the native decoded integer clock; subtract the double timestamps. No extra legacy offset or TSV timing source.",
+  "native_CFD": "normal keeps native CFD fraction/int64 decoding; failed uses native coarse clock",
+  "held_back": [
+    {
+      "ge": 204,
+      "run": "0472",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0472",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0473",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0473",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0476",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0476",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0477",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0477",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0478",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0478",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0480",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0480",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0481",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0481",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0482",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0482",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0483",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0483",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0484",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0484",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0485",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0485",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0486",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0486",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0487",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0487",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0488",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0488",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0489",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0489",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0490",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0490",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0491",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0491",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0492",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0492",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0493",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0493",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0494",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0494",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0495",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0495",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0496",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0496",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0497",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0497",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0498",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0498",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0499",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0499",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0500",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0500",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0509",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0509",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0510",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0510",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0511",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0511",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0512",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0512",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0513",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0513",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0514",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0514",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0515",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0515",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0516",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0516",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0517",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0517",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0518",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0518",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0519",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0519",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0520",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0520",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0521",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0521",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0524",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0524",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0525",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0525",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0526",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0526",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0528",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0528",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0529",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0529",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0530",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0530",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0531",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0531",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0532",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0532",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0533",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0533",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0534",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0534",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0535",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0535",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0536",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0536",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0537",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0537",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0538",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0538",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0539",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0539",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0540",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0540",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0541",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0541",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0542",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0542",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0543",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0543",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0544",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0544",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0545",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0545",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0546",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0546",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0547",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0547",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0548",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0548",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0549",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0549",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0550",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0550",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0553",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0553",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0557",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0557",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0558",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0558",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0559",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0559",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0560",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0560",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0561",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0561",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0562",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0562",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0563",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0563",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0564",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0564",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0565",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0565",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0568",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0568",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0574",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0574",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0575",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0575",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0576",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0576",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0577",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0577",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0578",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0578",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0579",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0579",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0580",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0580",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0582",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0582",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0583",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0583",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0584",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0584",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0585",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0585",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0586",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0586",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0587",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0587",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0590",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0590",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0591",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0591",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0592",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0592",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0593",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0593",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0594",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0594",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0595",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0595",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0596",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0596",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0597",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0597",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0602",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0602",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0603",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0603",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0604",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0604",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0605",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0605",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0680",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0680",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 508,
+      "run": "0680",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0681",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0681",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 508,
+      "run": "0681",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0682",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0682",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 508,
+      "run": "0682",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0683",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0683",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 508,
+      "run": "0683",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0684",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0684",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 508,
+      "run": "0684",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0685",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0685",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 508,
+      "run": "0685",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0690",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0690",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 508,
+      "run": "0690",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0691",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0691",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 508,
+      "run": "0691",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0692",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0692",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 508,
+      "run": "0692",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0693",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0693",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 508,
+      "run": "0693",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0694",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0694",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 508,
+      "run": "0694",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0697",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0697",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 508,
+      "run": "0697",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0698",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0698",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 508,
+      "run": "0698",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0699",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0699",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 508,
+      "run": "0699",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0700",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0700",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 508,
+      "run": "0700",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0701",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0701",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 508,
+      "run": "0701",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0702",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0702",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 508,
+      "run": "0702",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0703",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0703",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 508,
+      "run": "0703",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0704",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0704",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 508,
+      "run": "0704",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0705",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0705",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 508,
+      "run": "0705",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0706",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0706",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 508,
+      "run": "0706",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0707",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0707",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 508,
+      "run": "0707",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0708",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0708",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 508,
+      "run": "0708",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0709",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0709",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 508,
+      "run": "0709",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0710",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0710",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 508,
+      "run": "0710",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0712",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0712",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 508,
+      "run": "0712",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0713",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0713",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 508,
+      "run": "0713",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0714",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0714",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 508,
+      "run": "0714",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0715",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0715",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 508,
+      "run": "0715",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0716",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0716",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 508,
+      "run": "0716",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0717",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0717",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 508,
+      "run": "0717",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0718",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 211,
+      "run": "0718",
+      "state": 1,
+      "status": "unidentified_inherited_normal_anchor"
+    },
+    {
+      "ge": 508,
+      "run": "0718",
+      "state": 1,
+      "status": "single_energy_anchor_only"
+    },
+    {
+      "ge": 204,
+      "run": "0616",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0616",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0616",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0617",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0617",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0617",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0619",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0619",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0619",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0620",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0620",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0620",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0621",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0621",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0621",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0623",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0623",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0623",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0625",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0625",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0625",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0626",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0626",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0626",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0627",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0627",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0627",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0630",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0630",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0630",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0632",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0632",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0632",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0633",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0633",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0633",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0634",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0634",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0634",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0635",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0635",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0635",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0636",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0636",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0636",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0639",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0639",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0639",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0640",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0640",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0640",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0641",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0641",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0641",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0642",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0642",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0642",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0643",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0643",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0643",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0644",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0644",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0644",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0645",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0645",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0645",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0646",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0646",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0646",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0647",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0647",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0647",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0648",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0648",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0648",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0649",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0649",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0649",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0650",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0650",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0650",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0653",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0653",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0653",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0654",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0654",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0654",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0655",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0655",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0655",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0656",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0656",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0656",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0657",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0657",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0657",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0658",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0658",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0658",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0659",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0659",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0659",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0660",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0660",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0660",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0661",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0661",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0661",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0662",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0662",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0662",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0672",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0672",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0672",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0673",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0673",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0673",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 204,
+      "run": "0674",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 211,
+      "run": "0674",
+      "state": 1,
+      "status": "native_Ge"
+    },
+    {
+      "ge": 508,
+      "run": "0674",
+      "state": 1,
+      "status": "native_Ge"
+    }
+  ],
+  "held_back_meaning": "Historical qualifications retained for reader compatibility, not the decisions for this new fit; candidate_export.json contains all120 current branch decisions.",
+  "current_update_branches": 19,
+  "current_update_run_branches": 1232,
+  "validation_scope": "S3 full173 histograms; Ge low-full/high5percent caches, two run folds; three full native representative runs. Internal shared-event validation.",
+  "inherited_metadata": "inherited_metadata.json contains historical labels, not the current reference/activation state",
+  "task": "codex/analysis/s3_common_time_reference_20261026",
+  "report": "../../report.md",
+  "existing_ROOT": "No production ROOT rebuilt or relabeled",
+  "C_W_definition": "C=complete F(334keV); W=F(E)-C; exact failed model evaluated once inside F"
+}

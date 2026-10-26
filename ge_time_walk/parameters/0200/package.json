@@ -1,0 +1,40 @@
+{
+  "schema": "sm150_frozen_timing_package_v1",
+  "profile": "0200",
+  "packaged_date": "2026-10-26",
+  "files": {
+    "calibration.json": "488d1c1df190e3bb0ae8225c56f6b7cd70164c7759f9455c8bef62dc76b772e8",
+    "metadata.json": "fd004ecbb1862d4432552471c89d58239a89fdcce09441ef5462add393211e79",
+    "inherited_metadata.json": "662140ab09ef6e7acb411d3aca90d5cd671018b03b0566f8637622c37d90fe6a",
+    "correction_mode.txt": "8f67aeb8926b53c7569391657071c27b07606cf45e3dd8de52cc85f6c691c814",
+    "storage_format.txt": "e6d4186a938579ceed4ed5b2fccd42a32448dcda6b0ddbcfd49fc70177bbe9ae",
+    "source_sha256.txt": "248f5a581330f94fe9124540dd69e564c69a0edd9e0d484805e86b9121b82b68"
+  },
+  "source": "codex/analysis/s3_common_time_reference_20261026/profiles/candidate/",
+  "maintenance_source": "ge_time_walk/parameters/0200/",
+  "application": "Complete offset added once to decoded native timestamps; includes matched particle functions and exact failed models.",
+  "parameter_changes_in_packaging": false,
+  "reference": "S3 rings1–8: equal-ring/equal-run mean G(40MeV)=0 in each beam period. Si phase is already merged.",
+  "coverage": {
+    "runs": 173,
+    "Ge": 20,
+    "CFD_states": 2,
+    "run_Ge_CFD_curves": 6920
+  },
+  "status": "User selected0200 for upcoming full rebuild after three complete-run trials; all173 production replacement is still pending.",
+  "historical_metadata": "metadata.json and inherited_metadata.json preserve the original export status; they are not rewritten as a production activation record.",
+  "evidence": {
+    "notebook": "jupyter/codex_0200_150sm_s3_common_time_reference.ipynb",
+    "build_trial_notebook": "jupyter/codex_0203_150sm_time_candidate_0200_build_comparison.ipynb",
+    "full_trial_runs": [
+      "0617",
+      "0472",
+      "0680"
+    ],
+    "limitations": [
+      "High-beam Ge fitting used about5% per-run diagnostic caches plus three complete-run checks.",
+      "Energy shifts do not remove wide same-energy left tails.",
+      "No claim of universal improvement in500–2000keV background."
+    ]
+  }
+}

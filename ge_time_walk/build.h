@@ -1,82 +1,18 @@
-#ifndef _build_h_
-#define _build_h_
-
-#include "set.h"
-
-#include "TH1D.h"
-#include "TH2D.h"
-#include "TFile.h"
-#include "TTree.h"
-#include "TRandom3.h"
-#include "TBenchmark.h"
-
-#include "TSystem.h"
-
-#include <iostream>
-
-class build
-{
-public:
-  build(const std::string &filename_in, const std::string &filename_out, int r);
-  virtual ~build();
-
-  void Process();
-
-  void GetGeSpiderS3EventPrompt();
-  void GetGeSpiderS3EventRandom();
-  void SaveFile();
-
-private:
-  std::map<int, std::vector<double>> map_cali_data;
-  std::map<int, double> map_ts_offset;
-  std::map<int, double> map_k_data;
-
-  std::map<int, int> map_s3_sector_id, map_s3_ring_id;
-  std::map<int, std::vector<double>> map_s3_sector_cor_data, map_s3_ring_cor_data;
-
-private:
-  bool ReadCaliData();
-  void PrintCaliData();
-
-  void ReadS3CorData();
-  void PrintS3CorData();
-
-  bool ReadTSOffset();
-  void PrintTSOffset();
-
-  bool InitMapSectorRingID();
-  void PrintMapSectorRingID();
-
-private:
-  double GetEnergy();
-  Long64_t GetTsns();
-
-private:
-  TBenchmark *benchmark;  
-  TRandom3 *rndm;  
-
-private:
-  Int_t run;
-  std::vector<int> v_s3_sid;
-
-private:
-  TFile *file_in;
-  TTree *tr_in;
-  Short_t sr;
-  Short_t cid;
-  Short_t sid;
-  Short_t ch;
-  UShort_t evte;
-  Long64_t ts;
-  Short_t cfd;
-  Bool_t cfdft;
-  Short_t cfds;
-
-  Long64_t ts_ns;
-  Double_t energy;
-
-  TFile *file_out;
+#ifndef SM150_GE_WALK_BUILD_H
+#define SM150_GE_WALK_BUILD_H
+#include <cstdint>
+#include <filesystem>
+#include <string>
+// 标定诊断，不写活动参数；时间方向统一为particle-Ge。
+struct WalkOptions {
+  int run=0;
+  std::filesystem::path project,input,output,profile_dir;
+  std::string profile;
+  uint64_t begin=0,entries=0,chunk=100000,max_buffer_hits=2000000;
+  double native_window_ns=2000.,time_range_ns=1000.,time_bin_ns=4.,energy_bin_keV=10.;
+  double ge_min=40.,ge_max=2000.,si_min=15000.,si_max=100000.,s3_min=25000.,s3_max=100000.;
+  double s3_match_ns=80.,s3_match_keV=2500.;
+  bool write_pairs=false,inspect_parameters=false;
 };
-
-
+void build_ge_time_walk(const WalkOptions& options);
 #endif
