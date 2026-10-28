@@ -1,43 +1,29 @@
-#define raw_cxx
 #include "raw.h"
-#include <TH2.h>
-#include <TStyle.h>
-#include <TCanvas.h>
-
-void raw::Loop()
-{
-//   In a ROOT session, you can do:
-//      root> .L raw.C
-//      root> raw t
-//      root> t.GetEntry(12); // Fill t data members with entry number 12
-//      root> t.Show();       // Show values of entry 12
-//      root> t.Show(16);     // Read and show values of entry 16
-//      root> t.Loop();       // Loop on all entries
-//
-
-//     This is the loop skeleton where:
-//    jentry is the global entry number in the chain
-//    ientry is the entry number in the current Tree
-//  Note that the argument to GetEntry must be:
-//    jentry for TChain::GetEntry
-//    ientry for TTree::GetEntry and TBranch::GetEntry
-//
-//       To read only selected branches, Insert statements like:
-// METHOD1:
-//    fChain->SetBranchStatus("*",0);  // disable all branches
-//    fChain->SetBranchStatus("branchname",1);  // activate branchname
-// METHOD2: replace line
-//    fChain->GetEntry(jentry);       //read all branches
-//by  b_branchname->GetEntry(ientry); //read only this branch
-   if (fChain == 0) return;
-
-   Long64_t nentries = fChain->GetEntriesFast();
-
-   Long64_t nbytes = 0, nb = 0;
-   for (Long64_t jentry=0; jentry<nentries;jentry++) {
-      Long64_t ientry = LoadTree(jentry);
-      if (ientry < 0) break;
-      nb = fChain->GetEntry(jentry);   nbytes += nb;
-      // if (Cut(ientry) < 0) continue;
-   }
+#include <TBranch.h>
+#include <TLeaf.h>
+#include <stdexcept>
+#include <string>
+raw::raw(TTree* tree) : tree_(tree) {
+  if (!tree_) throw std::runtime_error("Missing input tree");
+  tree_->SetBranchStatus("*", 0);
+  auto bind = [&](const char* name, const char* type, void* address) {
+    auto* branch = tree_->GetBranch(name);
+    auto* leaf = tree_->GetLeaf(name);
+    if (!branch || !leaf || leaf->GetLeafCount() || leaf->GetLenStatic()!=1 ||
+        std::string(leaf->GetTypeName()) != type)
+      throw std::runtime_error(std::string("Missing/wrong scalar branch: ")+name);
+    tree_->SetBranchStatus(name, 1);
+    if (tree_->SetBranchAddress(name, address)<0)
+      throw std::runtime_error(std::string("Cannot bind: ")+name);
+  };
+  bind("sr", "Short_t", &sr); bind("cid", "Short_t", &cid);
+  bind("sid", "Short_t", &sid); bind("ch", "Short_t", &ch);
+  bind("cfd", "Short_t", &cfd); bind("cfds", "Short_t", &cfds);
+  bind("pileup", "Bool_t", &pileup); bind("outofr", "Bool_t", &outofr);
+  bind("cfdft", "Bool_t", &cfdft); bind("evte", "UShort_t", &evte);
+  bind("ts", "Long64_t", &ts);
+}
+raw::~raw() { tree_->ResetBranchAddresses(); } // 文件由调用方持有。
+void raw::GetEntry(Long64_t entry) {
+  if (tree_->GetEntry(entry)<=0) throw std::runtime_error("Failed reading entry "+std::to_string(entry));
 }

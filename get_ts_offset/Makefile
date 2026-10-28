@@ -1,18 +1,10 @@
-out = analysis
-
-sourcefile = main.cpp analysis.h analysis.cpp raw.h raw.cpp set.h
-
-ROOTCFLAGS  = $(shell root-config --cflags)
-ROOTLIBS    = $(shell root-config --libs) -lSpectrum
-
-CFLAGS = -g -Wall -std=c++11 -O2 -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
-
-GXX = g++
-
-all:$(out)
-
-$(out): $(sourcefile)
-	$(GXX) $(CFLAGS) $(ROOTCFLAGS) -o $@ $(filter %.cpp ,$(sourcefile)) $(ROOTLIBS)
-
+CXX = g++
+CXXFLAGS = -g -Wall -Wextra -O2 -std=c++17 -I../include
+ROOTCFLAGS = $(shell root-config --cflags)
+ROOTLIBS = $(shell root-config --libs) -lcrypto
+.PHONY: all clean
+all: analysis
+analysis: main.cpp analysis.cpp analysis.h raw.cpp raw.h set.h ../include/sm150_time_alignment.h ../include/sm150_event_calibration.h
+	$(CXX) $(CXXFLAGS) $(ROOTCFLAGS) main.cpp analysis.cpp raw.cpp -o $@ $(ROOTLIBS)
 clean:
-	rm -f *~ *.o $(out)
+	rm -f analysis *.o

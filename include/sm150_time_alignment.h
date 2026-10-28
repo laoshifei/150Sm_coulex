@@ -111,7 +111,7 @@ class TimeAlignment {
       if (particle_curves_.size()!=152) throw std::runtime_error("Expected all152 particle channels");
       for (std::map<int,std::vector<Piece> >::const_iterator it=particle_curves_.begin();it!=particle_curves_.end();++it)
         if (it->second.back().hi!=1e9) throw std::runtime_error("Particle-reference intervals lack upper bound");
-      if (group_ == "low") {
+      if (group_ == "low" || (total_ && ParticleEnergyDependent())) {
       std::ifstream energy((directory + "/particle_energy/" + run_name.str() + ".tsv").c_str());
       if (!energy) throw std::runtime_error("Missing frozen particle-energy calibration");
       while (std::getline(energy,line)) {
@@ -232,9 +232,18 @@ class TimeAlignment {
   }
   double TotalParticleOffsetFromAdc(int key, double adc) const {
     RequireTotal();
-    if (group_!="low") return TotalParticleOffset(key,0.);
+    if (!std::isfinite(adc)) throw std::runtime_error("Non-finite particle ADC");
     std::map<int,std::vector<double> >::const_iterator it=particle_calibration_.find(key);
-    if (it==particle_calibration_.end()) throw std::runtime_error("Unmapped physical particle calibration");
+    if (it==particle_calibration_.end()) {
+      // 兼容没有能量刻度表的旧高流强常数版本；能量相关版本禁止退回E=0。
+      std::map<int,std::vector<Piece> >::const_iterator p=particle_curves_.find(key);
+      if (group_=="low" || p==particle_curves_.end() || p->second.empty())
+        throw std::runtime_error("Unmapped physical particle calibration");
+      for (const Piece& piece:p->second)
+        if (piece.slope!=0. || piece.intercept!=p->second.front().intercept)
+          throw std::runtime_error("Energy-dependent particle timing requires ADC calibration");
+      return TotalParticleOffset(key,0.);
+    }
     const std::vector<double>& c=it->second;
     return TotalParticleOffset(key,c[0]+c[1]*adc+c[2]*adc*adc);
   }
@@ -305,7 +314,12 @@ class TimeAlignment {
       if (pieces.empty() || pieces.back().hi!=1e9) throw std::runtime_error("Incomplete JSON particle domain");
     }
     if (particle_curves_.size()!=152) throw std::runtime_error("Expected152 particle channels");
-    if (group_=="low") {
+    // 高低流强都允许完整的能量修正；旧高流强纯常数JSON仍兼容。
+    const bool has_particle_calibration=data.contains("particle_calibration") &&
+      data.at("particle_calibration").contains(r);
+    if (!has_particle_calibration && (group_=="low" || ParticleEnergyDependent()))
+      throw std::runtime_error("Missing JSON calibration for energy-dependent particle timing");
+    if (has_particle_calibration) {
       const nlohmann::json& cal=data.at("particle_calibration").at(r);
       for (nlohmann::json::const_iterator it=cal.begin();it!=cal.end();++it) {
         const int key=std::stoi(it.key());const std::vector<double> c=it.value().get<std::vector<double> >();
@@ -347,6 +361,12 @@ class TimeAlignment {
   }
   void RequireTotal() const {
     if (!active_ || !total_) throw std::runtime_error("A complete active timing profile is required");
+  }
+  bool ParticleEnergyDependent() const {
+    for (const auto& channel:particle_curves_)
+      for (const Piece& piece:channel.second)
+        if (piece.slope!=0. || piece.intercept!=channel.second.front().intercept) return true;
+    return false;
   }
   double ChannelFallback(int key) const {
     std::map<int,double>::const_iterator it=native_.find(key);
