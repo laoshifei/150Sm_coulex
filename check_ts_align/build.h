@@ -2,6 +2,7 @@
 #define _build_h_
 
 #include "set.h"
+#include "../include/sm150_time_alignment.h"
 
 #include "TH1D.h"
 #include "TH2D.h"
@@ -30,6 +31,8 @@ private:
   std::map<int, std::vector<double>> map_cali_data;
   std::map<int, double> map_ts_offset;
   std::map<int, std::vector<double>> map_ge_tw_data;
+  sm150::TimeAlignment time_alignment;
+  double timing_ge_energy_keV = 0.;
 
   std::map<int, double> map_k_data;
 

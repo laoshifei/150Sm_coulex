@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <stdlib.h>
+#include "TNamed.h"
 
 //
 build::build(const std::string &filename_in, const std::string &filename_out, int r)
@@ -62,20 +63,29 @@ build::build(const std::string &filename_in, const std::string &filename_out, in
   ReadS3CorData();
   PrintS3CorData();
 
-  // read ts offset
-  if(!ReadTsOffset()){
-    throw std::invalid_argument("can not read ts offset data.");
+  time_alignment.Load("../pars", run);
+  if(!time_alignment.total()){
+    if(!ReadTsOffset()){
+      throw std::invalid_argument("can not read ts offset data.");
+    }
+    PrintTsOffset();
+    time_alignment.ValidateNativeOffsets(map_ts_offset);
   }
-  PrintTsOffset();
+  std::cout << "time alignment profile: " << time_alignment.profile() << std::endl;
 
   // read ge time walk
-  if(!ReadGeTwData()){
-    throw std::invalid_argument("can not read ge time walk data.");
+  if(!time_alignment.active()){
+    if(!ReadGeTwData()){
+      throw std::invalid_argument("can not read ge time walk data.");
+    }
+    PrintGeTwData();
   }
-  PrintGeTwData();
 
   rndm = new TRandom3((Long64_t)time(0));
   file_out = TFile::Open(filename_out.c_str(), "recreate");
+  file_out->cd();
+  TNamed("sm150_time_alignment_profile", time_alignment.profile().c_str()).Write();
+  TNamed("sm150_time_alignment_source_sha256", time_alignment.source_sha256().c_str()).Write();
 }
 
 //
@@ -763,6 +773,7 @@ double build::GetEnergy()
 
   double energy = 0;
   if(cid==0){
+    timing_ge_energy_keV = (map_cali_data[key][0]+evte*map_cali_data[key][1]+evte*evte*map_cali_data[key][2])*map_k_data[key];
     energy = map_cali_data[key][0]+evte*map_cali_data[key][1]+evte*evte*map_cali_data[key][2]+rndm->Uniform(-0.5,0.5);
     energy *= map_k_data[key];
   }
@@ -794,18 +805,32 @@ Long64_t build::GetTsns()
       ts_ns = (ts*2-cfds+cfd/16384.)*4.;
     }
 
+    if(time_alignment.total()){
+      ts_ns = static_cast<Long64_t>(static_cast<double>(ts_ns)+time_alignment.TotalGeOffset(key, cfdft, timing_ge_energy_keV));
+    }else{
     ts_ns += map_ts_offset[key];
-
-    for(int i=0;i<tf->GetNpar();++i) tf->SetParameter(i, map_ge_tw_data[key][i]);
-
-    ts_ns += tf->Eval(energy);
+    if(time_alignment.active()){
+      double delta = 0.;
+      if(time_alignment.GeDelta(key, cfdft, timing_ge_energy_keV, delta))
+        ts_ns = static_cast<Long64_t>(static_cast<double>(ts_ns)+delta);
+    }else{
+      for(int i=0;i<tf->GetNpar();++i) tf->SetParameter(i, map_ge_tw_data[key][i]);
+      ts_ns += tf->Eval(energy);
+    }
+    }
   }
 
   if(cid==1){
     if(sr==250) ts_ns = ts*8;
     if(sr==100) ts_ns = ts*10; 
 
-    ts_ns += map_ts_offset[key];
+    if(time_alignment.total()){
+      ts_ns = static_cast<Long64_t>(static_cast<double>(ts_ns)+time_alignment.TotalParticleOffsetFromAdc(key, evte));
+    }else{
+      ts_ns += map_ts_offset[key];
+      const bool is_s3 = map_s3_ring_id.count(key) || map_s3_sector_id.count(key);
+      ts_ns = static_cast<Long64_t>(static_cast<double>(ts_ns)+time_alignment.ParticleDeltaFromAdc(key, evte, is_s3));
+    }
     ts_ns += rndm->Uniform(-5,5);
   }
 
