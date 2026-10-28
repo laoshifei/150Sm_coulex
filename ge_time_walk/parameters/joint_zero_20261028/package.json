@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-28T12:15:34.819435+08:00",
+  "source": "ge_time_walk/parameters/candidate_joint_zero_20261028",
+  "files": {
+    "calibration.json": "6ddcb304f1b861b5e73468effa1a9e6c9f4943e17eb7a759956d0448dd1b7618",
+    "metadata.json": "f06db1cc5cde00b6fcf631289624a0cc3811bbd09f58c13874cc6701694cc945",
+    "inherited_metadata.json": "8afe17d9934aa937ca90353efa367c819f8b8ae6e0c3dd6d3301b318503b0ccf",
+    "storage_format.txt": "e6d4186a938579ceed4ed5b2fccd42a32448dcda6b0ddbcfd49fc70177bbe9ae",
+    "correction_mode.txt": "8f67aeb8926b53c7569391657071c27b07606cf45e3dd8de52cc85f6c691c814",
+    "source_sha256.txt": "b51a6d47978516d558844f0873b9c5205aa6de40965bbe18786bcb97c1be9eaa"
+  },
+  "calibration_sha256": "6ddcb304f1b861b5e73468effa1a9e6c9f4943e17eb7a759956d0448dd1b7618"
+}

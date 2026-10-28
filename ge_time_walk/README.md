@@ -1,3 +1,22 @@
+# 当前采用：共同零点版本 joint_zero_20261028
+
+2026-10-28已根据用户授权，在五轮整轮C++ build对照后切换。维护源为[parameters/joint_zero_20261028](parameters/joint_zero_20261028)，生产active及本目录默认选择均指向此版本。calibration.json与0219交付一致；完整Si/S3/Ge函数只加一次。
+
+全173轮/346份窄宽ROOT已由原`build_all/build`完成重建、核验和替换；原346份旧ROOT及同一批数据的残留硬链接已按用户要求清理，旧回执、参数和核验记录保留。当前批次状态见`codex/analysis/build_joint_zero_adoption_20261028/`；中文窗口笔记为0220。窗口数值仍沿用0191，两端高度、随机归一和新谱检查单独列明；不声称所有CFD尾部或能区残差归零。
+
+当前版本从项目根目录校验、复制：
+
+```bash
+python3 ge_time_walk/parameters/manage.py verify
+python3 ge_time_walk/parameters/manage.py install
+```
+
+当前默认复制目标是`pars/time_alignment/versions/joint_zero_20261028/`；复制工具不修改`active.txt`。完整包含173轮的6920条Ge/CFD函数和26296组粒子通道函数，可读摘要分别为包内`ge_parameters.csv`和`particle_parameters.csv`。`inherited_metadata.json`保留候选阶段的原始状态，正式采用信息见同目录`metadata.json`。本地Notebook、研究记录、原始数据和能量刻度`pars/`不随本次Git提交；两个`candidate_*`目录仅为本地研究来源，运行当前包不需要它们。
+
+以下保留0200历史说明，旧状态和默认选择只对应原记录日期；当前选择以`parameters/selected_profile.json`及`pars/time_alignment/active.txt`为准。
+
+---
+
 # Ge time-walk：完整参数、诊断谱与核心峰拟合
 
 本目录同时维护C++程序和数值参数。已核验的0200完整包在[parameters/0200](parameters/0200)，覆盖173轮、20个Ge、normal/failed两类，共6920条完整函数；配套Si/S3函数保存在同一包，保持共同参考一致。`build`生成逐Ge、逐CFD、逐参考的诊断谱；生产符合事件由`build_all/build`生成。原多级ROOT宏已退役，旧实现保存在Git历史中。

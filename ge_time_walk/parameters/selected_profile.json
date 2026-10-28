@@ -1,6 +1,6 @@
 {
-  "profile": "0200",
-  "runtime_version": "s3_common_reference_0200",
-  "calibration_sha256": "488d1c1df190e3bb0ae8225c56f6b7cd70164c7759f9455c8bef62dc76b772e8",
-  "description": "Ge time-walk维护源；含配套Si/S3函数。install只复制，不修改active.txt。"
+  "profile": "joint_zero_20261028",
+  "runtime_version": "joint_zero_20261028",
+  "calibration_sha256": "6ddcb304f1b861b5e73468effa1a9e6c9f4943e17eb7a759956d0448dd1b7618",
+  "description": "Ge维护源及配套Si/S3完整时间函数；0219共同零点，经小批实际build检查后正式启用。"
 }

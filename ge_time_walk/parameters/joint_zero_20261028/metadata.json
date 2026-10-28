@@ -1,0 +1,8 @@
+{
+  "version": "joint_zero_20261028",
+  "source_sha256": "6ddcb304f1b861b5e73468effa1a9e6c9f4943e17eb7a759956d0448dd1b7618",
+  "prepared_at": "2026-10-28T12:15:34.819099+08:00",
+  "source": "ge_time_walk/parameters/candidate_joint_zero_20261028",
+  "application": "Frozen complete joint Si/S3/Ge functions, add once to native times",
+  "adoption": "User authorized production adoption after five-run actual-build comparison; activation receipt is in build_joint_zero_adoption_20261028"
+}
