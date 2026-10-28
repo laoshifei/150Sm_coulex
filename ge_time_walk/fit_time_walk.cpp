@@ -1,5 +1,5 @@
-// 逐Ge/CFD的能量分段核心拟合；C++计算，所有未通过项保留。
-// 输入为新build产生的整数二维谱，不使用ProfileY，不自动安装候选。
+// Fit timing cores in energy slices for each Ge/CFD branch in C++; retain all results that fail validation.
+// Input consists of integer-count 2D histograms from the new build; do not use ProfileY or install candidates automatically.
 #include "sm150_event_calibration.h"
 #include "candidate.h"
 #include <TFile.h>
@@ -125,7 +125,7 @@ json evaluate(const json& model,const json& check) {
 int supported(const json& points) {
   int n=0;for(const auto& p:points) if(p.at("status")=="valid") ++n;return n;
 }
-// 两个时间半段互相检验，不把同一事件的Si/S3参考称为独立观测。
+// Cross-check the two time halves; Si/S3 references sharing an event are not independent observations.
 json select_model(const json& full,const json& first,const json& second) {
   json answer={{"status","insufficient_support"},{"selected",nullptr},{"models",json::array()}};
   double best=std::numeric_limits<double>::infinity();int best_k=100;
@@ -135,8 +135,8 @@ json select_model(const json& full,const json& first,const json& second) {
     json item={{"full_model",m},{"first_model",a},{"second_model",b},{"passes_halves",false}};
     if(!a.is_null() && !b.is_null()) {
       auto ab=evaluate(a,second),ba=evaluate(b,first);item["first_to_second"]=ab;item["second_to_first"]=ba;
-      // 合并谱可能失去部分能量点，最终曲线不一定等于两半各自的好曲线。
-      // 必须检查实际导出的完整模型，防止在缺点能区出现失控插值。
+      // The combined spectrum may lose energy points, so its final curve can differ from the valid curves fitted to each half.
+      // Validate the actual complete exported model to catch unstable interpolation in energy regions without measurements.
       auto ma=evaluate(m,first),mb=evaluate(m,second);
       item["full_model_on_first"]=ma;item["full_model_on_second"]=mb;
       if(!ab.is_null() && !ba.is_null() && !ma.is_null() && !mb.is_null()) {

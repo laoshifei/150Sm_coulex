@@ -6,16 +6,16 @@
 #include <filesystem>
 #include <string>
 
-// 一轮 build 的运行设置。空路径使用 build.cpp 中的项目默认位置。
-// 能量刻度、时间修正和逐 Ge 符合窗从已有参数文件读取。
+// Runtime settings for one build run. Empty paths use the project defaults in build.cpp.
+// Read energy calibration, timing corrections and per-Ge coincidence windows from existing parameter files.
 struct BuildOptions {
   int run = 0;
   std::filesystem::path project, input, outdir, receipt;
   std::filesystem::path window_file, profile_dir, source_manifest, cache_receipt;
-  // windows：现行窄/宽；cache：原始字段宽窗；replay：从宽窗重建窄/宽。
+  // windows: current narrow/wide sets; cache: wide-window raw fields; replay: rebuild narrow/wide sets from the cache.
   std::string mode = "windows", tag;
 
-  // 0 处理整轮；非零仅用于小样检查，回执会标记覆盖范围。
+  // 0 processes the full run; a nonzero value limits a diagnostic sample, with coverage recorded in the receipt.
   uint64_t entry_limit = 0;
   std::size_t chunk_entries = 1000000;
   bool inspect_parameters = false;
@@ -25,8 +25,8 @@ class build {
 public:
   explicit build(const BuildOptions &options);
 
-  // 读取 → 刻度/时间修正 → 分组/匹配 → 窄宽选窗 → 写出 → 完整读回。
-  // 返回 0 表示本轮及读回核验完成；失败返回 1，并保留错误记录。
+  // Read -> energy/timing corrections -> grouping/matching -> narrow/wide gates -> output -> full readback.
+  // Return 0 when processing and readback validation finish; return 1 on failure and retain error records.
   int Process();
 
 private:

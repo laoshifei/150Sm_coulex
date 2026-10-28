@@ -1,9 +1,9 @@
-// 150Sm：当前窄/宽两套事件build，按原三文件方式维护。
-// main.cpp：命令行；build.h：运行设置与build接口；本文件：全部build实现。
-// 阅读顺序：先看 build::Process() 的八个步骤，再按下面编号查具体处理。
-// 参数与分组算法来自已核验的sm150_build；写出时去除跨参考分组的重复配对。
-// 共用时间修正函数仍在 include/sm150_time_alignment.h，避免各程序出现不同版本。
-// 旧的set.h固定窗/能量阈值不参与本入口，实际门列在classify及ROOT元数据中。
+// 150Sm: build the current narrow/wide event sets using the original three-file layout.
+// main.cpp: CLI; build.h: runtime settings and build interface; this file: complete build implementation.
+// Start with the eight steps in build::Process(), then use the numbered sections below for details.
+// Parameters and grouping follow the validated sm150_build; remove pairs repeated across reference groups on output.
+// Keep shared timing corrections in include/sm150_time_alignment.h so all programs use the same implementation.
+// Legacy fixed windows/energy thresholds in set.h are unused here; actual cuts are in classify and ROOT metadata.
 #include "build.h"
 #include "sm150_time_alignment.h"
 #include <TBranch.h>
@@ -55,7 +55,7 @@ sha256(const fs::path &path,
        const std::function<void(uint64_t, uint64_t)> &progress = {});
 
 // ==========================================================================
-// 1. 探测器通道映射声明（完整映射表放在文件末尾）
+// 1. Detector-channel mapping declarations (complete mapping tables are at the end of this file).
 // ==========================================================================
 // Exact maps copied from build_all/build.cpp; no changes to physical topology.
 namespace sm150_native {
@@ -74,7 +74,7 @@ struct Maps {
 } // namespace sm150_native
 
 // ==========================================================================
-// 2. 读取原有pars参数：能量刻度、逐轮增益、衰减和正背面归一
+// 2. Load existing pars: energy calibration, per-run gains, attenuation and front/back normalization.
 // ==========================================================================
 
 namespace sm150_native {
@@ -267,7 +267,7 @@ struct Parameters {
 } // namespace sm150_native
 
 // ==========================================================================
-// 3. 完整时间修正、排序和跨分块事件分组（时间单位ns）
+// 3. Complete timing correction, sorting and event grouping across chunks (time in ns).
 // ==========================================================================
 // Frozen streaming core retained during the C++ frontend port.
 // Derived from codex/analysis/spectrum_all_runs_timing_20261015/src/extract.cpp
@@ -484,7 +484,7 @@ struct Engine {
 } // namespace sm150_windowed
 
 // ==========================================================================
-// 4. 逐Ge窗表、粒子匹配、prompt/random写出及读回检查
+// 4. Per-Ge windows, particle matching, prompt/random output and readback checks.
 // ==========================================================================
 
 namespace sm150_native {
@@ -543,7 +543,7 @@ struct Gates {
                   same_width(width, w.at("random_width_ns").get<double>()) &&
                   same_width(g.alpha * width, g.upper - g.lower),
               "Invalid random normalization");
-          // random_side=-1/+1 必须分别代表左/右；两个区间不得重复或相交。
+          // random_side=-1/+1 must identify the left/right side respectively; the intervals must be distinct and disjoint.
           require(g.random[0].second <= g.lower && g.random[1].first >= g.upper,
                   "Random windows must be ordered left/right, outside prompt");
           g.record = w;
@@ -585,9 +585,9 @@ struct Event {
   uint8_t flags;
   std::vector<Particle> particles, sectors;
 };
-// 每个输出文件（单轮、单候选）独立去重，身份为原始Ge entry + 粒子entry +
+// Deduplicate each output file (one run, one candidate) independently; identity is original Ge entry + particle entry +
 // Si/S3。
-// reference_entry只是分组锚点，不能作为物理配对的身份；同一Ge的新粒子必须保留。
+// reference_entry is only a grouping anchor, not pair identity; retain every new particle paired with the same Ge hit.
 struct PairDeduplicator {
   struct Pair {
     Particle particle, sector;
@@ -612,8 +612,8 @@ struct PairDeduplicator {
     require(std::abs(e.time - e.reference_time) <= 100.,
             "Ge outside reference grouping bound");
     last_reference = e.reference_time;
-    // Ge分组为[reference-100, reference+100]。后续reference单调递增，
-    // Ge时间严格小于reference-100时不可能再出现，因此缓存不随整轮长度增长。
+    // Ge grouping uses [reference-100, reference+100], with monotonically increasing subsequent references.
+    // A Ge time strictly below reference-100 cannot recur, so cache size does not grow with the full run length.
     while (!expiry.empty() && expiry.begin()->first < e.reference_time - 100.) {
       active.erase(expiry.begin()->second);
       expiry.erase(expiry.begin());
@@ -629,7 +629,7 @@ struct PairDeduplicator {
     peak_photons = std::max(peak_photons, active.size());
   }
   static bool same_particle(const Particle &a, const Particle &b) {
-    // sector是当前分组中sector向量的下标，不属于原始事件身份。
+    // sector is an index into the current group's sector vector, not part of the original event identity.
     return a.entry == b.entry && a.key == b.key && a.view == b.view &&
            a.e == b.e && a.t == b.t && a.dt == b.dt && a.flags == b.flags;
   }
@@ -840,7 +840,7 @@ struct FileWriter {
     file->Close();
     require(!file->TestBit(TFile::kWriteError), "ROOT file close/write error");
     closed = true;
-    // 保留.partial；两套输出和冻结输入均通过核验后，Process才发布正式文件。
+    // Retain .partial files; Process publishes outputs only after both output sets and frozen inputs pass validation.
     return c;
   }
   ~FileWriter() {
@@ -947,8 +947,8 @@ inline json verify_root(const std::filesystem::path &path,
   require(manifest.at("run") == pars.run &&
               manifest.at("candidate") == std::string(label ? "B" : "A"),
           "Wrong output provenance");
-  // 与写出缓存独立核验：完整读回P/R两棵树后排序原始配对身份。
-  // 身份不含prompt/random类别，避免同一配对误入两类而漏检。
+  // Validate independently of the write cache: read both P/R trees fully, then sort original pair identities.
+  // Exclude prompt/random labels from identity so a pair incorrectly entering both categories is still detected.
   std::array<std::vector<std::pair<int64_t, int64_t>>, 2> pair_ids;
   for (const std::string name : {"tr_event", "tr_bg"}) {
     auto *tree = dynamic_cast<TTree *>(file->Get(name.c_str()));
@@ -1046,7 +1046,7 @@ inline json verify_root(const std::filesystem::path &path,
 } // namespace sm150_native
 
 // ==========================================================================
-// 5. 原始ROOT批量读取（保留已验证的高效basket读取方式）
+// 5. Bulk reading of raw ROOT data (retain the validated, efficient basket reader).
 // ==========================================================================
 using namespace sm150_native;
 
@@ -1113,7 +1113,7 @@ sha256(const fs::path &path,
   return out.str();
 }
 
-// 输入在加载时冻结，避免长时间原始文件SHA核验期间的参数变动被错误记为基线。
+// Freeze inputs at load time so parameter changes during a long source SHA check cannot redefine the baseline.
 static json frozen_json(const fs::path &path, json &hashes) {
   const auto hash = sha256(path);
   auto value = read_json(path);
@@ -1126,7 +1126,7 @@ static void verify_frozen(const json &hashes) {
     require(sha256(it.key()) == it.value(),
             "Frozen source/parameter changed: " + it.key());
 }
-// flock随进程退出自动释放；空锁文件保留，不能用删除锁文件的方式抢占活动任务。
+// flock is released on process exit; retain the empty lock file and never delete it to take over an active job.
 struct OutputLock {
   int fd = -1;
   explicit OutputLock(const fs::path &path) {
@@ -1164,7 +1164,7 @@ static void distinct_paths(const std::vector<fs::path> &outputs,
   }
 }
 static void publish_file(const fs::path &partial, const fs::path &target) {
-  // 不使用可覆盖目标的普通rename；无论是否有协作锁，已有正式文件都不能覆盖。
+  // Avoid ordinary rename, which can overwrite a target; never overwrite existing outputs, even without a cooperative lock.
   if (::syscall(SYS_renameat2, AT_FDCWD, partial.c_str(), AT_FDCWD,
                 target.c_str(), RENAME_NOREPLACE) != 0)
     throw std::runtime_error("Cannot publish " + target.string() + ": " +
@@ -1275,9 +1275,9 @@ struct RawReader {
 };
 
 // ==========================================================================
-// 6. 可重放的宽窗缓存。每个原始命中只存一次，保留source_entry及全部原始字段。
-// 核心窗为任意Ge附近±1000ns；另存100ns边界余量。全部Ge均保留，
-// 不在此处施加能量门、质量位、单Ge、addback或S3配对筛选。
+// 6. Replayable wide-window cache: store each raw hit once, retaining source_entry and all original fields.
+// The core window covers +/-1000 ns around any Ge hit, with an additional 100 ns margin; retain all Ge hits.
+// Apply no energy, quality-bit, single-Ge, addback or S3-pair selection at this stage.
 // ==========================================================================
 namespace sm150_cache {
 constexpr double core_ns = 1000., guard_ns = 100., bound_ns = 1000000.;
@@ -1287,7 +1287,7 @@ struct Record {
   uint16_t evte = 0;
   uint8_t cfdft = 0, pileup = 0, outofr = 0, kind = 0, in_core = 0;
   double energy_keV = 0., corrected_time_ns = 0.;
-  int8_t decision = 0; // 0等待后续Ge；1保留；-1丢弃
+  int8_t decision = 0; // 0: wait for a future Ge hit; 1: keep; -1: discard.
 };
 static Record calibrate(const RawBlock &b, size_t i, int64_t entry,
                         const Parameters &pars,
@@ -1315,8 +1315,8 @@ static Record calibrate(const RawBlock &b, size_t i, int64_t entry,
     t = r.cfdft ? double(8 * r.ts)
                 : (2 * r.ts - r.cfds + r.cfd / 16384.) * 4.;
   }
-  // 与现行build完全一致，先截断原生CFD时间，再加完整时间项。
-  // 未截断的CFD、cfds、ts仍单独保存，可供后续方法研究。
+  // Match the current build exactly: truncate the native CFD time first, then add the complete timing correction.
+  // Also retain untruncated CFD, cfds and ts fields for later method studies.
   r.corrected_time_ns =
       double(int64_t(t)) +
       (r.kind == 1 ? timing.TotalGeOffset(key, r.cfdft != 0, r.energy_keV)
@@ -1326,7 +1326,7 @@ static Record calibrate(const RawBlock &b, size_t i, int64_t entry,
           "Cache calibration/timestamp bound violated");
   return r;
 }
-// 仅将字段本身按固定顺序送入SHA，不包含C++结构体的padding。
+// Hash only the fields in a fixed order, excluding C++ struct padding.
 struct Digest {
   std::unique_ptr<EVP_MD_CTX, decltype(&EVP_MD_CTX_free)> ctx{
       EVP_MD_CTX_new(), &EVP_MD_CTX_free};
@@ -1367,7 +1367,7 @@ struct Selector {
   std::array<uint64_t, 5> input_counts{}, kept_counts{};
   uint64_t guard_particles = 0;
   int64_t last_coarse = std::numeric_limits<int64_t>::min(), last_entry = -1;
-  // 默认行为保持1000+100ns；较窄范围供独立体积试验复用同一选择器。
+  // Keep the default 1000+100 ns behavior; narrower size studies reuse the same selector.
   explicit Selector(double core = core_ns, double guard = guard_ns)
       : core_half_width(core), guard_width(guard) {
     require(std::isfinite(core) && std::isfinite(guard) && core > 0. &&
@@ -1477,7 +1477,7 @@ struct Writer {
   }
   ~Writer() { if (file && file->IsOpen()) file->Close(); }
 };
-// 完整读回所有字段；核对保存前/后SHA、原始ID唯一、刻度及核心/余量归属。
+// Read back every field; verify pre/post-write hashes, unique source IDs, calibration and core/margin membership.
 static json verify(const fs::path &path, const json &metadata,
                    const Parameters &pars, const sm150::TimeAlignment &timing,
                    size_t chunk) {
@@ -1537,7 +1537,7 @@ static json verify(const fs::path &path, const json &metadata,
 } // namespace sm150_cache
 
 // ==========================================================================
-// 7. 只读参数检查与运行路径辅助
+// 7. Read-only parameter inspection and runtime path helpers.
 // ==========================================================================
 static json inspect_parameters(const Parameters &pars,
                                const sm150_windowed::Engine &engine,
@@ -1582,7 +1582,7 @@ static fs::path default_path(const fs::path &requested,
 build::build(const BuildOptions &options) : options_(options) {}
 
 // ==========================================================================
-// 7. 一轮处理主流程：参数 → 读取 → 构建 → 两套选窗 → 校验
+// 7. Single-run workflow: parameters -> reading -> building -> both window selections -> validation.
 // ==========================================================================
 int build::Process() {
   const auto &options = options_;
@@ -1590,7 +1590,7 @@ int build::Process() {
   auto start = Clock::now();
   const auto cpu_start = std::clock();
   fs::path receipt_path, status_path;
-  // 锁保持到异常状态写完，防止失败者覆盖另一任务的进度。
+  // Hold the lock until failure status is saved so a failed job cannot overwrite another job's progress.
   std::vector<std::unique_ptr<OutputLock>> output_locks;
   try {
     require(options.mode == "windows" || caching || replay, "Unknown build mode");
@@ -1602,7 +1602,7 @@ int build::Process() {
                 uint64_t(std::numeric_limits<int64_t>::max()),
             "Entry limit exceeds ROOT signed entry range");
     fs::path executable = fs::canonical("/proc/self/exe");
-    // 第1步：确定输入与输出位置，读取刻度、时间修正和两套逐Ge窗口。
+    // Step 1: resolve input/output paths and load calibration, timing corrections and both per-Ge window sets.
     fs::path default_project =
         executable.parent_path().filename() == "build_all"
             ? executable.parent_path().parent_path()
@@ -1623,7 +1623,7 @@ int build::Process() {
                      project / "pars/time_alignment/versions" / profile);
     profile_dir = fs::canonical(profile_dir);
     profile = profile_dir.filename().string();
-    // 冻结完整配置目录（也覆盖共用加载器可能使用的兼容参数文件）。
+    // Freeze the complete configuration directory, including compatibility files used by the shared loader.
     for (const auto &item : fs::directory_iterator(profile_dir))
       if (item.is_regular_file() && item.path().filename() != "README.md")
         input_hashes[item.path().string()] = sha256(item.path());
@@ -1635,8 +1635,8 @@ int build::Process() {
     if (replay)
       for (const auto &row : gates.rows)
         for (const auto &gate : row.second) {
-          // 现行分组以参考Ge为中心取±1000ns，组内Ge最多偏离100ns。
-          // 留出该差值；更外侧窗口需另做按目标Ge直接配对的分析。
+          // Current groups span +/-1000 ns around a reference Ge hit; individual Ge hits may lie up to 100 ns from that reference.
+          // Reserve that difference; more distant windows require separate pairing directly against each target Ge hit.
           require(gate.lower >= -900. && gate.upper <= 900.,
                   "Replay prompt exceeds the current grouping coverage");
           for (const auto &side : gate.random)
@@ -1654,7 +1654,7 @@ int build::Process() {
       std::cout << inspect_parameters(pars, engine, calibration).dump() << '\n';
       return 0;
     }
-    // 第2步：核对严格轮次名单；已有输出拒绝覆盖。
+    // Step 2: check the strict run list and refuse to overwrite existing outputs.
     fs::path manifest_file = default_path(
         options.source_manifest,
         project /
@@ -1735,7 +1735,7 @@ int build::Process() {
                 !fs::exists(receipt_path.string() + ".tmp"),
             "Existing completion receipt or partial receipt");
     status_path = prospective_status;
-    // 第3步：记录进度；整轮运行先核验原始输入SHA。
+    // Step 3: record progress; verify the raw input SHA before a full-run build.
     auto state = [&](json value) {
       value["run"] = rn;
       value["seconds"] = seconds(start);
@@ -1768,7 +1768,7 @@ int build::Process() {
     }
     double hash_seconds = seconds(start) - hash_started;
     verify_frozen(input_hashes);
-    // 第4步：打开原始tree，保持原始entry身份和小样覆盖记录。
+    // Step 4: open the raw tree, preserving source-entry identities and partial-sample coverage records.
     std::unique_ptr<TFile> file(TFile::Open(input.c_str(), "READ"));
     require(file && !file->IsZombie(), "Cannot open input ROOT");
     auto *tree = dynamic_cast<TTree *>(file->Get("tree"));
@@ -1911,7 +1911,7 @@ int build::Process() {
                 << " bytes; receipt " << receipt_path << '\n';
       return 0;
     }
-    // 每份ROOT内嵌实际窗口、时间版本、筛选条件和输入来源。
+    // Embed the actual windows, timing version, selections and input provenance in every ROOT file.
     auto manifest = [&](int label) {
       return json{
           {"schema_version", 2},
@@ -1957,7 +1957,7 @@ int build::Process() {
           {"compression", "ZSTD level4"},
           {"ROOT_version", gROOT->GetVersion()}};
     };
-    // 第5步：一次读取同时构建窄窗A和宽窗B；prompt/random保留原始计数。
+    // Step 5: read once to build narrow window A and wide window B; retain raw prompt/random counts.
     FileWriter a(narrow, pars, gates, 0, manifest(0)),
         b(wide, pars, gates, 1, manifest(1));
     RawReader reader(*tree, stop, replay);
@@ -1994,7 +1994,7 @@ int build::Process() {
               "Output free-space floor");
       require(seconds(start) < 86400, "24hour per-run budget");
     }
-    // 第6步：写完最后一块，确认事件覆盖完整，再关闭两套输出。
+    // Step 6: write the final chunk, confirm complete event coverage and close both output sets.
     require(engine.read == stop && engine.tail.empty(),
             "Incomplete streaming coverage or uncleared tail");
     auto ac = a.close(), bc = b.close();
@@ -2003,7 +2003,7 @@ int build::Process() {
                 bc["tr_event"]["s3_pairs"].get<int64_t>() >=
                     ac["tr_event"]["s3_pairs"].get<int64_t>(),
             "Nested window counts failed");
-    // 第7步：完整读回两套ROOT，核验门、alpha、计数及P/R合计后的原始配对唯一性。
+    // Step 7: fully read back both ROOT files; verify cuts, alpha, counts and pair uniqueness across combined P/R data.
     double build_seconds = seconds(build_start);
     state({{"phase", "validating"}});
     auto verify_start = Clock::now();
@@ -2028,7 +2028,7 @@ int build::Process() {
                 before.st_mtim.tv_nsec == after.st_mtim.tv_nsec,
             "Input identity changed during build");
     verify_frozen(input_hashes);
-    // 第8步：两套读回及冻结输入检查全部通过后才发布；完成回执是整轮完成标志。
+    // Step 8: publish only after both readbacks and frozen-input checks pass; the completion receipt marks a finished run.
     publish_file(a.partial, a.path);
     publish_file(b.partial, b.path);
     json result = {
@@ -2077,7 +2077,7 @@ int build::Process() {
 }
 
 // ==========================================================================
-// 8. Ge、Si array、S3的ring/sector通道映射（保持原映射）
+// 8. Ge, Si array and S3 ring/sector channel mappings (retain the original mapping).
 // ==========================================================================
 namespace sm150_native {
 bool Maps::init(int run) {

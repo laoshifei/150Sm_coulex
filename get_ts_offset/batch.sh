@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 明确指定名单、输入、输出、并行数；等待所有任务并汇总退出码。
+# Specify the run list, input, output and concurrency explicitly; wait for every job and collect exit codes.
 set -euo pipefail
 if (( $# < 3 || $# > 5 )); then
   echo 'Usage: batch.sh RUN_LIST INPUT_DIR OUTPUT_DIR [JOBS=2] [raw|residual]' >&2

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# ./batch.sh [并行数=8] [轮次名单=../pars/run.txt] [输出目录=项目rootfile]
-# C++处理事件；本脚本只启动、补位和汇总退出状态。
+# ./batch.sh [jobs=8] [run_list=../pars/run.txt] [output_dir=project_root/rootfile]
+# C++ processes events; this script only launches jobs, fills available slots and reports exit status.
 set -uo pipefail
 script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 project_dir="$(dirname -- "$script_dir")"
@@ -17,7 +17,7 @@ if [[ ! -x "$script_dir/build" || ! -r "$run_list" ]]; then
   exit 2
 fi
 
-# 核对整份名单和输出冲突后才启动任务。
+# Validate the complete run list and check for output conflicts before launching any jobs.
 runs=()
 declare -A seen=()
 while read -r run rest || [[ -n "${run:-}" ]]; do

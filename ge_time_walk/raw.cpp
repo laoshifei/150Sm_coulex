@@ -23,7 +23,7 @@ raw::raw(TTree* tree) : tree_(tree) {
   bind("cfdft", "Bool_t", &cfdft); bind("evte", "UShort_t", &evte);
   bind("ts", "Long64_t", &ts);
 }
-raw::~raw() { tree_->ResetBranchAddresses(); } // 文件由调用方持有。
+raw::~raw() { tree_->ResetBranchAddresses(); } // The caller owns the file.
 void raw::GetEntry(Long64_t entry) {
   if (tree_->GetEntry(entry)<=0) throw std::runtime_error("Failed reading entry "+std::to_string(entry));
 }

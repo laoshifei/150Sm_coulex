@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <string>
-// 标定诊断，不写活动参数；时间方向统一为particle-Ge。
+// Calibration diagnostics only; do not write active parameters. Use particle-Ge as the common time-difference sign.
 struct WalkOptions {
   int run=0;
   std::filesystem::path project,input,output,profile_dir;

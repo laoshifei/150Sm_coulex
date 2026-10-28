@@ -235,7 +235,7 @@ class TimeAlignment {
     if (!std::isfinite(adc)) throw std::runtime_error("Non-finite particle ADC");
     std::map<int,std::vector<double> >::const_iterator it=particle_calibration_.find(key);
     if (it==particle_calibration_.end()) {
-      // 兼容没有能量刻度表的旧高流强常数版本；能量相关版本禁止退回E=0。
+      // Support legacy constant high-beam profiles without energy-calibration tables; energy-dependent profiles must not fall back to E=0.
       std::map<int,std::vector<Piece> >::const_iterator p=particle_curves_.find(key);
       if (group_=="low" || p==particle_curves_.end() || p->second.empty())
         throw std::runtime_error("Unmapped physical particle calibration");
@@ -314,7 +314,7 @@ class TimeAlignment {
       if (pieces.empty() || pieces.back().hi!=1e9) throw std::runtime_error("Incomplete JSON particle domain");
     }
     if (particle_curves_.size()!=152) throw std::runtime_error("Expected152 particle channels");
-    // 高低流强都允许完整的能量修正；旧高流强纯常数JSON仍兼容。
+    // Allow complete energy corrections for both beam intensities while retaining support for legacy constant high-beam JSON profiles.
     const bool has_particle_calibration=data.contains("particle_calibration") &&
       data.at("particle_calibration").contains(r);
     if (!has_particle_calibration && (group_=="low" || ParticleEnergyDependent()))

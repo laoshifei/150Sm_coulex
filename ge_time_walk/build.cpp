@@ -1,4 +1,4 @@
-// 顺序：冻结参数 -> 刻度/原生时间 -> 全候选配对 -> 双面检查 -> 分CFD时间谱。
+// Order: freeze parameters -> calibration/native time -> all candidate pairs -> front/back checks -> spectra by CFD state.
 #include "build.h"
 #include "raw.h"
 #include "sm150_event_calibration.h"
@@ -18,7 +18,7 @@
 using namespace sm150::diagnostic;
 namespace {
 const std::set<int> GE={204,205,206,209,211,212,213,214,215,304,305,306,308,310,311,506,507,508,509,510};
-constexpr double SHIFT_BOUND=1000000.; // 已校准时间与原生coarse时间的严格运行时上界/ns。
+constexpr double SHIFT_BOUND=1000000.; // Strict runtime upper bound on the shift between corrected and native coarse times, in ns.
 #pragma pack(push,1)
 struct InputRecord {
   int16_t sr;bool pileup,outofr;int16_t cid,sid,ch;uint16_t evte;int64_t ts;int16_t cfd;bool cfdft;int16_t cfds;
@@ -96,7 +96,7 @@ struct Writer {
   }
   void write() {
     file.cd();if(tree) require(tree->Write()>0,"Cannot write pairs");
-    // 未测得分支也保留空谱；空谱不等于零修正。
+    // Retain empty histograms for unmeasured branches; an empty histogram does not imply zero correction.
     for(int g:GE) for(const std::string ref:{"si","s3_ring_all","s3_matched","s3_sector"})
       for(int s=0;s<2;++s) for(int h=0;h<2;++h) for(const std::string c:{"current","native_ge"}) book(g,ref,s,h,c);
     for(const auto& h:hist) require(h.second->Write()>0,"Cannot write histogram "+h.first);
@@ -109,8 +109,8 @@ struct Engine {
   void process(double last,bool final) {
     peak_buffer=std::max(peak_buffer,buffer.size());
     require(buffer.size()<=o.max_buffer_hits,"Rolling buffer budget exceeded");
-    // buffer按原生coarse时间排列；匹配索引单独按修正时间排列。
-    // 唯一性要走ring->sector->另一ring两跳；相对原ring最多2个匹配窗。
+    // Sort the buffer by native coarse time and the matching index separately by corrected time.
+    // Uniqueness requires two hops, ring -> sector -> another ring, spanning up to two matching windows from the first ring.
     const double context=o.native_window_ns+2*SHIFT_BOUND+2*o.s3_match_ns;
     const double safe=final?std::numeric_limits<double>::infinity():last-context;
     std::vector<const Hit*> rings,sectors;
@@ -146,7 +146,7 @@ struct Engine {
       g.done=true;++ge_processed;
     }
     if(final) {buffer.clear();return;}
-    // 保留未来Ge和S3双面匹配所需的左右上下文，不在半段边界丢配对。
+    // Retain context on both sides for future Ge hits and S3 front/back matching; do not lose pairs at the half-run boundary.
     const double discard=safe-context;
     auto end=std::lower_bound(buffer.begin(),buffer.end(),discard,[](const Hit& h,double t){return double(h.coarse)<t;});
     for(auto it=buffer.begin();it!=end;++it) require(it->kind!=1 || it->done,"Unprocessed Ge at buffer boundary");
@@ -170,7 +170,7 @@ void build_ge_time_walk(const WalkOptions& input_options) {
     require(n>=1 && n<=10000 && std::abs(n-std::round(n))<1e-8,"Require integral number of bins<=10000");
   require(o.chunk>0 && o.chunk<=o.max_buffer_hits,"Invalid chunk/buffer limit");
   Parameters p(o.project,o.run,true);
-  // ge_time_walk维护数值源；显式active保留旧流程复现，禁止隐式混用。
+  // ge_time_walk maintains the numerical source; explicit active selection reproduces the previous workflow without implicit mixing.
   fs::path profile_dir;std::string selection_source,expected_sha;
   if(!o.profile_dir.empty()) {
     require(o.profile.empty(),"Choose --profile or --profile-dir, not both");

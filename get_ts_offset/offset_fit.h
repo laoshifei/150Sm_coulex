@@ -1,6 +1,6 @@
 #ifndef SM150_OFFSET_FIT_H
 #define SM150_OFFSET_FIT_H
-// 两个 ROOT 宏共用导出/质量检查；只写带状态的候选表，不写活动参数。
+// Share export and quality checks between the two ROOT macros; write candidates with explicit status, not active parameters.
 #include <TFile.h>
 #include <TH1D.h>
 #include <TF1.h>
@@ -122,7 +122,7 @@ inline int export_offsets(const TString& filename,int run,const TString& destina
     csv<<'\n'; rows.push_back(r);
     if(h->GetEntries()>=min_entries) {
       TCanvas canvas(("canvas_"+id).c_str(),id.c_str(),1000,500); h->Draw("hist");
-      // 完整时间范围保留；红线只描述核心拟合区，不代表宽拖尾得到修复。
+      // Retain the full time range; the red curve describes only the fitted core and does not imply that the broad tail is corrected.
       std::unique_ptr<TF1> curve;
       if(r.contains("fit_parameters")) {
         auto v=r["fit_parameters"].get<std::vector<double>>();

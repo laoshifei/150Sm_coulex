@@ -5,7 +5,7 @@
 #include <filesystem>
 #include <string>
 
-// 只生成候选测量/残差诊断；不写 pars 或自动采用 offset。
+// Produce candidate measurements/residual diagnostics only; do not write pars or adopt offsets automatically.
 struct OffsetOptions {
   int run = 0, ge_reference = KEYREF;
   std::filesystem::path project, input, output;

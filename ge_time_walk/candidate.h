@@ -1,6 +1,6 @@
 #ifndef SM150_GE_WALK_CANDIDATE_H
 #define SM150_GE_WALK_CANDIDATE_H
-// 导出完整one-pass候选；不安装、不修改active，不重复加failed旧模型。
+// Export a complete one-pass candidate without installing it, changing active or adding the old failed-CFD model twice.
 #include "sm150_event_calibration.h"
 #include "sm150_time_alignment.h"
 #include <functional>
@@ -42,7 +42,7 @@ inline json export_complete_candidate(const json& result,const json& input_meta,
     runs.insert(input.at("run").get<std::string>());
   }
   require(!runs.empty(),"Candidate lacks source runs");
-  // 当前生产基线由提取时保存的完整路径和SHA确定，不按active重新猜测。
+  // Identify the production baseline by the full path and SHA saved at extraction; do not infer it again from active.
   fs::path source;
   for(auto it=input_meta.at("parameter_snapshots").begin();it!=input_meta.at("parameter_snapshots").end();++it)
     if(fs::path(it.key()).filename()=="calibration.json" && it.value().at("sha256")==input_meta.at("profile_sha256"))source=it.key();
@@ -70,7 +70,7 @@ inline json export_complete_candidate(const json& result,const json& input_meta,
   auto metadata=json::parse(read_text(source.parent_path()/"metadata.json"));metadata["candidate_export"]=data["candidate_export"];
   metadata["version"]=data["version"];write(directory/"metadata.json",metadata.dump(2)+"\n");
   double worst=0;uint64_t checked=0;
-  // 用实际生产C++读取器复算，不只检查导出的JSON格式。
+  // Recompute with the actual production C++ reader, rather than checking only the exported JSON format.
   for(const auto& r:runs) {
     sm150::TimeAlignment old_t,new_t;old_t.LoadProfile(source.parent_path().string(),std::stoi(r));new_t.LoadProfile(directory.string(),std::stoi(r));
     for(int ge:data.at("ge").get<std::vector<int>>())for(int state=0;state<2;++state)for(int i=-1;i<=4001;++i) {

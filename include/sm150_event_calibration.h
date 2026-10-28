@@ -1,7 +1,7 @@
 #ifndef SM150_EVENT_CALIBRATION_H
 #define SM150_EVENT_CALIBRATION_H
-// get_ts_offset和ge_time_walk共用：保持已核验的刻度、映射和参数身份检查。
-// ADC转换为double后计算；不产生时间/能量随机抖动，不修改任何参数文件。
+// Shared by get_ts_offset and ge_time_walk: retain validated calibration, mapping and parameter-identity checks.
+// Convert ADC to double before evaluation; add no random time/energy jitter and modify no parameter files.
 #include <nlohmann/json.hpp>
 #include <openssl/evp.h>
 #include <algorithm>
@@ -95,7 +95,7 @@ struct Parameters {
     auto ge=keyed(pars/"cali_ge.txt",3);
     auto si=keyed(pars/(group=="low"?"cali_si_r457_low_current.txt":group=="high1"?"cali_si_r460.txt":"cali_si_r457_high_current.txt"),3);
     auto kg=keyed(pars/"run_k"/("k_"+rn(run)+".txt"),1);
-    // 与 build_all 的 37 个物理 Ge 一致；不按 config/b.txt 隐式删除通道。
+    // Match the 37 physical Ge channels in build_all; do not implicitly remove channels based on config/b.txt.
     const int ge_keys[]={204,205,206,208,209,210,211,212,213,214,215,304,305,306,307,308,309,310,311,
                          400,401,402,403,404,405,406,407,409,410,411,504,505,506,507,508,509,510};
     auto add=[&](int key,int kind,int ring,int sector,double gain) {

@@ -1,6 +1,6 @@
-// get_ts_offset：原生 offset 测量与现用参数残差检查。
-// 顺序：参数/映射 -> 原始 ADC 刻度 -> 时间 -> 排序 -> 全候选配对 -> 诊断。
-// 不更新 pars，不以无数据/拟合失败的 0 代替有效 offset。
+// get_ts_offset: native-time offset measurements and residual checks against the current parameters.
+// Order: parameters/mapping -> raw ADC calibration -> timing -> sorting -> all candidate pairs -> diagnostics.
+// Do not update pars or substitute zero for a valid offset when data are missing or a fit fails.
 #include "analysis.h"
 #include "raw.h"
 #include "sm150_time_alignment.h"
@@ -127,8 +127,8 @@ std::string legacy_name(int key) {
   std::ostringstream s; s<<(key<10000?"ge":"si")<<"_sid"<<(key%10000/100)<<"_ch"<<std::setw(2)<<std::setfill('0')<<key%100;
   return s.str();
 }
-// 分块只影响内存，不改变配对。保留过去 window 和未来 2*window，才能判断双向多重性。
-// 1e6ns 是经逐事件断言的最大时间移动界，不是符合窗；与 build 使用同一界限。
+// Chunking affects memory only, not pairing. Retain the past window and future 2*window to determine multiplicity in both directions.
+// 1e6 ns is the maximum timing-shift bound asserted for every event, not a coincidence gate; use the same bound as build.
 struct PairEngine {
   const OffsetOptions& o; const Parameters& p; Writer& w;
   std::vector<Hit> buffer;
@@ -168,7 +168,7 @@ struct PairEngine {
         const auto& b=buffer[j]; if(a.key==b.key) continue;
         const int ka=p.channels.at(a.key).kind,kb=p.channels.at(b.key).kind;
         if(o.particle_network) {
-          // Si作为参考的独立诊断：不要求Ge，不让同一对的两个方向重复填谱。
+          // Independent diagnostics referenced to Si: require no Ge and fill each pair only once, not in both directions.
           if(ka==2 && kb==2) {
             const auto& r=a.key<b.key?a:b; const auto& s=a.key<b.key?b:a;
             emit("si_si_"+std::to_string(r.key)+"_"+std::to_string(s.key),"si_si",r,s);
@@ -179,8 +179,8 @@ struct PairEngine {
           continue;
         }
         if(o.particle_calibration) {
-          // 单独的标定诊断模式：保留所有粒子通道，用既有20个Ge作参考。
-          // normal/failed及合计同时保存；不改变普通诊断模式和生产build。
+          // Separate calibration diagnostic mode: retain all particle channels and use the existing 20 Ge channels as references.
+          // Save normal, failed and combined spectra together; leave the standard diagnostic mode and production build unchanged.
           static const std::set<int> refs={204,205,206,209,211,212,213,214,215,
             304,305,306,308,310,311,506,507,508,509,510};
           if((ka==1)!=(kb==1)) {
@@ -228,15 +228,15 @@ struct PairEngine {
       }
     }
     consumed=safe;
-    // 未来未处理 hit 的反向候选仍可能在 safe-window 之后，必须保留。
+    // Reverse candidates for future unprocessed hits may still lie beyond safe-window and must be retained.
     auto end=std::upper_bound(buffer.begin(),buffer.end(),safe-o.window_ns,
                              [](double t,const Hit& h){return t<h.t;});
     buffer.erase(buffer.begin(),end);
   }
 };
-// 全统计粒子模式：单遍遍历所有原始条目，在线累积整数直方图。
-// 粒子原生时间只有coarse项，单调排序允许用两个滚动队列枚举全部候选。
-// 每对只在较后原始条目到达时计数；跨前/后半边界的配对归入较后半。
+// Full-statistics particle mode: read all raw entries in one pass and accumulate integer histograms online.
+// Native particle times contain only the coarse term; monotonic ordering permits two rolling queues to enumerate all candidates.
+// Count a pair only when its later raw entry arrives; assign pairs crossing the first/second-half boundary to the second half.
 struct FullCounts {
   size_t rows;
   std::vector<uint64_t> bins;
@@ -314,7 +314,7 @@ void full_particle(const OffsetOptions& o,Parameters& p) {
   auto* tree=dynamic_cast<TTree*>(input->Get("tree"));require(tree,"Missing source tree");
   const uint64_t total=tree->GetEntries();require(o.begin<total,"Begin outside source");
   const uint64_t end=o.entries?o.begin+std::min(o.entries,total-o.begin):total;
-  // 对读取的八个标量字段逐条打包后批量SHA；不读取或依赖Ge CFD字段。
+  // Pack each event's eight scalar fields and hash in batches; do not read or depend on Ge CFD fields.
 #pragma pack(push,1)
   struct Record { Long64_t ts;UShort_t evte;Short_t sr,cid,sid,ch;Bool_t pileup,outofr; } record{};
 #pragma pack(pop)
@@ -328,7 +328,7 @@ void full_particle(const OffsetOptions& o,Parameters& p) {
   bind("ts","Long64_t",&record.ts);bind("evte","UShort_t",&record.evte);
   bind("sr","Short_t",&record.sr);bind("cid","Short_t",&record.cid);bind("sid","Short_t",&record.sid);bind("ch","Short_t",&record.ch);
   bind("pileup","Bool_t",&record.pileup);bind("outofr","Bool_t",&record.outofr);
-  // 上述八项中的原始ADC、时间及通道/质量全部保留；采用完整标量记录哈希。
+  // Retain raw ADC, time, channel and quality fields from the eight values above; hash the complete scalar record.
   tree->SetCacheSize(64*1024*1024);
   for(const auto* name:{"ts","evte","sr","cid","sid","ch","pileup","outofr"}) tree->AddBranchToCache(name,true);
   tree->StopCacheLearningPhase();
@@ -512,7 +512,7 @@ void analysis::Process() {
   const uint64_t count=o.entries?std::min(o.entries,total-o.begin):total-o.begin;
   const uint64_t end=o.begin+count;
   raw rd(tree);
-  // CREATE 的 O_EXCL 语义防止并发同名输出；正式文件只在全部检查后发布。
+  // CREATE uses O_EXCL semantics to prevent concurrent outputs with the same name; publish only after all checks pass.
   std::unique_ptr<TFile> output(TFile::Open(partial.c_str(),"CREATE"));
   require(output && !output->IsZombie(),"Cannot create partial output");
   Writer writer(o,*output);
@@ -524,7 +524,7 @@ void analysis::Process() {
   const auto start=std::chrono::steady_clock::now();
   for(uint64_t entry=o.begin;entry<end;++entry) {
     rd.GetEntry(entry);
-    // 对实际读入的原始标量字段求 SHA256；不是未读取整份文件的 SHA256。
+    // Compute SHA256 over the raw scalar fields actually read, not over the unread remainder of the source file.
     digest.add(rd.sr);digest.add(rd.pileup);digest.add(rd.outofr);digest.add(rd.cid);digest.add(rd.sid);
     digest.add(rd.ch);digest.add(rd.evte);digest.add(rd.ts);digest.add(rd.cfd);digest.add(rd.cfdft);digest.add(rd.cfds);
     require(rd.sr==100 || rd.sr==250,"Unsupported sampling rate");
@@ -553,7 +553,7 @@ void analysis::Process() {
           native=rd.cfdft?double(coarse):(2.*rd.ts-rd.cfds+rd.cfd/16384.)*4.;
         }
         require(std::abs(native)<9007199254740992.,"Timestamp exceeds exact double integer precision");
-        native=double(int64_t(native)); // 保持当前 build 的原生时间量化定义。
+        native=double(int64_t(native)); // Preserve the current build's native-time quantization convention.
         const double correction=o.mode=="raw"?0.:c.kind==1 ?
             timing.TotalGeOffset(key,rd.cfdft,energy):timing.TotalParticleOffsetFromAdc(key,rd.evte);
         const double t=native+correction;
@@ -567,7 +567,7 @@ void analysis::Process() {
   }
   engine.process(double(previous),true);
   require(engine.buffer.empty(),"Final buffer not consumed");
-  // 保留所有物理通道的空谱及显式状态，参考缺失不阻止独立粒子诊断。
+  // Retain empty histograms and explicit status for all physical channels; a missing reference does not block independent particle diagnostics.
   json coverage=json::object();
   for(const auto& kv:p.channels) {
     int k=kv.first;
@@ -602,7 +602,7 @@ void analysis::Process() {
       require(h && h->GetEntries()==kv.second.all->GetEntries(),"Histogram readback failed");
     }
   }
-  // link 只在目标不存在时成功，防止核验过程中出现的新文件被覆盖。
+  // link succeeds only if the target is absent, preventing overwrite of a file created during validation.
   fs::create_hard_link(partial,o.output); fs::remove(partial);
   std::cout<<json({{"status","complete"},{"output",o.output.string()},{"read_entries",count},
     {"reference_present",metadata["reference_present"]},{"seconds",metadata["seconds"]}}).dump()<<'\n';
