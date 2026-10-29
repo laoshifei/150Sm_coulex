@@ -164,6 +164,21 @@ struct Parameters {
                si = keyed(pars + cal_name, 3),
                offset = keyed(pars + off_name, 1),
                gain = keyed(pars + "run_k/k_" + run + ".txt", 1);
+    // A complete candidate can move all channels to a common reference and additionally align the Si phase.
+    // Both terms are already included in the profile constants/complete functions; only verify their provenance here.
+    // Do not add them to event times again. Profiles without this declaration retain the legacy validation.
+    const bool shifted_reference = calibration.contains("common_reference");
+    double common_gauge = 0., si_phase = 0.;
+    if (shifted_reference) {
+      const auto &reference = calibration.at("common_reference");
+      common_gauge = reference.at("period_gauge_subtracted_ns")
+                         .at(group).get<double>();
+      if (reference.contains("Si_phase"))
+        si_phase = reference.at("Si_phase").at(group)
+                       .at("applied_si_shift_ns").get<double>();
+      require(std::isfinite(common_gauge) && std::isfinite(si_phase),
+              "Nonfinite declared timing-reference shift");
+    }
     std::set<int> good;
     for (const auto &row : read(pars + "config/b.txt")) {
       require(row.size() >= 3, "Short good-Ge row");
@@ -180,8 +195,15 @@ struct Parameters {
                             .at(group)
                             .at(std::to_string(key))
                             .get<double>();
-      require(std::floor(off[0]) == std::floor(baseline),
-              "Frozen native offset changed");
+      if (shifted_reference) {
+        const double expected = off[0] - common_gauge +
+                                (kind == 2 ? si_phase : 0.);
+        require(std::isfinite(baseline) && std::abs(baseline - expected) < 1e-8,
+                "Native offset disagrees with declared timing-reference shift");
+      } else {
+        require(std::floor(off[0]) == std::floor(baseline),
+                "Frozen native offset changed");
+      }
       const std::array<double, 9> values = {c[0], c[1], c[2], g,     kg,
                                             att,  fb0,  fb1,  off[0]};
       std::copy(values.begin(), values.end(), p.begin() + key * 9);
@@ -1617,10 +1639,28 @@ int build::Process() {
                   "selected_windows.json");
     json input_hashes = json::object();
     json window_json = frozen_json(window_file, input_hashes);
-    std::string profile = window_json.at("profile");
-    fs::path profile_dir =
-        default_path(options.profile_dir,
-                     project / "pars/time_alignment/versions" / profile);
+    // The window file retains its selection-time provenance; timing functions default to the current production profile.
+    // An explicit --profile-dir can replay a historical version independently of changes to active.
+    const std::string window_reference_profile = window_json.at("profile");
+    std::string profile, profile_source = "explicit --profile-dir";
+    fs::path profile_dir = options.profile_dir;
+    if (profile_dir.empty()) {
+      const auto active_file = project / "pars/time_alignment/active.txt";
+      const auto active_hash = sha256(active_file);
+      std::ifstream active_stream(active_file);
+      std::string extra;
+      require(bool(active_stream >> profile) && !(active_stream >> extra) &&
+                  profile != "." && profile != ".." &&
+                  profile.find_first_not_of(
+                      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-") ==
+                      std::string::npos,
+              "Invalid active timing profile: " + active_file.string());
+      require(sha256(active_file) == active_hash,
+              "Active profile changed while loading");
+      input_hashes[active_file.string()] = active_hash;
+      profile_dir = project / "pars/time_alignment/versions" / profile;
+      profile_source = active_file.string();
+    }
     profile_dir = fs::canonical(profile_dir);
     profile = profile_dir.filename().string();
     // Freeze the complete configuration directory, including compatibility files used by the shared loader.
@@ -1651,7 +1691,12 @@ int build::Process() {
                                   profile_dir.c_str(), run);
     verify_frozen(input_hashes);
     if (options.inspect_parameters) {
-      std::cout << inspect_parameters(pars, engine, calibration).dump() << '\n';
+      auto inspection = inspect_parameters(pars, engine, calibration);
+      inspection["time_alignment_profile"] = profile;
+      inspection["time_alignment_profile_dir"] = profile_dir.string();
+      inspection["time_alignment_profile_source"] = profile_source;
+      inspection["window_reference_profile"] = window_reference_profile;
+      std::cout << inspection.dump() << '\n';
       return 0;
     }
     // Step 2: check the strict run list and refuse to overwrite existing outputs.
@@ -1921,8 +1966,10 @@ int build::Process() {
           {"candidate", label ? "B" : "A"},
           {"window_file", window_file.string()},
           {"window_sha256", input_hashes.at(window_file.string())},
+          {"window_reference_profile", window_reference_profile},
           {"time_alignment_profile", profile},
           {"time_alignment_profile_dir", profile_dir.string()},
+          {"time_alignment_profile_source", profile_source},
           {"time_alignment_calibration_sha256",
            input_hashes.at((profile_dir / "calibration.json").string())},
           {"energy_parameters", pars.records},

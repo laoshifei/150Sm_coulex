@@ -18,7 +18,7 @@ void PrintUsage() {
             << "  --outdir DIR            输出目录；默认项目 rootfile/\n"
             << "  --project DIR           项目根目录；通常由可执行文件位置确定\n"
             << "  --window-file FILE      逐 Ge、Si/S3、时期的窄/宽窗口表\n"
-            << "  --profile-dir DIR       完整时间修正参数目录\n"
+            << "  --profile-dir DIR       覆盖时间版本；默认读取 pars/time_alignment/active.txt\n"
             << "  --source-manifest FILE  原始输入名单及校验记录\n"
             << "  --receipt FILE          完成回执；默认放在输出目录\n"
             << "  --entries N             只检查前 N 条；完整处理时省略\n"
