@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "label": "legacy_beta_pair_preserving",
+  "status": "baseline_not_new_optimization",
+  "Si": {"energy_scale": 1.0, "theta_offset_deg": 0.0, "phi_offset_deg": 0.0, "particle_energy_fraction": 0.0},
+  "S3": {"energy_scale": 0.5, "theta_offset_deg": 0.0, "phi_offset_deg": 0.0, "particle_energy_fraction": 0.0},
+  "ge_theta_offset_deg": 0.0,
+  "ge_phi_offset_deg": 0.0,
+  "per_ge": {},
+  "notes": "Preserve the historical angle-table exit-beta model and mass convention; retain every build pair and its own random weight. No additional timing or energy calibration."
+}

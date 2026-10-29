@@ -83,4 +83,11 @@ private:
   Double_t e_dc_r[GENUM];
 };
 
+namespace sm150_doppler {
+struct Options {
+  std::string project,parameters,input,output,scan_list,scan_parameters;
+};
+int process_build(const Options &options);
+int scan_pairs(const Options &options);
+}
 #endif

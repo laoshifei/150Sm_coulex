@@ -4,6 +4,8 @@
 
 #include <stdlib.h>
 #include <cmath>
+#include <algorithm>
+#include <stdexcept>
 
 #include "set.h"
 
@@ -359,5 +361,116 @@ double angle_info::ComputeCosThetaParticleGamma(double tg, double pg, double tp,
   double tmp2 = std::cos(tp)*std::cos(tg);
 
   return tmp1+tmp2;
+}
+
+namespace sm150_doppler {
+namespace {
+constexpr double rad = 3.14159265358979323846 / 180.0;
+// Preserve the historical mass convention for a controlled baseline comparison.
+constexpr double mass_p = 16*938.3 + 16*931.5 - 32*8.493;
+constexpr double mass_r = 62*938.3 + 88*931.5 - 150*8.262;
+void check(bool condition,const std::string &message) {
+  if(!condition) throw std::runtime_error(message);
+}
+double cosine(double tg,double pg,double tr,double pr) {
+  return std::sin(tg*rad)*std::sin(tr*rad)*std::cos((pg-pr)*rad)+std::cos(tg*rad)*std::cos(tr*rad);
+}
+}
+Model::Model(const std::string &project,const nlohmann::json &parameters):config(parameters) {
+  check(config.at("schema_version")==1,"Unsupported Doppler parameter schema");
+  for(const auto &family:{"Si","S3"}) {
+    auto &x=config.at(family);
+    const double scale=x.at("energy_scale"),theta=x.at("theta_offset_deg"),phi=x.at("phi_offset_deg"),blend=x.at("particle_energy_fraction");
+    check(std::isfinite(scale)&&scale>0&&scale<=3,"Invalid recoil energy scale");
+    check(std::isfinite(theta)&&std::abs(theta)<=5&&std::isfinite(phi)&&std::abs(phi)<=30,"Geometry scan exceeds allowed range");
+    check(std::isfinite(blend)&&blend>=0&&blend<=1,"Invalid particle-energy fraction");
+  }
+  auto open=[&](const std::string &name) {
+    std::ifstream f(project+"/pars/"+name);
+    check(bool(f),"Cannot read "+name); return f;
+  };
+  for(int which=0;which<2;++which) {
+    auto f=open(which ? "angle_info/spider_angle.txt":"angle_info/ge_angle.txt");
+    std::string header;std::getline(f,header);int r,s;double t,p;
+    auto &out=which ? si_angles:ge_angles;
+    while(f>>r>>s>>t>>p) check(out.emplace(100*r+s,std::make_pair(t,p)).second,"Duplicate angle entry");
+    check(f.eof()&&!out.empty(),"Malformed detector angle table");
+  }
+  for(int which=0;which<2;++which) {
+    auto f=open(which ? "angle_info/s3_sector_angle.txt":"angle_info/s3_ring_angle.txt");
+    std::string header;std::getline(f,header);int id;double angle;
+    auto &out=which ? s3_phi:s3_theta;
+    while(f>>id>>angle) check(out.emplace(id,angle).second,"Duplicate S3 angle entry");
+    check(f.eof()&&!out.empty(),"Malformed S3 angle table");
+  }
+  std::map<int,std::pair<double,double>> projectile;
+  auto fp=open("beta_info/theta_ein_eout_p.txt");double p,r,ei,eo;
+  while(fp>>p>>ei>>eo) check(projectile.emplace(int(std::lround(p*100)),std::make_pair(ei,eo)).second,"Duplicate projectile angle");
+  check(fp.eof(),"Malformed projectile table");
+  auto fr=open("beta_info/theta_ein_eout_r.txt");
+  while(fr>>p>>r>>ei>>eo) {
+    auto e=projectile.at(int(std::lround(p*100)));
+    knots[p<90 ? 1:0].push_back({std::round(p*100)/100,std::round(r*100)/100,e.first,e.second,ei,eo});
+  }
+  check(fr.eof(),"Malformed recoil table");
+  for(auto &table:knots) {
+    std::sort(table.begin(),table.end(),[](const Knot &a,const Knot &b){return a.p<b.p;});
+    check(table.size()>=2,"Missing kinematic table");
+  }
+}
+Model::Prepared Model::prepare(const Pair &pair) {
+  check(pair.reference==0||pair.reference==1,"Invalid particle family");
+  const auto &par=config.at(pair.reference ? "S3":"Si");
+  auto gamma=ge_angles.at(100*pair.ge_ring+pair.ge_sector);
+  auto particle=pair.reference ? std::make_pair(s3_theta.at(pair.ring),s3_phi.at(pair.sector)) : si_angles.at(100*pair.ring+pair.sector);
+  const double nominal=std::round(particle.first*100)/100;
+  particle.first+=par.at("theta_offset_deg").get<double>();
+  particle.second+=par.at("phi_offset_deg").get<double>();
+  gamma.first+=config.value("ge_theta_offset_deg",0.0);
+  gamma.second+=config.value("ge_phi_offset_deg",0.0);
+  if(config.contains("per_ge")&&config["per_ge"].contains(std::to_string(pair.ge))) {
+    const auto &g=config["per_ge"][std::to_string(pair.ge)];
+    gamma.first+=g.value("theta_offset_deg",0.0);gamma.second+=g.value("phi_offset_deg",0.0);
+  }
+  const auto &table=knots.at(pair.reference);
+  const double x=nominal+par.at("theta_offset_deg").get<double>();
+  auto upper=std::upper_bound(table.begin(),table.end(),x,[](double t,const Knot &k){return t<k.p;});
+  size_t j=upper==table.begin() ? 1 : std::min(size_t(upper-table.begin()),table.size()-1);
+  const auto &a=table[j-1],&b=table[j];const double f=(x-a.p)/(b.p-a.p);
+  auto mix=[&](double u,double v){return u+f*(v-u);};
+  const double tr=mix(a.r,b.r),pi=mix(a.pi,b.pi),po=mix(a.po,b.po),ri=mix(a.ri,b.ri),ro=mix(a.ro,b.ro);
+  check(pi>0&&po>0&&ri>0&&ro>0,"Invalid interpolated kinematics");
+  Prepared z{};
+  z.c.theta_p=particle.first;z.c.phi_p=particle.second;
+  z.c.theta_r=tr;z.c.phi_r=particle.second+180;
+  z.c.theta_g=gamma.first;z.c.phi_g=gamma.second;z.c.expected_particle_MeV=po;
+  z.c.extrapolated=x<table.front().p||x>table.back().p;
+  z.scale=par.at("energy_scale");z.energy_out=ro;
+  z.blend=par.at("particle_energy_fraction");
+  z.pp_base=std::sqrt(2*mass_p*pi);z.beam_p=std::sqrt(2*mass_p*(pi+ri));
+  const double px=z.pp_base*std::sin(particle.first*rad),pz=z.beam_p-z.pp_base*std::cos(particle.first*rad);
+  z.pr_base=(px*px+pz*pz)/(2*mass_r);z.pt_base=std::atan2(px,pz)/rad;
+  z.c.beta=std::sqrt(2*ro*z.scale/mass_r);
+  z.c.cosine=cosine(gamma.first,gamma.second,tr,z.c.phi_r);
+  return z;
+}
+Correction Model::evaluate(const Pair &pair) {
+  const auto key=std::make_tuple(pair.ge,pair.ge_ring,pair.ge_sector,pair.reference,pair.ring,pair.sector);
+  auto it=cache.find(key);if(it==cache.end()) it=cache.emplace(key,prepare(pair)).first;
+  const auto &z=it->second;Correction c=z.c;
+  if(z.blend>0) {
+    // A table-anchored momentum perturbation, not an independently calibrated velocity.
+    const double ep=z.pp_base*z.pp_base/(2*mass_p)+z.blend*(pair.particle_MeV-c.expected_particle_MeV);
+    check(ep>0,"Nonpositive reconstructed projectile energy");
+    const double pp=std::sqrt(2*mass_p*ep),px=pp*std::sin(c.theta_p*rad),pz=z.beam_p-pp*std::cos(c.theta_p*rad);
+    const double exit=z.energy_out+(px*px+pz*pz)/(2*mass_r)-z.pr_base;
+    c.stopped=exit<0;c.beta=std::sqrt(2*std::max(0.0,exit)*z.scale/mass_r);
+    c.theta_r+=std::atan2(px,pz)/rad-z.pt_base;
+    c.cosine=cosine(c.theta_g,c.phi_g,c.theta_r,c.phi_r);
+  }
+  check(std::isfinite(c.beta)&&c.beta>=0&&c.beta<1&&std::abs(c.cosine)<=1.0000001,"Invalid Doppler factor");
+  c.energy=pair.raw*(1-c.beta*c.cosine)/std::sqrt(1-c.beta*c.beta);
+  return c;
+}
 }
 

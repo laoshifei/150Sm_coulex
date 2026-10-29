@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "status": "adopted_user_default",
+  "adopted_on": "2026-10-10",
+  "scope": "Subsequent processing, peak-yield extraction and plotting of the corrected p1/p2 data",
+  "alpha_by_group": {
+    "low_si": 1.0,
+    "low_s3": 1.0,
+    "high_si": 1.09,
+    "high_s3": 1.0
+  },
+  "period_mapping": {"p1": "low", "p2": "high"},
+  "detector_mapping": {"spider": "si", "s3": "s3"},
+  "net": "P - alpha_group * R",
+  "conditional_variance": "P + alpha_group**2 * R",
+  "variance_assumptions": "Independent unweighted prompt/random counts; alpha fixed; additional correlations and systematic uncertainties handled separately",
+  "combined_spectrum": "Sum separately subtracted groups; sum their conditional variances",
+  "input_requirement": "Unsubtracted prompt and random counts from corrected e_dc_r; never treat an already-subtracted histogram as prompt",
+  "preserve": ["zero bins", "negative net bins", "underflow", "overflow", "raw prompt/random counts"],
+  "coefficient_basis": "Explicit user choice; no new timing-normalization calibration",
+  "historical_results": "Retain the actual alpha used; do not relabel old fits or F3 as using this policy"
+}

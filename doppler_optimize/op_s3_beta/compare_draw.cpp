@@ -33,32 +33,32 @@ void compare_draw()
     }
 
     // s3 all
-    v_h_ga_s3a.push_back((TH1D*)v_fi[i]->Get("event_e_raw_ge_all_s3_all"));
-    v_hh_ga_s3a.push_back((TH1D*)v_fi[i]->Get("bg_e_raw_ge_all_s3_all"));
+    v_h_ga_s3a.push_back((TH1D*)v_fi[i]->Get("event_e_dc_r_ge_all_s3_all"));
+    v_hh_ga_s3a.push_back((TH1D*)v_fi[i]->Get("bg_e_dc_r_ge_all_s3_all"));
     v_h_ga_s3a[i]->Add(v_hh_ga_s3a[i], -1);
 
-    v_h_grs32_s3a.push_back((TH1D*)v_fi[i]->Get("event_e_raw_ge_ring3_sector2_s3_all"));
-    v_hh_grs32_s3a.push_back((TH1D*)v_fi[i]->Get("bg_e_raw_ge_ring3_sector2_s3_all"));
+    v_h_grs32_s3a.push_back((TH1D*)v_fi[i]->Get("event_e_dc_r_ge_ring3_sector2_s3_all"));
+    v_hh_grs32_s3a.push_back((TH1D*)v_fi[i]->Get("bg_e_dc_r_ge_ring3_sector2_s3_all"));
     v_h_grs32_s3a[i]->Add(v_hh_grs32_s3a[i], -1);
 
-    v_h_grs41_s3a.push_back((TH1D*)v_fi[i]->Get("event_e_raw_ge_ring4_sector1_s3_all"));
-    v_hh_grs41_s3a.push_back((TH1D*)v_fi[i]->Get("bg_e_raw_ge_ring4_sector1_s3_all"));
+    v_h_grs41_s3a.push_back((TH1D*)v_fi[i]->Get("event_e_dc_r_ge_ring4_sector1_s3_all"));
+    v_hh_grs41_s3a.push_back((TH1D*)v_fi[i]->Get("bg_e_dc_r_ge_ring4_sector1_s3_all"));
     v_h_grs41_s3a[i]->Add(v_hh_grs41_s3a[i], -1);
 
-    v_h_grs42_s3a.push_back((TH1D*)v_fi[i]->Get("event_e_raw_ge_ring4_sector2_s3_all"));
-    v_hh_grs42_s3a.push_back((TH1D*)v_fi[i]->Get("bg_e_raw_ge_ring4_sector2_s3_all"));
+    v_h_grs42_s3a.push_back((TH1D*)v_fi[i]->Get("event_e_dc_r_ge_ring4_sector2_s3_all"));
+    v_hh_grs42_s3a.push_back((TH1D*)v_fi[i]->Get("bg_e_dc_r_ge_ring4_sector2_s3_all"));
     v_h_grs42_s3a[i]->Add(v_hh_grs42_s3a[i], -1);
 
-    v_h_grs43_s3a.push_back((TH1D*)v_fi[i]->Get("event_e_raw_ge_ring4_sector3_s3_all"));
-    v_hh_grs43_s3a.push_back((TH1D*)v_fi[i]->Get("bg_e_raw_ge_ring4_sector3_s3_all"));
+    v_h_grs43_s3a.push_back((TH1D*)v_fi[i]->Get("event_e_dc_r_ge_ring4_sector3_s3_all"));
+    v_hh_grs43_s3a.push_back((TH1D*)v_fi[i]->Get("bg_e_dc_r_ge_ring4_sector3_s3_all"));
     v_h_grs43_s3a[i]->Add(v_hh_grs43_s3a[i], -1);
 
-    v_h_grs52_s3a.push_back((TH1D*)v_fi[i]->Get("event_e_raw_ge_ring5_sector2_s3_all"));
-    v_hh_grs52_s3a.push_back((TH1D*)v_fi[i]->Get("bg_e_raw_ge_ring5_sector2_s3_all"));
+    v_h_grs52_s3a.push_back((TH1D*)v_fi[i]->Get("event_e_dc_r_ge_ring5_sector2_s3_all"));
+    v_hh_grs52_s3a.push_back((TH1D*)v_fi[i]->Get("bg_e_dc_r_ge_ring5_sector2_s3_all"));
     v_h_grs52_s3a[i]->Add(v_hh_grs52_s3a[i], -1);
 
-    v_h_grs53_s3a.push_back((TH1D*)v_fi[i]->Get("event_e_raw_ge_ring5_sector3_s3_all"));
-    v_hh_grs53_s3a.push_back((TH1D*)v_fi[i]->Get("bg_e_raw_ge_ring5_sector3_s3_all"));
+    v_h_grs53_s3a.push_back((TH1D*)v_fi[i]->Get("event_e_dc_r_ge_ring5_sector3_s3_all"));
+    v_hh_grs53_s3a.push_back((TH1D*)v_fi[i]->Get("bg_e_dc_r_ge_ring5_sector3_s3_all"));
     v_h_grs53_s3a[i]->Add(v_hh_grs53_s3a[i], -1);
   }
 
