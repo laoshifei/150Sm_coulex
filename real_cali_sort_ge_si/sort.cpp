@@ -2,6 +2,7 @@
 
 #include <vector>
 #include "math.h"
+#include "TNamed.h"
 
 //
 sort::sort(const std::string &filename_in, const std::string &filename_out, const int r)
@@ -49,22 +50,32 @@ sort::sort(const std::string &filename_in, const std::string &filename_out, cons
   }
   PrintS3CorData();
 
-  // read ts offset
-  if(!ReadTSOffset()){
-    throw std::invalid_argument("can not read ts offset data.");
+  time_alignment.Load("../pars", run);
+  // Complete profiles are self-contained: no external legacy offset is read.
+  if(!time_alignment.total()){
+    if(!ReadTSOffset()){
+      throw std::invalid_argument("can not read ts offset data.");
+    }
+    PrintTSOffset();
+    time_alignment.ValidateNativeOffsets(map_ts_offset);
   }
-  PrintTSOffset();
+  std::cout << "time alignment profile: " << time_alignment.profile() << std::endl;
 
   // read ge time walk
-  if(!ReadGeTwData()){
-    throw std::invalid_argument("can not read ge time walk data.");
+  if(!time_alignment.active()){
+    if(!ReadGeTwData()){
+      throw std::invalid_argument("can not read ge time walk data.");
+    }
+    PrintGeTwData();
   }
-  PrintGeTwData();
 
   rndm = new TRandom3((Long64_t)time(0));
   
   //
   file_out = TFile::Open(filename_out.c_str(), "recreate");
+  file_out->cd();
+  TNamed("sm150_time_alignment_profile", time_alignment.profile().c_str()).Write();
+  TNamed("sm150_time_alignment_source_sha256", time_alignment.source_sha256().c_str()).Write();
 
   tr_out = new TTree("tree", "GDDAQ cali and sort data");
   tr_out->Branch("cid", &sd.cid);
@@ -168,19 +179,34 @@ void sort::GetTsns()
       sd.ts = (rd->ts*2-rd->cfds+rd->cfd/16384.)*4.;
     }
     
+    if(time_alignment.total()){
+      sd.ts = static_cast<Long64_t>(static_cast<double>(sd.ts)+time_alignment.TotalGeOffset(key, rd->cfdft, timing_ge_energy_keV));
+    }else{
     sd.ts += map_ts_offset[key];
-
+    if(time_alignment.active()){
+      double delta = 0.;
+      if(time_alignment.GeDelta(key, rd->cfdft, timing_ge_energy_keV, delta))
+        sd.ts = static_cast<Long64_t>(static_cast<double>(sd.ts)+delta);
+    }else{
 #ifdef TW
-    for(int i=0;i<tf->GetNpar();++i) tf->SetParameter(i, map_ge_tw[key][i]);
-    sd.ts += tf->Eval(sd.evte);
+      for(int i=0;i<tf->GetNpar();++i) tf->SetParameter(i, map_ge_tw[key][i]);
+      sd.ts += tf->Eval(sd.evte);
 #endif
+    }
+    }
   }
 
   if(rd->cid==1){
     if(rd->sr==250) sd.ts = rd->ts*8;
     if(rd->sr==100) sd.ts = rd->ts*10; 
 
-    sd.ts += map_ts_offset[key];
+    if(time_alignment.total()){
+      sd.ts = static_cast<Long64_t>(static_cast<double>(sd.ts)+time_alignment.TotalParticleOffsetFromAdc(key, rd->evte));
+    }else{
+      sd.ts += map_ts_offset[key];
+      const bool is_s3 = map_s3_ring_id.count(key) || map_s3_sector_id.count(key);
+      sd.ts = static_cast<Long64_t>(static_cast<double>(sd.ts)+time_alignment.ParticleDeltaFromAdc(key, rd->evte, is_s3));
+    }
     sd.ts += rndm->Uniform(-5,5);
   }
 }
@@ -189,14 +215,18 @@ void sort::GetTsns()
 void sort::GetEnergy()
 {
   int key = 10000*rd->cid+100*rd->sid+rd->ch;
+  // Square ADC values in floating point to avoid signed-int overflow above 46340.
+  const double adc = rd->evte;
 
   if(rd->cid==0){
-    sd.evte = map_cali[key][0]+rd->evte*map_cali[key][1]+rd->evte*rd->evte*map_cali[key][2]+rndm->Uniform(-0.5,0.5);
+    // The fitted lookup uses calibrated physical energy, without display dither.
+    timing_ge_energy_keV = (map_cali[key][0]+adc*map_cali[key][1]+adc*adc*map_cali[key][2])*map_k[key];
+    sd.evte = map_cali[key][0]+adc*map_cali[key][1]+adc*adc*map_cali[key][2]+rndm->Uniform(-0.5,0.5);
     sd.evte *= map_k[key];
   }
 
   if(rd->cid==1){
-    sd.evte = map_cali[key][0]+rd->evte*map_cali[key][1]+rd->evte*rd->evte*map_cali[key][2]+rndm->Uniform(-5.,5.);
+    sd.evte = map_cali[key][0]+adc*map_cali[key][1]+adc*adc*map_cali[key][2]+rndm->Uniform(-5.,5.);
 
     // modified
     if(rd->sid==11) sd.evte *= 10.;

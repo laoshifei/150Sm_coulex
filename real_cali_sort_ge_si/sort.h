@@ -17,6 +17,7 @@
 #include <ctime>
 
 #include "raw.h"
+#include "../include/sm150_time_alignment.h"
 
 //
 struct sort_data {
@@ -79,6 +80,8 @@ private:
   std::map<int, double> map_s3_sector_att, map_s3_ring_att; // key is id
   std::map<int, double> map_ts_offset;
   std::map<int, std::vector<double>> map_ge_tw;
+  sm150::TimeAlignment time_alignment;
+  double timing_ge_energy_keV = 0.;
 
   std::map<int, int> map_s3_sector_id, map_s3_ring_id;
 

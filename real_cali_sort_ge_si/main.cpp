@@ -11,21 +11,28 @@
 //
 int main(int argc, char const *argv[])
 {
-  if(argc != 2){
-    std::cout << "need parameter" << std::endl;
-    std::cout << "like: analysis 33" << std::endl;
+  if(argc != 2 && argc != 4){
+    std::cout << "./sort run [input.root output.root]" << std::endl;
     return -1;
   }
 
   int run = atoi(argv[1]);
   TString file_in = TString::Format("../rootfile/data_C2_%04d_%04d.root", run, run);
-  std::cout << "analysis " << file_in << std::endl;
 
 #ifdef TW
   TString file_out = TString::Format("../rootfile/data%04d_tw.root", run);
 #else
   TString file_out = TString::Format("../rootfile/data%04d.root", run);
 #endif
+  if(argc == 4){
+    file_in = argv[2];
+    file_out = argv[3];
+  }
+  if(file_in == file_out){
+    std::cerr << "Input and output ROOT files must be different." << std::endl;
+    return -1;
+  }
+  std::cout << "input " << file_in << " -> output " << file_out << std::endl;
 
   TStopwatch timer;
   timer.Start();

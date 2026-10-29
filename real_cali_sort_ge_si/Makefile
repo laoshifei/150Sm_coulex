@@ -1,6 +1,6 @@
 out = sort
 
-sourcefile = main.cpp sort.h sort.cpp raw.h raw.cpp set.h
+sourcefile = main.cpp sort.h sort.cpp raw.h raw.cpp set.h ../include/sm150_time_alignment.h
 
 ROOTCFLAGS  = $(shell root-config --cflags)
 ROOTLIBS    = $(shell root-config --libs) -lSpectrum
