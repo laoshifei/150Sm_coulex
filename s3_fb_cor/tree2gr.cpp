@@ -2,12 +2,13 @@
 void tree2gr_sector(int run)
 {
   TFile *fi = TFile::Open(TString::Format("../rootfile/si/data%04d_build_s3_200ns_no_s3cor.root", run).Data());
-  if(fi->IsZombie()){
+  if(!fi || fi->IsZombie()){
     cout << "can not open rootfile." << endl;
     return;
   }
 
   TTree *tr = (TTree*)fi->Get("tr_event");
+  if(!tr) { Error("legacy_s3", "Missing tr_event"); fi->Close(); return; }
   TH2D *hh_for_sector[32];
   TGraph *gr[32];
 
@@ -45,12 +46,13 @@ void tree2gr_sector(int run)
 void tree2gr_ring(int run)
 {
   TFile *fi = TFile::Open(TString::Format("../rootfile/si/data%04d_build_s3_200ns_no_s3cor.root", run).Data());
-  if(fi->IsZombie()){
+  if(!fi || fi->IsZombie()){
     cout << "can not open rootfile." << endl;
     return;
   }
 
   TTree *tr = (TTree*)fi->Get("tr_event");
+  if(!tr) { Error("legacy_s3", "Missing tr_event"); fi->Close(); return; }
   TH2D *hh_for_ring[24];
   TGraph *gr[24];
 

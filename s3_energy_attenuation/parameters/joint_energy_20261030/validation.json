@@ -1,0 +1,49 @@
+{
+  "status": "passed",
+  "checked_at": "2026-10-30T10:18:09.282444+08:00",
+  "parameter_sha256": "2ec47907e9281fabfe39468f644be3f4111f5ad7a5e4d72c60e3043db3e25f0b",
+  "runs_exported": 173,
+  "channels_exported": 9688,
+  "position_factors_exported": 4152,
+  "native_loader_runs": [
+    "0472",
+    "0616",
+    "0680",
+    "0630",
+    "0634",
+    "0553",
+    "0718"
+  ],
+  "all_formal_timing_and_non_S3_energy_unchanged": true,
+  "prior_full_event_build_runs": [
+    "0630",
+    "0634",
+    "0553",
+    "0718"
+  ],
+  "new_event_reads": 0,
+  "production_activated": false,
+  "limits": [
+    "Full-run event build was checked for 0630, 0634, 0553, 0718 only; the 173-run coverage is stratified calibration evidence.",
+    "0634 is a coupled tradeoff: ring11 and sector30 normalized widths increase by about 14%; do not splice isolated old coefficients.",
+    "High-beam rings9-24 are diagnostic only; production uses rings1-8. Low beam uses rings1-24.",
+    "Relative reference scale, not an independent absolute calibration or a radiation-damage measurement.",
+    "No complete parameter confidence intervals or model uncertainty propagation are supplied.",
+    "p1_reference and k_strip form a chosen factorization; they are not independently measured physical effects."
+  ],
+  "delivery": {
+    "status": "passed",
+    "notebook": "jupyter/codex_0232_150sm_s3_replacement_parameters.ipynb",
+    "notebook_sha256": "b03483e216c1bc4c8665a7e8193da35d592e148ee6feaae5ef2226d4254296cd",
+    "executed_code_cells": 187,
+    "complete_run_tables": 173,
+    "channel_rows_checked": 9688,
+    "ring_q_values_checked": 4152,
+    "embedded_figures_exact": 4,
+    "errors": 0,
+    "stderr": 0,
+    "broken_links": 0,
+    "formal_parameters_unchanged": true,
+    "scope": "Notebook/parameter/export checks only; no new event analysis."
+  }
+}

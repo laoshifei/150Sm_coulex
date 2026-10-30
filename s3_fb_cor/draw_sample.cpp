@@ -5,9 +5,11 @@
 void draw_sample_single()
 {
   TFile *fi = TFile::Open("../rootfile/si/data0616_build_s3_200ns_no_s3cor.root");
+  if(!fi || fi->IsZombie()) { Error("draw_sample_single", "Cannot open input"); return; }
   TTree *tr_event = (TTree*)fi->Get("tr_event");
+  if(!tr_event) { Error("draw_sample_single", "Missing tr_event"); fi->Close(); return; }
 
-  TH2D *hh = new TH2D("hh", "", 10000,0,100000,10000,0,100000);
+  TH2D *hh = new TH2D("hh", "", 500,0,100000,500,0,100000);
   hh->GetXaxis()->SetTitle("ring energy [keV]");
   hh->GetYaxis()->SetTitle("sector energy [keV]");
 
@@ -18,7 +20,9 @@ void draw_sample_single()
   cc->cd();
   cc->SetLogz();
   hh->Draw("colz");
+  gSystem->mkdir("fig", true);
   cc->SaveAs("fig/cc.png");
+  fi->Close();
 }
 
 //
@@ -28,13 +32,13 @@ void draw_sector(int run)
   gStyle->SetOptTitle(0);
 
   //
-  mkdir(Form("./fig/%04d",run), 0777);
+  gSystem->mkdir(Form("./fig/%04d",run), true);
 
   //
   TFile *fi;
   TGraph *hh[32];
   fi = TFile::Open(TString::Format("../rootfile/si/data%04d_gr_fast.root", run).Data());
-  if(fi->IsZombie()){
+  if(!fi || fi->IsZombie()){
     cout << "wrong rootfile." << endl;
     return;
   }
@@ -49,11 +53,11 @@ void draw_sector(int run)
     cc[i]->cd();
     cc[i]->SetLeftMargin(0.15);
     
-    hh[i]->SetPoint(hh[i]->GetN(), 100000, 100000);
-    hh[i]->GetXaxis()->SetRangeUser(0, 100000);
-    hh[i]->GetYaxis()->SetRangeUser(0, 100000);
-    hh[i]->GetXaxis()->SetTitle("ring11 [keV]");
-    hh[i]->GetYaxis()->SetTitle(Form("sector%02d [keV]",i+1));
+    if(!hh[i]) { Error("draw_sample", "Missing channel graph"); continue; }
+    hh[i]->GetXaxis()->SetLimits(0, 100000);
+    hh[i]->SetMinimum(0); hh[i]->SetMaximum(100000);
+    hh[i]->GetXaxis()->SetTitle(Form("sector%02d [keV]",i+1));
+    hh[i]->GetYaxis()->SetTitle("ring11 [keV]");
     hh[i]->Draw("ap");  
 
     cc[i]->SaveAs(Form("fig/%04d/%s.png",run,cc[i]->GetName()));
@@ -69,13 +73,13 @@ void draw_ring(int run)
   gStyle->SetOptTitle(0);
 
   //
-  mkdir(Form("./fig/%04d",run), 0777);
+  gSystem->mkdir(Form("./fig/%04d",run), true);
 
   //
   TFile *fi;
   TGraph *hh[24];
   fi = TFile::Open(TString::Format("../rootfile/si/data%04d_gr_fast.root", run).Data());
-  if(fi->IsZombie()){
+  if(!fi || fi->IsZombie()){
     cout << "wrong rootfile." << endl;
     return;
   }
@@ -90,11 +94,11 @@ void draw_ring(int run)
     cc[i]->cd();
     cc[i]->SetLeftMargin(0.15);
     
-    hh[i]->SetPoint(hh[i]->GetN(), 100000, 100000);
-    hh[i]->GetXaxis()->SetRangeUser(0, 100000);
-    hh[i]->GetYaxis()->SetRangeUser(0, 100000);
-    hh[i]->GetXaxis()->SetTitle("sector1 [keV]");
-    hh[i]->GetYaxis()->SetTitle(Form("ring%02d [keV]",i+1));
+    if(!hh[i]) { Error("draw_sample", "Missing channel graph"); continue; }
+    hh[i]->GetXaxis()->SetLimits(0, 100000);
+    hh[i]->SetMinimum(0); hh[i]->SetMaximum(100000);
+    hh[i]->GetXaxis()->SetTitle(Form("ring%02d [keV]",i+1));
+    hh[i]->GetYaxis()->SetTitle("sector1 [keV]");
     hh[i]->Draw("ap");  
 
     cc[i]->SaveAs(Form("fig/%04d/%s.png",run,cc[i]->GetName()));

@@ -5,12 +5,13 @@ void tree2hist_check_fast(int run)
   gStyle->SetOptStat(0);
 
   TFile *fi = TFile::Open(TString::Format("../rootfile/si/data%04d_build_s3_200ns.root", run).Data());
-  if(fi->IsZombie()){
+  if(!fi || fi->IsZombie()){
     cout << "can not open rootfile." << endl;
     return;
   }
 
   TTree *tr = (TTree*)fi->Get("tr_event");
+  if(!tr) { Error("legacy_s3", "Missing tr_event"); fi->Close(); return; }
 
   //
   TH2D *hh_sector = new TH2D("hh_sector", "sector vs. id TH2", 32, 1, 33, 1000, 0, 100000);
@@ -25,7 +26,7 @@ void tree2hist_check_fast(int run)
 
   //
   TH2D *hh_ring = new TH2D("hh_ring", "ring vs. id TH2", 24, 1, 25, 1000, 0, 100000);
-  tr->Draw("s3_ring_energy:s3_ring_id>>hh_ring", "n_s3_ring==1 && n_s3_ring==1", "goff", tr->GetEntries()/32);
+  tr->Draw("s3_ring_energy:s3_ring_id>>hh_ring", "n_s3_ring==1 && n_s3_sector==1", "goff", tr->GetEntries()/32);
   TCanvas *cc_r = new TCanvas("cc_r", "", 0, 0, 600, 400);
   cc_r->cd();
   cc_r->SetLogz();
@@ -97,7 +98,7 @@ void tree2hist_check_fast(int run)
     h_ring[i] = new TH1D(Form("h_ring%02d",i+1), "", 1000, 0, 100000);
 
     TString draw_str_ring = TString::Format("s3_ring_energy>>%s", h_ring[i]->GetName());
-    TString cut_str_ring = TString::Format("n_s3_ring==1 && n_s3_ring==1 && s3_ring_id==%d",i+1);
+    TString cut_str_ring = TString::Format("n_s3_ring==1 && n_s3_sector==1 && s3_ring_id==%d",i+1);
     cout << draw_str_ring << endl;
     cout << cut_str_ring << endl;
     cout << endl;
@@ -109,7 +110,7 @@ void tree2hist_check_fast(int run)
     h_ring2[i] = new TH1D(Form("h_ring%02d_coin_ring",i+1), "", 1000, 0, 100000);
 
     TString draw_str_ring2 = TString::Format("s3_sector_energy>>%s", h_ring2[i]->GetName());
-    TString cut_str_ring2 = TString::Format("n_s3_ring==1 && n_s3_ring==1 && s3_ring_id==%d",i+1);
+    TString cut_str_ring2 = TString::Format("n_s3_ring==1 && n_s3_sector==1 && s3_ring_id==%d",i+1);
     cout << draw_str_ring2 << endl;
     cout << cut_str_ring2 << endl;
     cout << endl;

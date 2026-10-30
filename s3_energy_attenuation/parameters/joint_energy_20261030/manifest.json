@@ -1,0 +1,67 @@
+{
+  "schema": "sm150_s3_replacement_package_v1",
+  "created": "2026-10-30T10:05:45.328630+08:00",
+  "version": "joint_energy_20261030",
+  "status": "prepared_not_activated",
+  "canonical_parameters": "s3_fb_cor/parameters/joint_energy_20261030/coefficients.json",
+  "parameter_sha256": "2ec47907e9281fabfe39468f644be3f4111f5ad7a5e4d72c60e3043db3e25f0b",
+  "parameter_calculation_date": "2026-10-29T23:20:58.921348+08:00",
+  "parameter_values_changed_during_packaging": false,
+  "origin": "codex/analysis/s3_calibration_targeted_review_20261029/parameters/candidate/coefficients.json",
+  "formula": "Er=q[run,matched_ring]*(A[run,ring]+B[run,ring]*E0r); Es=q[run,matched_ring]*(A[run,sector]+B[run,sector]*E0s)",
+  "E0": "hardware_gain*(c0+c1*ADC+c2*ADC^2), keV; excluding old attenuation and front/back terms",
+  "factorization": "A=p0; B=p1_reference*k_strip; q from the matched ring acts once on each face",
+  "counts": {
+    "runs": 173,
+    "channels": 9688,
+    "ring_position_terms": 4152,
+    "period_runs": {
+      "high1": 101,
+      "low": 40,
+      "high2": 32
+    },
+    "runs_with_position_term": 44,
+    "runs_different_from_formal": 130
+  },
+  "source_counts": {
+    "0229_inherited": 142,
+    "0228": 22,
+    "0229": 2,
+    "fixed_offset_10.000000": 5,
+    "fixed_offset_100.000000": 1,
+    "fixed_offset_1.000000": 1
+  },
+  "compatible_build_sha256": "8da70ea9b1e71229cb2e071a10e989aa19140b47c17931cd14558835b49aaae2",
+  "build_option": "--s3-energy-file",
+  "compatible_mode": "windows",
+  "limits": [
+    "Full-run event build was checked for 0630, 0634, 0553, 0718 only; the 173-run coverage is stratified calibration evidence.",
+    "0634 is a coupled tradeoff: ring11 and sector30 normalized widths increase by about 14%; do not splice isolated old coefficients.",
+    "High-beam rings9-24 are diagnostic only; production uses rings1-8. Low beam uses rings1-24.",
+    "Relative reference scale, not an independent absolute calibration or a radiation-damage measurement.",
+    "No complete parameter confidence intervals or model uncertainty propagation are supplied.",
+    "p1_reference and k_strip form a chosen factorization; they are not independently measured physical effects."
+  ],
+  "files_sha256": {
+    "s3_fb_cor/parameters/joint_energy_20261030/coefficients.json": "2ec47907e9281fabfe39468f644be3f4111f5ad7a5e4d72c60e3043db3e25f0b",
+    "s3_fb_cor/parameters/joint_energy_20261030/channel_parameters.csv": "c593c760ffc543e1db669539abeff3523a54ce268dff66f575af88d8601202a8",
+    "s3_fb_cor/parameters/joint_energy_20261030/normalization.csv": "f2b18337103902ee9faadb491b208d991162662998c37bf88420ba731700a183",
+    "s3_fb_cor/parameters/joint_energy_20261030/run_status.csv": "7270f9e03aa894a11af5af3b7256fc3bc7c5cc0286f2720a940be1831343b74c",
+    "s3_energy_attenuation/parameters/joint_energy_20261030/attenuation.csv": "6a1cd8ef59c983b8ce6ae4a4f8f54f435487dd763e4cc47b19294c31e13359f9",
+    "s3_energy_attenuation/parameters/joint_energy_20261030/ring_position_factors.csv": "e3f3bb02f53e3c39462cb187e0d03879f11950d09b5ec34b07db752f7f3b1a2e"
+  },
+  "evidence_sha256": {
+    "codex/analysis/s3_calibration_targeted_review_20261029/completion.json": "de7adb10bfb2e83ab76e0f307ce4e3a9908a2a7b39c19884377e454330cfddc1",
+    "codex/analysis/s3_calibration_targeted_review_20261029/results/run_decisions.csv": "781e2489294636d32a88f96c816000b452c40f9f885d25b6303285a4a9503530",
+    "codex/analysis/s3_build_candidate_pilot_20261030/completion.json": "3fe7347b634d6bd2c293b324a7c09f57fb9ccefcd8bc8b3347421a1cf5640b7d",
+    "codex/analysis/s3_build_candidate_pilot_20261030/validation/all_parameters.json": "620c46e63acd90be322c5643cd4c409af74aee8fa9c023c5bd30989847c79ac3",
+    "codex/analysis/s3_build_candidate_pilot_20261030/validation/raw_energy.json": "2b1911ca1438db090cc33a42a9b86e45ac464554e100b9c87ec7f65dee5b5afb",
+    "codex/analysis/s3_build_candidate_pilot_20261030/validation/formal_regression.json": "883e1e462b12371706917b80074e4cc2d5c21d68ec412688d0e6265d47d608cc",
+    "codex/analysis/s3_build_candidate_pilot_20261030/results/details/same_event_metrics.csv": "361d0314afc05b35b6fe8147d381fce641980850eb6eb5d2f118c3b58d342107",
+    "codex/analysis/s3_build_candidate_pilot_20261030/results/details/channels.csv": "d89693249a20c5813d631c95aaeb2e86fe4cb04315efd1fe0b5ad6881c887401"
+  },
+  "time_profile": "joint_zero_20261028",
+  "formal_parameters_replaced": false,
+  "formal_roots_rebuilt": false,
+  "new_event_reads": 0
+}

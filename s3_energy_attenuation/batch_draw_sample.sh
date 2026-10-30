@@ -1,22 +1,12 @@
-#!/usr/bin/bash
-
-max_jobs=120
-
-for i in $(seq -w 1 24);
-do
-  mkdir -p fig/ring${i}
+#!/usr/bin/env bash
+set -euo pipefail
+if (( $# != 2 )); then
+  echo "Usage: $0 SPECTRA_ROOT NEW_FIGURE_DIR" >&2
+  exit 2
+fi
+script_dir="$(cd -- "$(dirname -- "$0")" && pwd)"
+# Reject characters that would alter the ROOT expression.
+for arg in "$1" "$2"; do
+  [[ "$arg" != *'"'* && "$arg" != *'\'* && "$arg" != *$'\n'* ]] || { echo "Unsupported path characters" >&2; exit 2; }
 done
-
-for i in $(seq -w 1 32);
-do
-  mkdir -p fig/sector${i}
-done
-
-#
-while read run; do
-  root -b -q "draw_sample.cpp($run)" &
-
-  while [ "$(jobs -p | wc -l)" -ge "$max_jobs" ]; do
-    wait -n
-  done
-done < "../pars/run.txt"
+exec root -l -b -q -n "$script_dir/draw_sample.cpp(\"$1\",\"$2\")"

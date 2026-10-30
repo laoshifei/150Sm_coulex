@@ -1,0 +1,12 @@
+{
+  "description": "Reproduce the saved 0230 targeted review and complete candidate export. These paths select historical data, not executable code. Output is always supplied on the command line.",
+  "baseline": "../codex/analysis/s3_calibration_targeted_review_20261029/inputs/baseline_0228.json",
+  "previous": "../codex/analysis/s3_calibration_targeted_review_20261029/inputs/candidate_0229.json",
+  "manifest": "../codex/analysis/s3_calibration_targeted_review_20261029/analysis_manifest.json",
+  "reference_manifest": "../codex/analysis/s3_sector_conditioned_calibration_20261029/final_manifest.json",
+  "protocol": "../codex/analysis/s3_calibration_targeted_review_20261029/protocol.json",
+  "confirmation_manifest": "../codex/analysis/s3_calibration_targeted_review_20261029/confirmation_sources.json",
+  "selection_freeze": "../codex/analysis/s3_calibration_targeted_review_20261029/selection_frozen.json",
+  "confirmation_dir": "../codex/analysis/s3_calibration_targeted_review_20261029/results/confirmation",
+  "review_rows": "../codex/analysis/s3_calibration_targeted_review_20261029/inputs/review_rows.json"
+}

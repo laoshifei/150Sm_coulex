@@ -10,7 +10,7 @@ void correction_single(ofstream &fo, int run, int sector, int ring, double x0, d
   mkdir(TString::Format("./fig/%04d",run).Data(), 0777);
 
   TFile *fi = TFile::Open(TString::Format("../rootfile/si/data%04d_gr_fast.root", run).Data());
-  if(fi->IsZombie()){
+  if(!fi || fi->IsZombie()){
     cout << "can not open rootfile." << endl;
     return;
   }
@@ -25,8 +25,8 @@ void correction_single(ofstream &fo, int run, int sector, int ring, double x0, d
 
   c2->cd();
   gr->SetTitle(Form("for_ring_sector%02d_ring%02d",sector,ring));
-  gr->GetXaxis()->SetTitle("sector energy [keV]");
-  gr->GetYaxis()->SetTitle("ring energy [keV]");
+  gr->GetXaxis()->SetTitle("ring energy [keV]");
+  gr->GetYaxis()->SetTitle("sector energy [keV]");
   gr->Draw("ap");
 
   gr->Fit("pol1", TString::Format("ROB=%lf",rob).Data(), "same", x0, x1);
@@ -48,7 +48,7 @@ void correction_single(ofstream &fo, int run, int sector, int ring, double x0, d
   gr_residual->GetXaxis()->SetRangeUser(-5000, 5000);
   gr_residual->SetTitle(Form("residual_between_sector%02d_ring%02d",sector,ring));
   gr_residual->GetXaxis()->SetTitle("residual error [keV]");
-  gr_residual->GetYaxis()->SetTitle("ring energy [keV]");
+  gr_residual->GetYaxis()->SetTitle("sector energy [keV]");
   gr_residual->Draw("ap");
 
   c2->SaveAs(TString::Format("./fig/%04d/%s.png", run, c2->GetName()));

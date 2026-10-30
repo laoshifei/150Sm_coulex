@@ -1,0 +1,7 @@
+{
+  "description": "Reproduce the saved 0229 comparison with explicit archived inputs. Relative paths start at this configuration file. Output is always supplied on the command line.",
+  "baseline": "../codex/analysis/s3_sector_conditioned_calibration_20261029/previous_coefficients.json",
+  "manifest": "../codex/analysis/s3_sector_conditioned_calibration_20261029/final_manifest.json",
+  "reference_manifest": "../codex/analysis/s3_sector_conditioned_calibration_20261029/final_manifest.json",
+  "evaluation_dir": "../codex/analysis/s3_sector_conditioned_calibration_20261029/results/evaluation_final"
+}

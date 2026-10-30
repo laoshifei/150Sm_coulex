@@ -1,0 +1,13 @@
+/extract
+/calibrate
+/conditioned_extract
+/conditioned_calibrate
+/pars/
+/fig/
+/logs/
+*.root
+*.partial
+*.so
+*.pcm
+*.d
+__pycache__/

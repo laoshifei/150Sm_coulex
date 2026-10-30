@@ -1,6 +1,7 @@
 #!/usr/bin/bash
+# Legacy prefix-sample workflow; prefer calibrate and explicit batch_new.sh inputs.
 
-max_jobs=120
+max_jobs=${MAX_JOBS:-1}
 
 while read run; do
   mkdir -p fig/$(printf "%04d" $run) 

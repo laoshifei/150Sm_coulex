@@ -1,6 +1,7 @@
 #!/usr/bin/bash
+# Legacy prefix-sample workflow; prefer calibrate and explicit batch_new.sh inputs.
 
-max_jobs=60
+max_jobs=${MAX_JOBS:-1}
 
 while read run; do
   root -b -q "tree2gr.cpp($run)" &
