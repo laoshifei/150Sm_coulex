@@ -1,0 +1,9 @@
+/ana
+/results/
+/fig/
+/terminal_cout/
+*.root
+*.partial
+*.so
+*.pcm
+*.d

@@ -1,53 +1,26 @@
-#ifndef _analysis_h_
-#define _analysis_h_
+#ifndef SM150_S3_COIN_ANALYSIS_H
+#define SM150_S3_COIN_ANALYSIS_H
+#include <cstdint>
+#include <filesystem>
+#include <string>
+#include "set.h"
 
-#include "s3_tree.h"
-
-#include <vector>
-#include <map>
-#include <numeric>
-
-#include "TMath.h"
-#include "TH1D.h"
-#include "TH2D.h"
-#include "TRandom3.h"
-#include "TBenchmark.h"
-
-class analysis
-{
-public:
-  analysis(int run, const std::string &filename_in, const std::string &filename_out);
-  virtual ~analysis();
-
-  void Process();
-
-private:
-  std::map<int, double> m_r2theta, m_s2phi;
-
-private:
-  double ThetaLab2CMProjectile(double t);
-  double ThetaLab2CMRecoil(double t);
-
-private:
-  bool ReadS3AngleData();
-  void PrintS3AngleData();
-
-private:
-  TBenchmark *benchmark;
-  TRandom3 *rndm;
-
-  TFile *file_in;
-  TTree *tree;
-
-  s3_tree *st;
-
-  //
-  Double_t tau, tau_tilde;
-  
-  //
-  Int_t run;
-
-  TFile *file_out;
+struct AnalysisOptions {
+  int run=0, segments=20;
+  int64_t sample_entries=0;
+  std::filesystem::path input, output, project, energy_file;
+  std::string format="auto";
+  double energy_min=2500., energy_max=100000.;
+  double face_time=80., face_energy=2500., particle_time=80.;
+  double phi_low=160., phi_high=200., cm_low=160., cm_high=200.;
+  double beam=EBeam, deficit=2., projectile_mass=APro, target_mass=ATar;
 };
 
+class analysis {
+ public:
+  explicit analysis(AnalysisOptions options):options_(std::move(options)){}
+  int Process();
+ private:
+  AnalysisOptions options_;
+};
 #endif
