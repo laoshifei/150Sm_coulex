@@ -1,10 +1,5 @@
-
-//
-void macro_cali(int run)
-{
-  TString cmd = TString::Format("root -b -q 'get_hist_cali.cpp(%s, %d)'", TString::Format("\"../rootfile/data%04d.root\"",run).Data(), run);
-  gSystem->Exec(cmd);
-
-  gSystem->Exec("wait");
+#include "run_histogram.h"
+// The default input is decoded C2 on E; an explicit path can also select C1.
+void macro_cali(int run, const char* input="") {
+  raw2hist_macro::run(run,input,"both","all","decoded");
 }
-

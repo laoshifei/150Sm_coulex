@@ -1,10 +1,5 @@
-
-//
-void macro_cali_si(int run)
-{
-  TString cmd = TString::Format("root -b -q 'get_hist_cali_si.cpp(%s, %d)'", TString::Format("\"../rootfile/si/data_C1_%04d.root\"",run).Data(), run);
-  gSystem->Exec(cmd);
-
-  gSystem->Exec("wait");
+#include "run_histogram.h"
+// The default input is decoded C2 on E; an explicit path can also select C1.
+void macro_cali_si(int run, const char* input="") {
+  raw2hist_macro::run(run,input,"both","particle","decoded");
 }
-

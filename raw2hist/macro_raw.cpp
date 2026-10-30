@@ -1,10 +1,5 @@
-
-//
-void macro_raw(int run)
-{
-  TString cmd = TString::Format("root -b -q 'get_hist_raw.cpp(%s, %d)'", TString::Format("\"../rootfile/data_C2_%04d_%04d.root\"",run,run).Data(), run);
-  gSystem->Exec(cmd);
-
-  gSystem->Exec("wait");
+#include "run_histogram.h"
+// The default input is decoded C2 on E; an explicit path can also select C1.
+void macro_raw(int run, const char* input="") {
+  raw2hist_macro::run(run,input,"raw","all","decoded");
 }
-
