@@ -1,0 +1,9 @@
+{
+  "schema": "sm150_s3_active_energy_v1",
+  "parameter_file": "s3_fb_cor/parameters/joint_energy_20261030/coefficients.json",
+  "sha256": "2ec47907e9281fabfe39468f644be3f4111f5ad7a5e4d72c60e3043db3e25f0b",
+  "version": "joint_energy_20261030",
+  "adoption_task": "codex/analysis/s3_energy_adoption_20261031",
+  "scope": "raw-input windows mode",
+  "formula": "Er=q*(Ar+Br*E0r); Es=q*(As+Bs*E0s); q from matched ring, once per face"
+}

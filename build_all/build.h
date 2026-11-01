@@ -12,6 +12,10 @@ struct BuildOptions {
   int run = 0;
   std::filesystem::path project, input, outdir, receipt;
   std::filesystem::path window_file, profile_dir, source_manifest, cache_receipt;
+  // Optional complete S3 energy calibration, applied before the final energy/matching cuts.
+  std::filesystem::path s3_energy_file;
+  // Explicitly replay the legacy factorized S3 calibration after formal adoption.
+  bool legacy_s3_energy = false;
   // windows: current narrow/wide sets; cache: wide-window raw fields; replay: rebuild narrow/wide sets from the cache.
   std::string mode = "windows", tag;
 

@@ -121,6 +121,9 @@ struct Parameters {
   std::vector<std::string> files;
   json file_hashes = json::object();
   json records = json::object();
+  bool complete_s3_energy = false;
+  std::array<double, 24> s3_position_q;
+  json s3_energy = {{"mode", "legacy_pars"}};
   std::string group, run;
   std::vector<std::vector<double>> read(const std::string &path,
                                         bool header = true) {
@@ -145,6 +148,7 @@ struct Parameters {
     return result;
   }
   Parameters(const std::string &project, int r, const json &calibration) {
+    s3_position_q.fill(1.);
     run = run_name(r);
     group = calibration.at("groups").at(run).get<std::string>();
     require(group == "low" || group == "high1" || group == "high2",
@@ -285,6 +289,69 @@ struct Parameters {
     }
     require(records.size() == 189, "Incomplete native parameter coverage");
   }
+  void load_s3_energy(const json &package, const fs::path &path,
+                      const std::string &hash) {
+    require(package.at("schema") == "sm150_s3_targeted_review_candidate_v1",
+            "Unsupported complete S3 energy schema");
+    const auto &model = package.at("runs").at(run);
+    require(model.at("period") == group &&
+                model.at("active_rings") == (group == "low" ? 24 : 8),
+            "S3 energy period or active-ring coverage mismatch");
+    const auto a = model.at("A_keV").get<std::vector<double>>();
+    const auto b = model.at("B").get<std::vector<double>>();
+    const auto position = model.at("q_position").get<std::vector<double>>();
+    require(a.size() == 56 && b.size() == 56 && position.size() == 24,
+            "Incomplete S3 energy arrays");
+    for (size_t i = 0; i < a.size(); ++i)
+      require(std::isfinite(a[i]) && std::isfinite(b[i]) && b[i] > 0.,
+              "Invalid S3 A/B coefficient");
+    for (double value : position)
+      require(std::isfinite(value) && value > 0., "Invalid S3 position factor");
+    // The redundant channel table is checked by physical index, never by electronics order.
+    std::set<int> indices;
+    for (const auto &row : model.at("channels")) {
+      const int i = row.at("index");
+      require(i >= 0 && i < 56 && indices.insert(i).second,
+              "Invalid/duplicate S3 channel index");
+      require(row.at("run") == run && row.at("period") == group &&
+                  row.at("A_keV") == a[i] && row.at("B") == b[i],
+              "S3 channel table disagrees with total coefficients");
+    }
+    require(indices.size() == 56, "Incomplete S3 channel table");
+    const bool needs_context = std::any_of(position.begin(), position.end(),
+                                         [](double x) { return x != 1.; });
+    require(model.at("requires_ring_context") == needs_context,
+            "S3 ring-context declaration mismatch");
+    std::copy(position.begin(), position.end(), s3_position_q.begin());
+    for (auto it = records.begin(); it != records.end(); ++it) {
+      const int key = std::stoi(it.key()), kind = q[key * 5];
+      if (kind != 3 && kind != 4)
+        continue;
+      const int i = kind == 3 ? q[key * 5 + 1] - 1 : 23 + q[key * 5 + 2];
+      // Replace the old attenuation/front-back chain with total A+B*E0.
+      // q is deliberately deferred until a ring/sector pair is known.
+      p[key * 9 + 5] = 1.;
+      p[key * 9 + 6] = a[i];
+      p[key * 9 + 7] = b[i];
+      it.value()["legacy_attenuation"] = it.value().at("attenuation");
+      it.value()["legacy_fb_p0_kev"] = it.value().at("fb_p0_kev");
+      it.value()["legacy_fb_p1"] = it.value().at("fb_p1");
+      it.value()["attenuation"] = 1.;
+      it.value()["fb_p0_kev"] = a[i];
+      it.value()["fb_p1"] = b[i];
+      it.value()["complete_s3_A_keV"] = a[i];
+      it.value()["complete_s3_B"] = b[i];
+      it.value()["position_q"] = "shared matched-ring factor; see s3_energy_calibration";
+    }
+    complete_s3_energy = true;
+    s3_energy = {{"mode", "complete_A_B_matched_ring_q"},
+                 {"file", path.string()}, {"sha256", hash},
+                 {"schema", package.at("schema")}, {"run_model", model},
+                 {"E0", "hardware_gain*(c0+c1*ADC+c2*ADC^2), keV; no old attenuation/front-back"},
+                 {"formula", "Er=q[matched_ring]*(Ar+Br*E0r); Es=q[matched_ring]*(As+Bs*E0s)"},
+                 {"application", "q once to both faces before 25-100MeV and abs(Er-Es)<2500keV cuts"},
+                 {"timing", "unchanged: complete particle correction evaluated from raw ADC"}};
+  }
 };
 } // namespace sm150_native
 
@@ -324,8 +391,11 @@ struct Engine {
   std::vector<double> ge_dt, p_dt;
   std::vector<uint8_t> ge_flags, p_flags;
   std::vector<double> ge_energy, p_energy;
-  Engine(const double *p, const int32_t *q, const char *directory, int run)
-      : par(p, p + 16384 * 9), info(q, q + 16384 * 5) {
+  bool defer_s3_energy_cut;
+  Engine(const double *p, const int32_t *q, const char *directory, int run,
+         bool complete_s3_energy = false)
+      : par(p, p + 16384 * 9), info(q, q + 16384 * 5),
+        defer_s3_energy_cut(complete_s3_energy) {
     timing.LoadProfile(directory, run);
     if (!timing.active() || !timing.total())
       throw std::runtime_error("Complete timing profile required");
@@ -395,7 +465,10 @@ struct Engine {
       e *= p[3] * p[4] * p[5];
       e = p[6] + p[7] * e;
       const int kind = info[key * 5];
-      if (e <= (kind == 1 ? 20. : 2500.))
+      // With q>1, a subthreshold unscaled S3 hit may enter the final gate.
+      // Positive q cannot promote a nonpositive intermediate energy.
+      if (e <= (kind == 1 ? 20. :
+                (defer_s3_energy_cut && kind >= 3 ? 0. : 2500.)))
         continue;
       double t = coarse;
       if (cid[i] == 0) {
@@ -608,7 +681,7 @@ struct Event {
   std::vector<Particle> particles, sectors;
 };
 // Deduplicate each output file (one run, one candidate) independently; identity is original Ge entry + particle entry +
-// Si/S3。
+// Si/S3.
 // reference_entry is only a grouping anchor, not pair identity; retain every new particle paired with the same Ge hit.
 struct PairDeduplicator {
   struct Pair {
@@ -898,8 +971,11 @@ inline int64_t classify(const sm150_windowed::Engine &cache,
     for (int64_t j = cache.poff[i]; j < cache.poff[i + 1]; ++j) {
       int pk = cache.p_key[j], kind = pars.q[pk * 5];
       double en = cache.p_energy[j];
-      if ((cache.p_flags[j] & 3) || kind < 2 ||
-          en <= (kind == 2 ? 15000. : 25000.) || en >= 100000.)
+      if ((cache.p_flags[j] & 3) || kind < 2)
+        continue;
+      // A sector's final energy depends on the matched ring; defer S3 cuts in that mode.
+      if ((kind == 2 || !pars.complete_s3_energy) &&
+          (en <= (kind == 2 ? 15000. : 25000.) || en >= 100000.))
         continue;
       if (kind == 3 && (pars.q[pk * 5 + 1] < 1 ||
                         pars.q[pk * 5 + 1] > (pars.group == "low" ? 24 : 8)))
@@ -921,15 +997,22 @@ inline int64_t classify(const sm150_windowed::Engine &cache,
     }
     size_t match_ring = 0, match_sector = 0, matches = 0;
     for (size_t r = 0; r < rings.size(); ++r)
-      for (size_t s = 0; s < e.sectors.size(); ++s)
-        if (std::abs(rings[r].e - e.sectors[s].e) < 2500. &&
+      for (size_t s = 0; s < e.sectors.size(); ++s) {
+        const double factor = pars.s3_position_q.at(pars.q[rings[r].key * 5 + 1] - 1);
+        const double er = factor * rings[r].e, es = factor * e.sectors[s].e;
+        if (er > 25000. && er < 100000. && es > 25000. && es < 100000. &&
+            std::abs(er - es) < 2500. &&
             std::abs(rings[r].dt - e.sectors[s].dt) < 80.) {
           ++matches;
           match_ring = r;
           match_sector = s;
         }
+      }
     if (matches == 1) {
       Particle r = rings[match_ring];
+      const double factor = pars.s3_position_q.at(pars.q[r.key * 5 + 1] - 1);
+      r.e *= factor;
+      e.sectors[match_sector].e *= factor;
       r.view = 1;
       r.sector = match_sector;
       e.particles.push_back(r);
@@ -1029,7 +1112,8 @@ inline json verify_root(const std::filesystem::path &path,
                   st.GetSize() == size_t(*ns),
               "S3 face multiplicity mismatch");
       for (int i = 0; i < *ns; ++i)
-        require(std::abs(ring.energy[i] - se[i]) < 2500. &&
+        require(se[i] > 25000. && se[i] < 100000. &&
+                    std::abs(ring.energy[i] - se[i]) < 2500. &&
                     std::abs(ring.dt[i] - st[i]) < 80.,
                 "S3 face agreement mismatch");
       ++events;
@@ -1616,6 +1700,10 @@ int build::Process() {
   std::vector<std::unique_ptr<OutputLock>> output_locks;
   try {
     require(options.mode == "windows" || caching || replay, "Unknown build mode");
+    require(!options.legacy_s3_energy || options.s3_energy_file.empty(),
+            "--legacy-s3-energy conflicts with --s3-energy-file");
+    require(options.s3_energy_file.empty() || options.mode == "windows",
+            "Complete S3 energy profile requires raw-input windows mode; cache coverage is not revalidated");
     require(!replay || (!options.input.empty() && !options.entry_limit),
             "Replay requires --input cache.root and does not accept --entries");
     require(replay || options.cache_receipt.empty(),
@@ -1670,6 +1758,34 @@ int build::Process() {
     json calibration =
         frozen_json(profile_dir / "calibration.json", input_hashes);
     Parameters pars(project.string(), run, calibration);
+    fs::path selected_energy = options.s3_energy_file;
+    std::string energy_selection = options.legacy_s3_energy
+        ? "explicit --legacy-s3-energy" : "legacy fallback";
+    std::string expected_energy_sha;
+    // Keep the fitted package in its domain directory. Activate it only through
+    // a separately recorded pointer, so historical parameter packages stay frozen.
+    const auto active_energy = project / "s3_fb_cor/parameters/active.json";
+    if (selected_energy.empty() && !options.legacy_s3_energy && fs::exists(active_energy)) {
+      const auto active = frozen_json(active_energy, input_hashes);
+      require(active.at("schema") == "sm150_s3_active_energy_v1",
+              "Unknown active S3 energy pointer schema");
+      selected_energy = project / active.at("parameter_file").get<std::string>();
+      expected_energy_sha = active.at("sha256").get<std::string>();
+      energy_selection = active_energy.string();
+    } else if (!selected_energy.empty()) {
+      energy_selection = "explicit --s3-energy-file";
+    }
+    if (!selected_energy.empty()) {
+      require(options.mode == "windows",
+              "Active complete S3 energy requires raw-input windows mode; use --legacy-s3-energy only for historical cache/replay");
+      const auto energy_path = fs::canonical(selected_energy);
+      const auto energy_json = frozen_json(energy_path, input_hashes);
+      require(expected_energy_sha.empty() || input_hashes.at(energy_path.string()) == expected_energy_sha,
+              "Active S3 energy package SHA256 mismatch");
+      pars.load_s3_energy(energy_json, energy_path,
+                          input_hashes.at(energy_path.string()).get<std::string>());
+    }
+    pars.s3_energy["selection"] = energy_selection;
     input_hashes.update(pars.file_hashes);
     Gates gates(window_json, pars.group);
     if (replay)
@@ -1688,7 +1804,7 @@ int build::Process() {
         require(gates.rows.count({key, 0}) && gates.rows.count({key, 1}),
                 "Missing window for active Ge channel");
     sm150_windowed::Engine engine(pars.p.data(), pars.q.data(),
-                                  profile_dir.c_str(), run);
+                                  profile_dir.c_str(), run, pars.complete_s3_energy);
     verify_frozen(input_hashes);
     if (options.inspect_parameters) {
       auto inspection = inspect_parameters(pars, engine, calibration);
@@ -1696,6 +1812,7 @@ int build::Process() {
       inspection["time_alignment_profile_dir"] = profile_dir.string();
       inspection["time_alignment_profile_source"] = profile_source;
       inspection["window_reference_profile"] = window_reference_profile;
+      inspection["s3_energy_calibration"] = pars.s3_energy;
       std::cout << inspection.dump() << '\n';
       return 0;
     }
@@ -1974,6 +2091,7 @@ int build::Process() {
            input_hashes.at((profile_dir / "calibration.json").string())},
           {"energy_parameters", pars.records},
           {"source", source},
+          {"s3_energy_calibration", pars.s3_energy},
           {"replay_input", replay_input},
           {"windows", gates.manifest(label)},
           {"selection",
@@ -2089,6 +2207,7 @@ int build::Process() {
         {"source", source},
         {"replay_input", replay_input},
         {"outputs", outputs},
+        {"s3_energy_calibration", pars.s3_energy},
         {"extractor_counters",
          {{"raw_entries", engine.read},
           {"ge_reference_groups", engine.all_ge_groups},

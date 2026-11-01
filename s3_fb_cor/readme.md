@@ -87,8 +87,23 @@ Use the complete JSON through the existing native frontend:
 
 Run this example from the project root. The candidate replaces the old
 attenuation/front-back energy chain and applies the matched-ring factor once
-to both faces. It is not a drop-in pair of legacy text tables. The default
-production configuration and existing ROOT files have not been changed.
+to both faces. It is not a drop-in pair of legacy text tables. The package
+manifest preserves its preparation-time status from 2026-10-30.
+
+This package was adopted on 2026-10-31. `build_all/build` now resolves
+the default S3 energy package through `parameters/active.json`, including its
+SHA256. An explicit `--s3-energy-file` overrides that selection;
+`--legacy-s3-energy` replays the old factorized chain. Complete A/B/q processing
+requires raw-input `windows` mode. The source calibration, timing profile and
+coincidence windows are unchanged by this adoption.
+
+Enabling the default does not modify previously generated ROOT files. The
+173-run rebuild and verification are tracked separately in the
+[adoption report](../codex/analysis/s3_energy_adoption_20261031/report.md).
+The 173-run rebuild completed on 2026-11-01. Its 346 new files occupy the
+original names at the top of `rootfile/`. Each old file was first archived to
+`E:/Sm150/build_archive/before_s3_energy_20261031/` and checked by full SHA256
+readback before its local pathname was replaced.
 See [0232](../jupyter/codex_0232_150sm_s3_replacement_parameters.ipynb) for every
 run/channel value, the three-period maps, and the retained 0634 tradeoff.
 The following sections describe the fitting tools and earlier staged workflows.

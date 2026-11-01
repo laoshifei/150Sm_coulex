@@ -19,6 +19,8 @@ void PrintUsage() {
             << "  --project DIR           项目根目录；通常由可执行文件位置确定\n"
             << "  --window-file FILE      逐 Ge、Si/S3、时期的窄/宽窗口表\n"
             << "  --profile-dir DIR       覆盖时间版本；默认读取 pars/time_alignment/active.txt\n"
+            << "  --s3-energy-file FILE   显式完整 S3 A/B/q 参数（仅 windows）\n"
+            << "  --legacy-s3-energy     显式使用旧 pars；默认采用 S3 active.json（若存在）\n"
             << "  --source-manifest FILE  原始输入名单及校验记录\n"
             << "  --receipt FILE          完成回执；默认放在输出目录\n"
             << "  --entries N             只检查前 N 条；完整处理时省略\n"
@@ -43,6 +45,12 @@ BuildOptions ReadOptions(int argc, char **argv) {
   std::set<std::string> seen;
   for (int i = 1; i < argc; ++i) {
     std::string key = argv[i];
+    if (key == "--legacy-s3-energy") {
+      if (!seen.insert(key).second)
+        throw std::invalid_argument("重复参数：" + key);
+      options.legacy_s3_energy = true;
+      continue;
+    }
     if (key == "--inspect-parameters") {
       options.inspect_parameters = true;
       continue;
@@ -79,6 +87,8 @@ BuildOptions ReadOptions(int argc, char **argv) {
       options.window_file = value;
     else if (key == "--profile-dir")
       options.profile_dir = value;
+    else if (key == "--s3-energy-file")
+      options.s3_energy_file = value;
     else if (key == "--source-manifest")
       options.source_manifest = value;
     else if (key == "--cache-receipt")
