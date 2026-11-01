@@ -1,44 +1,41 @@
 #include "build.h"
-#include "set.h"
-
+#include <cmath>
 #include <iostream>
-#include <fstream>
-#include <assert.h>
-#include <stdlib.h>
-
-#include "TString.h"
-
-int main(int argc, char const *argv[])
-{
-  if(argc != 2){
-    std::cout << "need parameter" << std::endl;
-    std::cout << "like: analysis 33" << std::endl;
-    return -1;
-  }
-
-  int time_window = TimeWindow;
-
-  int run = atoi(argv[1]);
-  TString file_in = TString::Format("../rootfile/si/data_C1_%04d.root", run);
-  std::cout << "analysis " << file_in << std::endl;
-  
-#if defined(OPENS3COR) && defined(OPENS3ATT)
-    TString file_out = TString::Format("../rootfile/si/data%04d_build_s3_%dns_new.root", run, time_window);
-#elif !defined(OPENS3COR) && defined(OPENS3ATT)
-    TString file_out = TString::Format("../rootfile/si/data%04d_build_s3_%dns_no_s3cor.root", run, time_window);
-#elif !defined(OPENS3COR) && !defined(OPENS3ATT)
-    TString file_out = TString::Format("../rootfile/si/data%04d_build_s3_%dns_no_s3att_no_s3cor.root", run, time_window);
-#else
-    #error "Invalid macro combination: OPENS3COR requires OPENS3ATT to be defined"
-    return 0;
-#endif
-
-  build *bu = new build(file_in.Data(), file_out.Data(), run);
-  bu->Process();
-
-  delete bu;
-
-  std::cout << "output filename " << file_out << std::endl;
-
-  return 0;
+#include <stdexcept>
+#include <string>
+int main(int argc,char** argv) {
+  try {
+    BuildOptions o;
+    for(int i=1;i<argc;++i) {
+      std::string a=argv[i];
+      if(a=="--help" || a=="-h") {
+        std::cout<<"./build RUN [--input decoded.root] [--output s3.root] [--project DIR]\n"
+          "  --profile-dir DIR  Complete timing profile; default active.txt\n"
+          "  --entries N        Prefix limit for tests; omitted means full input\n"
+          "  --sample-entries N Distributed joint-calibration pairs; 0 means all\n"
+          "  --gap-ns N         Temporal connected-component gap (default 100)\n"
+          "  --reorder-ns N     Bounded reorder buffer (default 20000)\n"
+          "  --min-energy-kev E Pre-normalization threshold (default 2500)\n"
+          "  --blocks N         Contiguous fit/check blocks (default 40)\n"
+          "No addback or energy-agreement gate; existing outputs are protected.\n";
+        return 0;
+      }
+      auto value=[&](){if(++i>=argc)throw std::invalid_argument("Missing value for "+a);return std::string(argv[i]);};
+      auto integer=[](const std::string& s){size_t n=0;auto v=std::stoll(s,&n);if(n!=s.size())throw std::invalid_argument("Invalid integer");return v;};
+      if(a=="--input")o.input=value();else if(a=="--output")o.output=value();
+      else if(a=="--project")o.project=value();else if(a=="--profile-dir")o.profile_dir=value();
+      else if(a=="--entries")o.entries=integer(value());else if(a=="--gap-ns")o.cluster_gap_ns=integer(value());
+      else if(a=="--sample-entries")o.sample_entries=integer(value());
+      else if(a=="--reorder-ns")o.reorder_ns=integer(value());else if(a=="--blocks")o.blocks=integer(value());
+      else if(a=="--min-energy-kev") {auto s=value();size_t n=0;o.min_energy_keV=std::stod(s,&n);if(n!=s.size())throw std::invalid_argument("Invalid energy");}
+      else if(!a.empty() && a[0]!='-' && !o.run)o.run=integer(a);
+      else throw std::invalid_argument("Unknown argument: "+a);
+    }
+    if(o.run<1 || o.run>9999 || o.entries<0 || o.cluster_gap_ns<1 || o.cluster_gap_ns>2000 ||
+       o.reorder_ns<2*o.cluster_gap_ns || o.blocks<2 || o.blocks>1000 || !std::isfinite(o.min_energy_keV) || o.min_energy_keV<0.)
+      throw std::invalid_argument("Invalid settings; use --help");
+    if(o.sample_entries < -1 || (o.sample_entries>=0 && o.entries))
+      throw std::invalid_argument("Distributed sampling and prefix limits cannot be combined");
+    return o.sample_entries>=0?build(o).Sample():build(o).Process();
+  }catch(const std::exception& e){std::cerr<<"build_s3: "<<e.what()<<'\n';return 1;}
 }

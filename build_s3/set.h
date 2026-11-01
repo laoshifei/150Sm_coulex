@@ -1,6 +1,9 @@
 #ifndef SET_H
 #define SET_H
 
+// Historical constants only. The current build executable uses CLI options
+// and the complete pars/time_alignment profile, not this header.
+
 #define OPENS3ATT
 #define OPENS3COR
 
