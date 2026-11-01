@@ -1,0 +1,237 @@
+{
+  "schema": "sm150_source_lines_v1",
+  "units": "keV; photons per 100 disintegrations; standard uncertainties",
+  "references": [
+    {
+      "isotope": "Ba133",
+      "url": "https://www.lnhb.fr/nuclides/Ba-133_tables.pdf",
+      "edition": "2016-03-10",
+      "location": "printed page 4, section 5.2"
+    },
+    {
+      "isotope": "Eu152",
+      "url": "https://www.lnhb.fr/nuclides/Eu-152_tables.pdf",
+      "edition": "2004-04-27",
+      "location": "printed pages 9-11, section 5.2"
+    }
+  ],
+  "notes": [
+    "These are photon probabilities, not gamma plus conversion-electron probabilities.",
+    "The 443.965-keV unresolved double transition is 0.32(2)+2.80(2); covariance was not supplied. Its combined uncertainty is taken conservatively as 0.04 percentage point.",
+    "Energy-branch probability correlations are not supplied by these tables; propagated point uncertainties assume independent listed entries. This is not a complete systematic budget.",
+    "The 40-keV X-ray complex is not treated as a monoenergetic gamma line.",
+    "The 963.390/964.079-keV pair is integrated as one unresolved feature with summed photon probability, rather than fitting an unidentifiable free-area doublet."
+  ],
+  "lines": [
+    {
+      "id": "ba081",
+      "isotope": "Ba133",
+      "energy": 80.9979,
+      "intensity": 33.31,
+      "uncertainty": 0.3,
+      "range": [
+        76,
+        87
+      ],
+      "neighbors": [
+        79.6142,
+        84.94
+      ]
+    },
+    {
+      "id": "eu122",
+      "isotope": "Eu152",
+      "energy": 121.7817,
+      "intensity": 28.41,
+      "uncertainty": 0.13,
+      "range": [
+        114,
+        131
+      ],
+      "neighbors": [
+        125.69
+      ]
+    },
+    {
+      "id": "eu245",
+      "isotope": "Eu152",
+      "energy": 244.6974,
+      "intensity": 7.55,
+      "uncertainty": 0.04,
+      "range": [
+        235,
+        256
+      ],
+      "neighbors": [
+        251.633
+      ]
+    },
+    {
+      "id": "ba276",
+      "isotope": "Ba133",
+      "energy": 276.3989,
+      "intensity": 7.13,
+      "uncertainty": 0.06,
+      "range": [
+        268,
+        285
+      ],
+      "neighbors": [
+        271.131,
+        275.449
+      ]
+    },
+    {
+      "id": "ba303",
+      "isotope": "Ba133",
+      "energy": 302.8508,
+      "intensity": 18.31,
+      "uncertainty": 0.11,
+      "range": [
+        291,
+        312
+      ],
+      "neighbors": [
+        295.9387
+      ]
+    },
+    {
+      "id": "eu344",
+      "isotope": "Eu152",
+      "energy": 344.2785,
+      "intensity": 26.59,
+      "uncertainty": 0.12,
+      "range": [
+        335,
+        350
+      ],
+      "neighbors": [
+        340.4
+      ]
+    },
+    {
+      "id": "ba356",
+      "isotope": "Ba133",
+      "energy": 356.0129,
+      "intensity": 62.05,
+      "uncertainty": 0.19,
+      "range": [
+        350,
+        365
+      ],
+      "neighbors": [
+        351.66
+      ]
+    },
+    {
+      "id": "ba384",
+      "isotope": "Ba133",
+      "energy": 383.8485,
+      "intensity": 8.94,
+      "uncertainty": 0.06,
+      "range": [
+        374,
+        393
+      ],
+      "neighbors": [
+        387.9
+      ]
+    },
+    {
+      "id": "eu411",
+      "isotope": "Eu152",
+      "energy": 411.1165,
+      "intensity": 2.238,
+      "uncertainty": 0.01,
+      "range": [
+        402,
+        422
+      ],
+      "neighbors": [
+        416.048
+      ]
+    },
+    {
+      "id": "eu444",
+      "isotope": "Eu152",
+      "energy": 443.965,
+      "intensity": 3.12,
+      "uncertainty": 0.04,
+      "range": [
+        433,
+        455
+      ],
+      "neighbors": [
+        440.86
+      ]
+    },
+    {
+      "id": "eu779",
+      "isotope": "Eu152",
+      "energy": 778.9045,
+      "intensity": 12.97,
+      "uncertainty": 0.06,
+      "range": [
+        767,
+        790
+      ],
+      "neighbors": [
+        768.944
+      ]
+    },
+    {
+      "id": "eu867",
+      "isotope": "Eu152",
+      "energy": 867.38,
+      "intensity": 4.243,
+      "uncertainty": 0.023,
+      "range": [
+        855,
+        880
+      ],
+      "neighbors": []
+    },
+    {
+      "id": "eu964",
+      "isotope": "Eu152",
+      "energy": 964.079,
+      "intensity": 14.6341,
+      "uncertainty": 0.06003332407921454,
+      "range": [
+        952,
+        977
+      ],
+      "neighbors": [
+        958.63,
+        974.09
+      ],
+      "note": "Unresolved 963.390/964.079-keV pair integrated together; summed photon probability; efficiency assumed equal across 0.689 keV."
+    },
+    {
+      "id": "eu1112",
+      "isotope": "Eu152",
+      "energy": 1112.076,
+      "intensity": 13.41,
+      "uncertainty": 0.06,
+      "range": [
+        1101,
+        1125
+      ],
+      "neighbors": [
+        1109.174
+      ]
+    },
+    {
+      "id": "eu1408",
+      "isotope": "Eu152",
+      "energy": 1408.013,
+      "intensity": 20.85,
+      "uncertainty": 0.08,
+      "range": [
+        1394,
+        1422
+      ],
+      "neighbors": []
+    }
+  ]
+}

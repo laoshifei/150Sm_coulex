@@ -1,0 +1,114 @@
+{
+  "schema": "sm150_ge_source_candidate_package_v1",
+  "created_at": "2026-10-30T22:41:34.231203+08:00",
+  "status": "candidate_review_required",
+  "formal_replacement": false,
+  "run": "0722",
+  "raw_input": {
+    "path": "/mnt/e/Sm150/rootfile/data_C1_0722.root",
+    "size": 867959078,
+    "mtime_ns": 1791799548000000000,
+    "entries": 99612789,
+    "sha256_status": "fresh full hash after complete C++ event replay",
+    "sha256": "2156319a6903170692e9c7287801841eb45d6d5417c0237757ebcb3719a80000"
+  },
+  "files": [
+    {
+      "path": "curve_parameters.csv",
+      "bytes": 705,
+      "sha256": "025cfe6e86aba17667fcdc83c94db05dad0118ab7120fad48c49e3d773a760ae"
+    },
+    {
+      "path": "source_energy.json",
+      "bytes": 9763,
+      "sha256": "ff9d9b89c972a22843e22cc2b86489469fe5f4fc3bcb2a040e6126c560188351"
+    },
+    {
+      "path": "source_lines.json",
+      "bytes": 4910,
+      "sha256": "2c5b6bfbb73d028f9f04d5261387f882b9cceac60b39e704c5abca6f09e13648"
+    },
+    {
+      "path": "relative_efficiency.json",
+      "bytes": 119388,
+      "sha256": "ee127cfb5ef75e2997ef27e17af876a9165b37fbd3f81fa6874771324f829d0c"
+    }
+  ],
+  "program_and_histogram_sources": [
+    {
+      "path": "ge_eff/recalibrate.py",
+      "bytes": 11851,
+      "sha256": "8961b26189620277d9a8340efa85f0a72d27f883f4bd465fbb2007d7f8af7416"
+    },
+    {
+      "path": "ge_eff/fit_efficiency.py",
+      "bytes": 10085,
+      "sha256": "c70041429503bac0738be10dd2f9c6b1335bba24d997303395a785b761823c3d"
+    },
+    {
+      "path": "ge_eff/source_spectra.cpp",
+      "bytes": 8645,
+      "sha256": "7193b9c640dbbe2eaa4fa49aca1462ecf6c26201d7dd49e25e569aa0191d893e"
+    },
+    {
+      "path": "ge_eff/source_spectra",
+      "bytes": 287088,
+      "sha256": "07cc98b6d2bcee6e0a59db83c88ece652702a8c3a58c21ede7b5b7fb60537a86"
+    },
+    {
+      "path": "ge_eff/source_lines.json",
+      "bytes": 4910,
+      "sha256": "2c5b6bfbb73d028f9f04d5261387f882b9cceac60b39e704c5abca6f09e13648"
+    },
+    {
+      "path": "raw2hist/histogram",
+      "bytes": 265992,
+      "sha256": "8118790f146db32e3a9476b2234408e474e8c477ddea2b76a577b41d2e0a02a8"
+    },
+    {
+      "path": "raw2hist/main.cpp",
+      "bytes": 14173,
+      "sha256": "8317e6790c1fa7f1ef734fd663210b4b6636fc118283118567c758fef1135eab"
+    },
+    {
+      "path": "include/sm150_event_calibration.h",
+      "bytes": 8192,
+      "sha256": "58f2ed9d28236b45aa2ef15471361b20ab3ba8d888f09395a1c40e9414fda55b"
+    },
+    {
+      "path": "pars/cali_ge.txt",
+      "bytes": 5785,
+      "sha256": "81229f2a9cc38ecc320167c45587c95a3cfaa1b7d611079d76435ae3ee5a06eb"
+    },
+    {
+      "path": "codex/analysis/ge_eff_recalibration_20261030/data/source_adc.root",
+      "bytes": 1098171,
+      "sha256": "da90d34344d5f59cd7ef4481d552e45e77f5c38629c4bc65eb484d8b34403572"
+    },
+    {
+      "path": "codex/analysis/ge_eff_recalibration_20261030/data/source_energy.root",
+      "bytes": 284234,
+      "sha256": "e5f18e514fb23f3d673408394c6a566632a2dc4ecf3b945464c395889e735d37"
+    },
+    {
+      "path": "codex/analysis/ge_eff_recalibration_20261030/energy_fit/used_recalibrate.py",
+      "bytes": 11105,
+      "sha256": "ee39265fd8ae86a15148d2008e3831445234dea631bccd9b5f90b82c54c4c0ca"
+    },
+    {
+      "path": "codex/analysis/ge_eff_recalibration_20261030/energy_fit/used_source_lines.json",
+      "bytes": 3000,
+      "sha256": "28678fad43796f32488eded6386a9ee5e4f7f818c1b329852d1132992168056e"
+    }
+  ],
+  "energy_version": "source_energy.json is the first left-tail anchor fit actually used for source_energy.root; the later all-two-sided energy experiment is not installed",
+  "current_cli_note": "recalibrate.py now exposes --energy-model left|gaussian|both; frozen used_recalibrate.py preserves the exact first-stage program",
+  "applicability": "Relative source response for this clean selection; epsilon(334)=1; 244.6974-1408.013 keV; Clover AB100 is a source diagnostic, not exact production grouping",
+  "unresolved": [
+    "Ring4 quadratic curve chi2/ndof=65.997/9; Ge304 energy-dependent quality acceptance",
+    "Ge306/Ge510 curve disagreement; some individual source peak shapes are inadequate",
+    "Ge506/Ge509 source energy residuals exceed 1 keV",
+    "No absolute activity/live-time/geometry certification or true coincidence summing correction",
+    "Conditional covariance excludes model selection, response changes, shared-event correlations and full source-intensity covariance"
+  ]
+}

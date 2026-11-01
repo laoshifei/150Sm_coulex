@@ -1,0 +1,347 @@
+{
+  "schema": "sm150_ge_source_energy_v1",
+  "run": "0722",
+  "channels": {
+    "204": {
+      "coefficients": [
+        0.32908394217236037,
+        0.03739791998061218,
+        3.5987665618279635e-10
+      ],
+      "formula": "E_keV=c0+c1*ADC+c2*ADC^2",
+      "anchor_count": 7,
+      "rms_keV": 0.03618512622136388,
+      "max_residual_keV": 0.06536703555292434,
+      "valid_energy_keV": [
+        302.8508,
+        1408.013
+      ],
+      "status": "candidate",
+      "weights": "equal; diagnostic polynomial, no absolute-energy confidence claim"
+    },
+    "205": {
+      "coefficients": [
+        0.4358574648500735,
+        0.34249707048626404,
+        5.7718091316614495e-09
+      ],
+      "formula": "E_keV=c0+c1*ADC+c2*ADC^2",
+      "anchor_count": 9,
+      "rms_keV": 0.07816440047157916,
+      "max_residual_keV": 0.16583691715482018,
+      "valid_energy_keV": [
+        244.6974,
+        1408.013
+      ],
+      "status": "candidate",
+      "weights": "equal; diagnostic polynomial, no absolute-energy confidence claim"
+    },
+    "206": {
+      "coefficients": [
+        0.0860202817083291,
+        0.037970479200048445,
+        -6.321194552847721e-11
+      ],
+      "formula": "E_keV=c0+c1*ADC+c2*ADC^2",
+      "anchor_count": 9,
+      "rms_keV": 0.038076962799373296,
+      "max_residual_keV": 0.07808962256348195,
+      "valid_energy_keV": [
+        121.7817,
+        1408.013
+      ],
+      "status": "candidate",
+      "weights": "equal; diagnostic polynomial, no absolute-energy confidence claim"
+    },
+    "209": {
+      "coefficients": [
+        0.23957663545627383,
+        0.33918059626848235,
+        -4.342788202528198e-08
+      ],
+      "formula": "E_keV=c0+c1*ADC+c2*ADC^2",
+      "anchor_count": 10,
+      "rms_keV": 0.12127153271542597,
+      "max_residual_keV": 0.2521465263139362,
+      "valid_energy_keV": [
+        121.7817,
+        1408.013
+      ],
+      "status": "candidate",
+      "weights": "equal; diagnostic polynomial, no absolute-energy confidence claim"
+    },
+    "211": {
+      "coefficients": [
+        0.16197210112420635,
+        0.3233479587401607,
+        -3.482262287022806e-08
+      ],
+      "formula": "E_keV=c0+c1*ADC+c2*ADC^2",
+      "anchor_count": 9,
+      "rms_keV": 0.14143672082207467,
+      "max_residual_keV": 0.19945065301612885,
+      "valid_energy_keV": [
+        121.7817,
+        1408.013
+      ],
+      "status": "candidate",
+      "weights": "equal; diagnostic polynomial, no absolute-energy confidence claim"
+    },
+    "212": {
+      "coefficients": [
+        0.4909447366682116,
+        0.16127792168111835,
+        2.6276593909834303e-08
+      ],
+      "formula": "E_keV=c0+c1*ADC+c2*ADC^2",
+      "anchor_count": 9,
+      "rms_keV": 0.05785448627315616,
+      "max_residual_keV": 0.11936893427855466,
+      "valid_energy_keV": [
+        244.6974,
+        1408.013
+      ],
+      "status": "candidate",
+      "weights": "equal; diagnostic polynomial, no absolute-energy confidence claim"
+    },
+    "213": {
+      "coefficients": [
+        0.566834943141771,
+        0.15500056527032158,
+        3.589052834708466e-08
+      ],
+      "formula": "E_keV=c0+c1*ADC+c2*ADC^2",
+      "anchor_count": 8,
+      "rms_keV": 0.04545388442889953,
+      "max_residual_keV": 0.07628611320041045,
+      "valid_energy_keV": [
+        244.6974,
+        1408.013
+      ],
+      "status": "candidate",
+      "weights": "equal; diagnostic polynomial, no absolute-energy confidence claim"
+    },
+    "214": {
+      "coefficients": [
+        0.24105704244959725,
+        0.1650792323514304,
+        2.131504758418359e-08
+      ],
+      "formula": "E_keV=c0+c1*ADC+c2*ADC^2",
+      "anchor_count": 9,
+      "rms_keV": 0.06293058319472707,
+      "max_residual_keV": 0.10693659132175526,
+      "valid_energy_keV": [
+        121.7817,
+        1408.013
+      ],
+      "status": "candidate",
+      "weights": "equal; diagnostic polynomial, no absolute-energy confidence claim"
+    },
+    "215": {
+      "coefficients": [
+        0.31178909214020223,
+        0.1656035411005289,
+        -3.503970933110335e-10
+      ],
+      "formula": "E_keV=c0+c1*ADC+c2*ADC^2",
+      "anchor_count": 9,
+      "rms_keV": 0.06811362632868578,
+      "max_residual_keV": 0.11434672112136468,
+      "valid_energy_keV": [
+        244.6974,
+        1408.013
+      ],
+      "status": "candidate",
+      "weights": "equal; diagnostic polynomial, no absolute-energy confidence claim"
+    },
+    "304": {
+      "coefficients": [
+        -0.0004279282331935974,
+        0.363838656185212,
+        2.0848720926186972e-08
+      ],
+      "formula": "E_keV=c0+c1*ADC+c2*ADC^2",
+      "anchor_count": 9,
+      "rms_keV": 0.04658357466552063,
+      "max_residual_keV": 0.10921966607520517,
+      "valid_energy_keV": [
+        244.6974,
+        1408.013
+      ],
+      "status": "candidate",
+      "weights": "equal; diagnostic polynomial, no absolute-energy confidence claim"
+    },
+    "305": {
+      "coefficients": [
+        -0.19935391614274067,
+        0.11143403561467345,
+        6.391818639867916e-09
+      ],
+      "formula": "E_keV=c0+c1*ADC+c2*ADC^2",
+      "anchor_count": 8,
+      "rms_keV": 0.06993502868815064,
+      "max_residual_keV": 0.11722251216701807,
+      "valid_energy_keV": [
+        302.8508,
+        1408.013
+      ],
+      "status": "candidate",
+      "weights": "equal; diagnostic polynomial, no absolute-energy confidence claim"
+    },
+    "306": {
+      "coefficients": [
+        0.2487539661565279,
+        0.33676709820615336,
+        2.2953740961036387e-08
+      ],
+      "formula": "E_keV=c0+c1*ADC+c2*ADC^2",
+      "anchor_count": 7,
+      "rms_keV": 0.1670609057978043,
+      "max_residual_keV": 0.3532552191463765,
+      "valid_energy_keV": [
+        244.6974,
+        1408.013
+      ],
+      "status": "candidate",
+      "weights": "equal; diagnostic polynomial, no absolute-energy confidence claim"
+    },
+    "308": {
+      "coefficients": [
+        0.38129021173949695,
+        0.4065655917090773,
+        2.181957959865816e-07
+      ],
+      "formula": "E_keV=c0+c1*ADC+c2*ADC^2",
+      "anchor_count": 10,
+      "rms_keV": 0.2616346395528151,
+      "max_residual_keV": 0.5035932215437526,
+      "valid_energy_keV": [
+        121.7817,
+        1408.013
+      ],
+      "status": "candidate",
+      "weights": "equal; diagnostic polynomial, no absolute-energy confidence claim"
+    },
+    "310": {
+      "coefficients": [
+        1.6517991464353372,
+        0.38073916261160706,
+        3.5938066839189755e-07
+      ],
+      "formula": "E_keV=c0+c1*ADC+c2*ADC^2",
+      "anchor_count": 7,
+      "rms_keV": 0.11174978164742988,
+      "max_residual_keV": 0.19741482426411494,
+      "valid_energy_keV": [
+        244.6974,
+        1408.013
+      ],
+      "status": "candidate",
+      "weights": "equal; diagnostic polynomial, no absolute-energy confidence claim"
+    },
+    "311": {
+      "coefficients": [
+        -1.1755730539250635,
+        0.39501242519321866,
+        -1.6770010642475652e-07
+      ],
+      "formula": "E_keV=c0+c1*ADC+c2*ADC^2",
+      "anchor_count": 10,
+      "rms_keV": 0.21459192011127098,
+      "max_residual_keV": 0.4728933992566908,
+      "valid_energy_keV": [
+        121.7817,
+        1408.013
+      ],
+      "status": "candidate",
+      "weights": "equal; diagnostic polynomial, no absolute-energy confidence claim"
+    },
+    "506": {
+      "coefficients": [
+        0.7000137659745178,
+        0.4017370235311823,
+        -9.395736876506332e-08
+      ],
+      "formula": "E_keV=c0+c1*ADC+c2*ADC^2",
+      "anchor_count": 10,
+      "rms_keV": 0.5924172815133634,
+      "max_residual_keV": 1.328859328441581,
+      "valid_energy_keV": [
+        121.7817,
+        1408.013
+      ],
+      "status": "review_required",
+      "weights": "equal; diagnostic polynomial, no absolute-energy confidence claim"
+    },
+    "507": {
+      "coefficients": [
+        -0.18007474095486486,
+        0.43330875404053876,
+        2.1503912657983925e-08
+      ],
+      "formula": "E_keV=c0+c1*ADC+c2*ADC^2",
+      "anchor_count": 8,
+      "rms_keV": 0.14125561846951393,
+      "max_residual_keV": 0.25831245874013575,
+      "valid_energy_keV": [
+        121.7817,
+        1408.013
+      ],
+      "status": "candidate",
+      "weights": "equal; diagnostic polynomial, no absolute-energy confidence claim"
+    },
+    "508": {
+      "coefficients": [
+        -0.12533342853316753,
+        0.4070555310672007,
+        3.832849384717995e-08
+      ],
+      "formula": "E_keV=c0+c1*ADC+c2*ADC^2",
+      "anchor_count": 7,
+      "rms_keV": 0.048575966661668996,
+      "max_residual_keV": 0.10086928824006236,
+      "valid_energy_keV": [
+        302.8508,
+        1408.013
+      ],
+      "status": "candidate",
+      "weights": "equal; diagnostic polynomial, no absolute-energy confidence claim"
+    },
+    "509": {
+      "coefficients": [
+        -0.332255568504479,
+        0.40418791027710527,
+        2.0622411492105227e-07
+      ],
+      "formula": "E_keV=c0+c1*ADC+c2*ADC^2",
+      "anchor_count": 10,
+      "rms_keV": 0.569949198937575,
+      "max_residual_keV": 1.1254049412229392,
+      "valid_energy_keV": [
+        121.7817,
+        1408.013
+      ],
+      "status": "review_required",
+      "weights": "equal; diagnostic polynomial, no absolute-energy confidence claim"
+    },
+    "510": {
+      "coefficients": [
+        0.6881020249874155,
+        0.39049466221314194,
+        2.1826284565162998e-07
+      ],
+      "formula": "E_keV=c0+c1*ADC+c2*ADC^2",
+      "anchor_count": 8,
+      "rms_keV": 0.21397188449272442,
+      "max_residual_keV": 0.3559472634796066,
+      "valid_energy_keV": [
+        302.8508,
+        1408.013
+      ],
+      "status": "candidate",
+      "weights": "equal; diagnostic polynomial, no absolute-energy confidence claim"
+    }
+  },
+  "formal_replacement": false
+}
