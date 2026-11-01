@@ -1,0 +1,217 @@
+{
+  "estimates": {
+    "10400": {
+      "coefficients": [
+        112.2802395608167,
+        4.569395663862098,
+        0.0
+      ],
+      "donor_keys": [
+        10402,
+        10404,
+        10406,
+        10408,
+        10409,
+        10410,
+        10411,
+        10412,
+        10414,
+        10415
+      ],
+      "donor_sample_stddev": [
+        45.54954694164244,
+        0.12660227680996905,
+        0.0
+      ],
+      "fit_chi2": null,
+      "independent_calibration": false,
+      "key": 10400,
+      "status": "same_board_estimate_not_installed",
+      "uncertainty_scope": "Donor scatter is descriptive, not a measured uncertainty for the target channel"
+    },
+    "10401": {
+      "coefficients": [
+        112.2802395608167,
+        4.569395663862098,
+        0.0
+      ],
+      "donor_keys": [
+        10402,
+        10404,
+        10406,
+        10408,
+        10409,
+        10410,
+        10411,
+        10412,
+        10414,
+        10415
+      ],
+      "donor_sample_stddev": [
+        45.54954694164244,
+        0.12660227680996905,
+        0.0
+      ],
+      "fit_chi2": null,
+      "independent_calibration": false,
+      "key": 10401,
+      "status": "same_board_estimate_not_installed",
+      "uncertainty_scope": "Donor scatter is descriptive, not a measured uncertainty for the target channel"
+    },
+    "10403": {
+      "coefficients": [
+        112.2802395608167,
+        4.569395663862098,
+        0.0
+      ],
+      "donor_keys": [
+        10402,
+        10404,
+        10406,
+        10408,
+        10409,
+        10410,
+        10411,
+        10412,
+        10414,
+        10415
+      ],
+      "donor_sample_stddev": [
+        45.54954694164244,
+        0.12660227680996905,
+        0.0
+      ],
+      "fit_chi2": null,
+      "independent_calibration": false,
+      "key": 10403,
+      "status": "same_board_estimate_not_installed",
+      "uncertainty_scope": "Donor scatter is descriptive, not a measured uncertainty for the target channel"
+    },
+    "10407": {
+      "coefficients": [
+        112.2802395608167,
+        4.569395663862098,
+        0.0
+      ],
+      "donor_keys": [
+        10402,
+        10404,
+        10406,
+        10408,
+        10409,
+        10410,
+        10411,
+        10412,
+        10414,
+        10415
+      ],
+      "donor_sample_stddev": [
+        45.54954694164244,
+        0.12660227680996905,
+        0.0
+      ],
+      "fit_chi2": null,
+      "independent_calibration": false,
+      "key": 10407,
+      "status": "same_board_estimate_not_installed",
+      "uncertainty_scope": "Donor scatter is descriptive, not a measured uncertainty for the target channel"
+    },
+    "10413": {
+      "coefficients": [
+        112.2802395608167,
+        4.569395663862098,
+        0.0
+      ],
+      "donor_keys": [
+        10402,
+        10404,
+        10406,
+        10408,
+        10409,
+        10410,
+        10411,
+        10412,
+        10414,
+        10415
+      ],
+      "donor_sample_stddev": [
+        45.54954694164244,
+        0.12660227680996905,
+        0.0
+      ],
+      "fit_chi2": null,
+      "independent_calibration": false,
+      "key": 10413,
+      "status": "same_board_estimate_not_installed",
+      "uncertainty_scope": "Donor scatter is descriptive, not a measured uncertainty for the target channel"
+    },
+    "10607": {
+      "coefficients": [
+        86.78844006020329,
+        11.494643962588803,
+        0.0
+      ],
+      "donor_keys": [
+        10600,
+        10601,
+        10602,
+        10604,
+        10608,
+        10609,
+        10610,
+        10611,
+        10612,
+        10613,
+        10615
+      ],
+      "donor_sample_stddev": [
+        62.327407285942165,
+        0.21778773137461757,
+        0.0
+      ],
+      "fit_chi2": null,
+      "independent_calibration": false,
+      "key": 10607,
+      "status": "same_board_estimate_not_installed",
+      "uncertainty_scope": "Donor scatter is descriptive, not a measured uncertainty for the target channel"
+    },
+    "10707": {
+      "coefficients": [
+        89.75926510732704,
+        3.618345198128064,
+        0.0
+      ],
+      "donor_keys": [
+        10700,
+        10701,
+        10702,
+        10703,
+        10704,
+        10705,
+        10706,
+        10708,
+        10709,
+        10710,
+        10711,
+        10712,
+        10713,
+        10714,
+        10715
+      ],
+      "donor_sample_stddev": [
+        32.2624289723104,
+        0.08169738916013704,
+        0.0
+      ],
+      "fit_chi2": null,
+      "independent_calibration": false,
+      "key": 10707,
+      "status": "same_board_estimate_not_installed",
+      "uncertainty_scope": "Donor scatter is descriptive, not a measured uncertainty for the target channel"
+    }
+  },
+  "formal_replacement": false,
+  "input": "/home/xc/2025_CIAE_150Sm/codex/analysis/source_calibration_modernization_20261031/results_review/source_0460/calibration.json",
+  "input_sha256": "1364b822f9f95a42b75bc82d959a6e15f32f7f901d05eff0bdb9c001c5ad80a6",
+  "schema": "sm150_same_board_estimates_v1"
+}

@@ -1,0 +1,411 @@
+{
+  "binary_sha256": "3b686ae858238c811268bf045982429d2ef7582bd91100c86f490b06220d0a84",
+  "completion": {
+    "candidate_channels": 34,
+    "candidate_text_is_complete": false,
+    "selected_channels": 37,
+    "status": "computation_complete"
+  },
+  "formal_replacement": false,
+  "formula": "k=511 keV / centroid of energy_base; old k is not applied",
+  "input": "/mnt/e/Sm150/codex_archive_20261030/codex/analysis/raw2hist_modernization_20261030/results/data0472_hist.root",
+  "input_sha256": "1bc157cd439e5dcaa0cbe09dee2b9219095e1446eca69008cfc3ae9d6d60b380",
+  "run": "0472",
+  "schema": "sm150_ge_gain_candidate_v1",
+  "seed_sha256": "81229f2a9cc38ecc320167c45587c95a3cfaa1b7d611079d76435ae3ee5a06eb",
+  "input_sample_fraction": 0.011271922773874832,
+  "channels": {
+    "204": {
+      "key": 204,
+      "status": "peak_fit_unreliable",
+      "candidate_eligible": false,
+      "old_k": 1.001530283
+    },
+    "205": {
+      "key": 205,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 1.00170171,
+      "k": 1.0021421282132656,
+      "k_se": 0.0002033393084459669,
+      "center": 509.90771230331336,
+      "center_se": 0.10346265132659482,
+      "deviance_per_dof": 1.1008370615089655
+    },
+    "206": {
+      "key": 206,
+      "status": "peak_fit_unreliable",
+      "candidate_eligible": false,
+      "old_k": 1.001634259
+    },
+    "208": {
+      "key": 208,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 1.001038069,
+      "k": 1.0018551051527231,
+      "k_se": 0.00020098721382621695,
+      "center": 510.05379657380996,
+      "center_se": 0.10232446882548629,
+      "deviance_per_dof": 0.6031961254429522
+    },
+    "209": {
+      "key": 209,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 1.002004282,
+      "k": 1.002378718058697,
+      "k_se": 0.00022980404331753991,
+      "center": 509.78735960162015,
+      "center_se": 0.11687318810550096,
+      "deviance_per_dof": 0.7573816566285234
+    },
+    "210": {
+      "key": 210,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 1.001879201,
+      "k": 1.002915847750675,
+      "k_se": 0.000275007422590988,
+      "center": 509.5143337759228,
+      "center_se": 0.13971284232783887,
+      "deviance_per_dof": 1.850027343151638
+    },
+    "211": {
+      "key": 211,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 1.002201966,
+      "k": 1.0029240419800391,
+      "k_se": 0.000562843598353163,
+      "center": 509.5101708711159,
+      "center_se": 0.2859384419626281,
+      "deviance_per_dof": 0.7020087992421685
+    },
+    "212": {
+      "key": 212,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 1.001375989,
+      "k": 1.0017366807614598,
+      "k_se": 0.0004149861297493758,
+      "center": 510.1140946656447,
+      "center_se": 0.21132327281355856,
+      "deviance_per_dof": 1.0484031764665969
+    },
+    "213": {
+      "key": 213,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 1.001817177,
+      "k": 1.0021315991666429,
+      "k_se": 0.00034806138676763944,
+      "center": 509.91306972551286,
+      "center_se": 0.1771035364289446,
+      "deviance_per_dof": 0.964812679020922
+    },
+    "214": {
+      "key": 214,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 1.001151146,
+      "k": 1.001389097169064,
+      "k_se": 0.00040567199966636366,
+      "center": 510.2911559998023,
+      "center_se": 0.20672367439561867,
+      "deviance_per_dof": 1.3371797583793286
+    },
+    "215": {
+      "key": 215,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 1.001723778,
+      "k": 1.002285693653601,
+      "k_se": 0.00026908469967731863,
+      "center": 509.8346741209759,
+      "center_se": 0.1368758539003352,
+      "deviance_per_dof": 1.1399494155220127
+    },
+    "304": {
+      "key": 304,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 0.999468462,
+      "k": 0.9998866054218071,
+      "k_se": 0.00032929478793390925,
+      "center": 511.05795120080853,
+      "center_se": 0.16830780485514651,
+      "deviance_per_dof": 1.1069298678092856
+    },
+    "305": {
+      "key": 305,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 0.999741142,
+      "k": 1.0000481802076355,
+      "k_se": 0.00032979710494160857,
+      "center": 510.975381100042,
+      "center_se": 0.1685100825324639,
+      "deviance_per_dof": 1.089780537804487
+    },
+    "306": {
+      "key": 306,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 0.9999447,
+      "k": 1.0005557893594699,
+      "k_se": 0.00031504432970268703,
+      "center": 510.71614939845495,
+      "center_se": 0.16080885110721965,
+      "deviance_per_dof": 1.4041498336786318
+    },
+    "307": {
+      "key": 307,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 0.99963473,
+      "k": 0.9999935836323195,
+      "k_se": 0.00031149672840619026,
+      "center": 511.00327878492266,
+      "center_se": 0.1591768708836696,
+      "deviance_per_dof": 1.98471926127871
+    },
+    "308": {
+      "key": 308,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 0.997773909,
+      "k": 0.9981268336316991,
+      "k_se": 0.0003090321482725559,
+      "center": 511.9589843514366,
+      "center_se": 0.1585086979235939,
+      "deviance_per_dof": 1.4639723256976658
+    },
+    "309": {
+      "key": 309,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 0.99794952,
+      "k": 0.9983719578551863,
+      "k_se": 0.00027567298496470574,
+      "center": 511.83328616098856,
+      "center_se": 0.14132869887833976,
+      "deviance_per_dof": 0.5800015683854916
+    },
+    "310": {
+      "key": 310,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 0.99785041,
+      "k": 0.9976575329439127,
+      "k_se": 0.00023726514667305514,
+      "center": 512.1998111838323,
+      "center_se": 0.12181250510667496,
+      "deviance_per_dof": 1.4354401466148892
+    },
+    "311": {
+      "key": 311,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 0.998572364,
+      "k": 0.9989182448419122,
+      "k_se": 0.00022643899814693384,
+      "center": 511.5533755025872,
+      "center_se": 0.11596107533887334,
+      "deviance_per_dof": 1.513151445391388
+    },
+    "400": {
+      "key": 400,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 1.000774242,
+      "k": 1.0012496192361893,
+      "k_se": 0.00024199405887333144,
+      "center": 510.362241525565,
+      "center_se": 0.12335048917839231,
+      "deviance_per_dof": 1.0832317683780575
+    },
+    "401": {
+      "key": 401,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 1.000724517,
+      "k": 1.0014999348996425,
+      "k_se": 0.000329075775327526,
+      "center": 510.23468119466816,
+      "center_se": 0.1676544026235547,
+      "deviance_per_dof": 1.1431509322713462
+    },
+    "402": {
+      "key": 402,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 1.000951951,
+      "k": 1.0011908330812527,
+      "k_se": 0.0002838141374632322,
+      "center": 510.3922080742116,
+      "center_se": 0.14468422953567028,
+      "deviance_per_dof": 1.291435248684748
+    },
+    "403": {
+      "key": 403,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 1.000385031,
+      "k": 1.0006348814738713,
+      "k_se": 0.00040135993717021237,
+      "center": 510.6757814072298,
+      "center_se": 0.20483475374959426,
+      "deviance_per_dof": 1.454038323258406
+    },
+    "404": {
+      "key": 404,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 0.99948453,
+      "k": 0.9994160293258549,
+      "k_se": 0.00034741825364624913,
+      "center": 511.2985833784249,
+      "center_se": 0.17773825485764405,
+      "deviance_per_dof": 0.9672143803295292
+    },
+    "405": {
+      "key": 405,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 1.000716989,
+      "k": 1.0001429793404533,
+      "k_se": 0.0004311547402879708,
+      "center": 510.9269480019549,
+      "center_se": 0.22025708335939953,
+      "deviance_per_dof": 0.7577703819172114
+    },
+    "406": {
+      "key": 406,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 1.000191105,
+      "k": 1.0010949207720474,
+      "k_se": 0.00035014528753768773,
+      "center": 510.4411074285696,
+      "center_se": 0.17853306876614283,
+      "deviance_per_dof": 1.1249836526367814
+    },
+    "407": {
+      "key": 407,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 0.999462124,
+      "k": 0.9999116719081196,
+      "k_se": 0.0007097554167592617,
+      "center": 511.0451396420493,
+      "center_se": 0.36274909700500757,
+      "deviance_per_dof": 0.8735511463116674
+    },
+    "409": {
+      "key": 409,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 1.000097569,
+      "k": 1.0009552771741008,
+      "k_se": 0.0005399352737868951,
+      "center": 510.5123192343381,
+      "center_se": 0.27538054410939594,
+      "deviance_per_dof": 0.7658438183299084
+    },
+    "410": {
+      "key": 410,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 0.979424327,
+      "k": 0.9798368243557112,
+      "k_se": 0.0005637098740964218,
+      "center": 521.5154067474516,
+      "center_se": 0.3000330024034952,
+      "deviance_per_dof": 1.181915426269803
+    },
+    "411": {
+      "key": 411,
+      "status": "peak_fit_unreliable",
+      "candidate_eligible": false,
+      "old_k": 0.998765215
+    },
+    "504": {
+      "key": 504,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 0.990435543,
+      "k": 0.9908914593634569,
+      "k_se": 0.0002411437060823996,
+      "center": 515.697249351875,
+      "center_se": 0.1255002702365573,
+      "deviance_per_dof": 1.7170374067203147
+    },
+    "505": {
+      "key": 505,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 0.999692843,
+      "k": 0.9992660226343023,
+      "k_se": 0.0003747849987414267,
+      "center": 511.3753379234118,
+      "center_se": 0.1917965797283614,
+      "deviance_per_dof": 2.6156086976109814
+    },
+    "506": {
+      "key": 506,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 0.996674068,
+      "k": 0.9959954518797924,
+      "k_se": 0.0010311387514939552,
+      "center": 513.0545516403353,
+      "center_se": 0.531157475496741,
+      "deviance_per_dof": 2.9435295697511212
+    },
+    "507": {
+      "key": 507,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 0.999448085,
+      "k": 0.9995202545371995,
+      "k_se": 0.00026502322573179364,
+      "center": 511.24526759750813,
+      "center_se": 0.1355569027678598,
+      "deviance_per_dof": 1.1610955359124402
+    },
+    "508": {
+      "key": 508,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 0.99723567,
+      "k": 0.9976884769504494,
+      "k_se": 0.0004661436413481743,
+      "center": 512.1839249481269,
+      "center_se": 0.23930443753855002,
+      "deviance_per_dof": 1.5529550235478762
+    },
+    "509": {
+      "key": 509,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 1.000758696,
+      "k": 1.001389153831622,
+      "k_se": 0.00014474627003786423,
+      "center": 510.29112712551085,
+      "center_se": 0.07376027291908827,
+      "deviance_per_dof": 2.4729290591907835
+    },
+    "510": {
+      "key": 510,
+      "status": "gain_candidate",
+      "candidate_eligible": true,
+      "old_k": 0.998013311,
+      "k": 0.9988571678494573,
+      "k_se": 0.00039522133031011543,
+      "center": 511.58465539190615,
+      "center_se": 0.20242050072639017,
+      "deviance_per_dof": 1.136722886150999
+    }
+  }
+}

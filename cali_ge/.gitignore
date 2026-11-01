@@ -1,0 +1,9 @@
+/calibrate
+/__pycache__/
+
+# Keep the text companions referenced by the frozen candidate manifests.
+!/parameters/source_0377_20261031/candidate_parameters.txt
+!/parameters/source_0722_20261031/candidate_parameters.txt
+!/parameters/gain_checks_20261031/k_0472_candidate.txt
+!/parameters/gain_checks_20261031/k_0617_candidate.txt
+!/parameters/gain_checks_20261031/k_0680_candidate.txt

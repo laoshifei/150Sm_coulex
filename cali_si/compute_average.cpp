@@ -1,120 +1,51 @@
-//
-void compute_average(int run)
-{
-  vector<pair<int, int>> v_p = {
-    {4, 0},
-    {4, 1},
-    {4, 3},
-    {4, 7},
-    {4, 13},
-    {6, 7},
-    {7, 7}
-  };
+#include "../include/sm150_source_calibration.h"
 
-  //
-  ifstream fi(TString::Format("./cali_%04d.txt",run).Data());
-  if(!fi){
-    cout << "can not open the file." << endl;
-    return;
-  }
-
-  string line;
-  getline(fi, line);
-
-  int cid, sid, ch;
-  int key;
-  double par0, par1, par2, chi2;
-  map<int, vector<double>> m_p0, m_p1, m_p2, m_chi2;
-  for(int i=2;i<=12;i++){
-    m_p0[i] = {};
-    m_p1[i] = {};
-    m_p2[i] = {};
-    m_chi2[i] = {};
-  }
-
-  while(1){
-    fi >> cid >> sid >> ch >> par0 >> par1 >> par2 >> chi2;
-    if(!fi.good()) break;
- 
-    m_p0[sid].push_back(par0);
-    m_p1[sid].push_back(par1);
-    m_p2[sid].push_back(par2);
-    m_chi2[sid].push_back(chi2);
-  }
-
-  for(int i=2;i<=12;i++){
-    for(int j=0;j<16;j++){
-      cout << "sid " << i << " p0 " << m_p0[i][j] << " p1 " << m_p1[i][j] << " p2 " << m_p2[i][j] << endl;
+int compute_average(const sm150::sourcecal::Options& options) {
+  using namespace sm150::sourcecal;
+  require(!options.keys.empty(),"Average estimates require explicit --keys; there is no automatic replacement");
+  const auto input=json::parse(read_text(options.input));
+  require(input.at("schema")=="sm150_source_energy_candidate_v2","Expected source calibration JSON");
+  json estimates=json::object();
+  for(int key:options.keys) {
+    const int sid=key%10000/100;require(key/10000==1,"Expected particle electronics keys");
+    require(input.at("channels").contains(std::to_string(key)),"Unknown estimate target");
+    std::vector<Coeff> values;std::vector<int> donors;
+    for(auto it=input.at("channels").begin();it!=input.at("channels").end();++it) {
+      const int other=std::stoi(it.key());
+      if(other/10000!=1||other%10000/100!=sid||options.keys.count(other)||!it.value().value("candidate_eligible",false))continue;
+      donors.push_back(other);values.push_back(it.value().at("calibration").at("coefficients").get<Coeff>());
     }
-    cout << endl;
-  }
-
-  //
-  for(auto &it : v_p){
-    m_p0[it.first][it.second] = 0;
-    m_p1[it.first][it.second] = 0;
-    m_p2[it.first][it.second] = 0;
-    m_chi2[it.first][it.second] = 0;
-  }
-
-  for(int i=2;i<=12;i++){
-    for(int j=0;j<16;j++){
-      cout << "sid " << i << " p0 " << m_p0[i][j] << " p1 " << m_p1[i][j] << " p2 " << m_p2[i][j] << endl;
+    json result={{"key",key},{"donor_keys",donors},{"status","insufficient_donors"},{"independent_calibration",false}};
+    if(values.size()>=3) {
+      Coeff mean{},spread{};for(const auto& v:values)for(int i=0;i<3;++i)mean[i]+=v[i]/values.size();
+      for(const auto& v:values)for(int i=0;i<3;++i)spread[i]+=std::pow(v[i]-mean[i],2)/(values.size()-1);
+      for(double& x:spread)x=std::sqrt(x);
+      result["status"]="same_board_estimate_not_installed";result["coefficients"]=mean;
+      result["donor_sample_stddev"]=spread;result["fit_chi2"]=nullptr;
+      result["uncertainty_scope"]="Donor scatter is descriptive, not a measured uncertainty for the target channel";
     }
-    cout << endl;
+    estimates[std::to_string(key)]=result;
   }
+  fs::create_directories(options.output);
+  write_json(options.output/"estimates.json",{{"schema","sm150_same_board_estimates_v1"},
+    {"input",options.input.string()},{"input_sha256",sha_file(options.input)},{"formal_replacement",false},{"estimates",estimates}});
+  return 0;
+}
 
-  //
-  map<int, vector<double>> m_ave;
-  for(int i=2;i<=12;i++){
-    m_ave[i] = {0., 0., 0., 0.};
+int remap_low(const sm150::sourcecal::Options& options) {
+  using namespace sm150::sourcecal;
+  auto input=json::parse(read_text(options.input));
+  require(input.at("schema")=="sm150_source_energy_candidate_v2"&&input.at("run")=="0457","Only the documented 0457 source remapping is implemented");
+  json rows=json::object(),mapping=json::array();
+  for(auto it=input.at("channels").begin();it!=input.at("channels").end();++it) {
+    int old=std::stoi(it.key()),sid=old%10000/100,next=sid;
+    if(sid==2)next=9;else if(sid==9)next=2;else if(sid==3)next=10;else if(sid==10)next=3;
+    const int key=10000+100*next+old%100;require(!rows.contains(std::to_string(key)),"Remapping collision");
+    auto row=it.value();row["key"]=key;row["source_key"]=old;rows[std::to_string(key)]=row;
+    mapping.push_back({{"source_key",old},{"low_beam_key",key}});
   }
-
-  int n = 0;
-  for(int i=2;i<=12;i++){
-    n = 0;
-    for(int j=0;j<16;j++){
-      if(m_p0[i][j] != 0) n++;
-
-      m_ave[i][0] += m_p0[i][j];
-      m_ave[i][1] += m_p1[i][j];
-      m_ave[i][2] += m_p2[i][j];
-      m_ave[i][3] += m_chi2[i][j];
-    }
-    if(n==0) continue;
-
-    m_ave[i][0] /= (double)n;
-    m_ave[i][1] /= (double)n;
-    m_ave[i][2] /= (double)n;
-    m_ave[i][3] /= (double)n;
-  }
-
-  for(int i=2;i<=12;i++){
-    cout << i << " p0 " << m_ave[i][0]  << " p1 " << m_ave[i][1]  << " p2 " << m_ave[i][2] << endl;
-  }
-
-  //
-  ofstream fo(TString::Format("./cali_%04d_new.txt",run).Data());
-
-  fi.clear();
-  fi.seekg(0, std::ios::beg);
-  getline(fi, line);
-  fo << line << endl;
-  
-  TString str_out;
-  while(1){
-    fi >> cid >> sid >> ch >> par0 >> par1 >> par2 >> chi2;
-    if(!fi.good()) break;
- 
-    if(std::find(v_p.begin(), v_p.end(), std::make_pair(sid,ch))!=v_p.end()){
-      str_out = Form("%4d  %4d  %4d  %16.9f  %16.9f  %16.9f  %16.9f", cid, sid, ch, m_ave[sid][0], m_ave[sid][1], m_ave[sid][2], m_ave[sid][3]);
-      fo << str_out << endl;
-    }else{
-      str_out = Form("%4d  %4d  %4d  %16.9f  %16.9f  %16.9f  %16.9f", cid, sid, ch, par0, par1, par2, chi2);
-      fo << str_out << endl;
-    }
-  }
-
-  fi.close();
-  fo.close();
+  input["channels"]=rows;input["remapping"]={{"source",options.input.string()},{"sha256",sha_file(options.input)},
+    {"rule","sid2<->9 and sid3<->10; coefficient rows only; hardware gains remain separate"},{"mapping",mapping}};
+  input["derived_low_beam_layout"]=true;fs::create_directories(options.output);write_json(options.output/"calibration.json",input);
+  return 0;
 }

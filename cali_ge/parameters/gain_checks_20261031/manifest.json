@@ -1,0 +1,30 @@
+{
+  "schema": "sm150_calibration_package_v1",
+  "formal_replacement": false,
+  "files": [
+    {
+      "path": "gain_0472.json",
+      "sha256": "03f15aa219e3870174569ec65fc9e060cc200c9b1c1f35325ed2ed2a368a1721"
+    },
+    {
+      "path": "gain_0617.json",
+      "sha256": "11c946e676a2fe23f0e6952f86871db8daff820e59393f4b46f26d13f43edf3b"
+    },
+    {
+      "path": "gain_0680.json",
+      "sha256": "ae32994d33765e38c47c60bb269982f6fb67e806250fb920b0fa3000a34f6a21"
+    },
+    {
+      "path": "k_0472_candidate.txt",
+      "sha256": "aa3b7bbcf26a52993f2f08ab36808bb5ac042d0985a9c41b36cfc159a1a41d2f"
+    },
+    {
+      "path": "k_0617_candidate.txt",
+      "sha256": "1fc9cdeda2d2827f740a7999b3965605ed8ed2a295af2895ad287cb35a8b6762"
+    },
+    {
+      "path": "k_0680_candidate.txt",
+      "sha256": "42d73b977dc89968d2087de0456dd2c7f53c3d942a7421738b3802658a732fa4"
+    }
+  ]
+}

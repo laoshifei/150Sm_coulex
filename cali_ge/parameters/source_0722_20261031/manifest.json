@@ -1,0 +1,29 @@
+{
+  "schema": "sm150_source_candidate_package_v1",
+  "formal_replacement": false,
+  "full_result": "codex/analysis/source_calibration_modernization_20261031/results_review/source_0722/calibration.json",
+  "full_result_sha256": "627f8c7503e85e5e7ec3475ae24c326dad5b944b7050b7e8820ef0c2f952f0ec",
+  "complete": false,
+  "files": [
+    {
+      "path": "candidate.json",
+      "sha256": "e19bf9cb12fac041ae3e54cf55092564ef5797ae7b420dba2d5e60d20ca086ad"
+    },
+    {
+      "path": "candidate_parameters.txt",
+      "sha256": "87e604e8c9e2612cd6fbe03a2e5cada529416ec76aef9d798ecedd807f618109"
+    },
+    {
+      "path": "completion.json",
+      "sha256": "169a5fd01a604733af282b0767219f22a2f6bb2f5843bdca7f259ae0f518d06e"
+    },
+    {
+      "path": "parameters.csv",
+      "sha256": "7ae1dffef495028d8bada79bcdb915a2e777e2f504babe14b8970e361f752664"
+    },
+    {
+      "path": "used_source_config.json",
+      "sha256": "bcf0cdf1c95fe21852682401c3a3cb6d753f5e4d23b5bc1c4964fbae9cbf39c4"
+    }
+  ]
+}

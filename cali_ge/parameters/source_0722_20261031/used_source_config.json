@@ -1,0 +1,116 @@
+{
+  "schema": "sm150_source_calibration_policy_v1",
+  "detector": "Ge",
+  "degree": 2,
+  "minimum_anchors": 5,
+  "search_energy_keV": [
+    65,
+    1470
+  ],
+  "search_threshold": 0.0015,
+  "search_sigma_bins": 2.0,
+  "maximum_search_peaks": 48,
+  "matching_tolerance_keV": 3.0,
+  "matching_offset_limit_keV": 25.0,
+  "matching_scale_range": [
+    0.9,
+    1.1
+  ],
+  "peak_half_width_keV": 8.0,
+  "maximum_peak_deviance_per_dof": 8.0,
+  "maximum_energy_residual_keV": 1.0,
+  "lines": [
+    {
+      "id": "ba081",
+      "energy_keV": 80.9979,
+      "anchor": false,
+      "half_width_keV": 5.5
+    },
+    {
+      "id": "eu122",
+      "energy_keV": 121.7817,
+      "anchor": true,
+      "half_width_keV": 8.5
+    },
+    {
+      "id": "eu245",
+      "energy_keV": 244.6974,
+      "anchor": true,
+      "half_width_keV": 10.0
+    },
+    {
+      "id": "ba276",
+      "energy_keV": 276.3989,
+      "anchor": false,
+      "half_width_keV": 8.5
+    },
+    {
+      "id": "ba303",
+      "energy_keV": 302.8508,
+      "anchor": true,
+      "half_width_keV": 10.0
+    },
+    {
+      "id": "eu344",
+      "energy_keV": 344.2785,
+      "anchor": true,
+      "half_width_keV": 7.5
+    },
+    {
+      "id": "ba356",
+      "energy_keV": 356.0129,
+      "anchor": true,
+      "half_width_keV": 7.5
+    },
+    {
+      "id": "ba384",
+      "energy_keV": 383.8485,
+      "anchor": true,
+      "half_width_keV": 9.5
+    },
+    {
+      "id": "eu411",
+      "energy_keV": 411.1165,
+      "anchor": false,
+      "half_width_keV": 10.0
+    },
+    {
+      "id": "eu444",
+      "energy_keV": 443.965,
+      "anchor": false,
+      "half_width_keV": 10.0
+    },
+    {
+      "id": "eu779",
+      "energy_keV": 778.9045,
+      "anchor": true,
+      "half_width_keV": 10.0
+    },
+    {
+      "id": "eu867",
+      "energy_keV": 867.38,
+      "anchor": true,
+      "half_width_keV": 10.0
+    },
+    {
+      "id": "eu964",
+      "energy_keV": 964.079,
+      "anchor": false,
+      "half_width_keV": 10.0
+    },
+    {
+      "id": "eu1112",
+      "energy_keV": 1112.076,
+      "anchor": true,
+      "half_width_keV": 10.0
+    },
+    {
+      "id": "eu1408",
+      "energy_keV": 1408.013,
+      "anchor": true,
+      "half_width_keV": 10.0
+    }
+  ],
+  "source_reference": "LNHB energies from ge_eff/source_lines.json; explicit unresolved/weak lines retained as diagnostics",
+  "uncertainty_scope": "Conditional center propagation only; equal calibration-anchor weights; source probability is not used for energy fitting"
+}

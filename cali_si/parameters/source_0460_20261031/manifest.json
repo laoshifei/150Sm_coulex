@@ -1,0 +1,33 @@
+{
+  "schema": "sm150_source_candidate_package_v1",
+  "formal_replacement": false,
+  "full_result": "codex/analysis/source_calibration_modernization_20261031/results_review/source_0460/calibration.json",
+  "full_result_sha256": "1364b822f9f95a42b75bc82d959a6e15f32f7f901d05eff0bdb9c001c5ad80a6",
+  "complete": false,
+  "files": [
+    {
+      "path": "candidate.json",
+      "sha256": "5fc6a7bc75e5ce69ec3b9b7f82b2440f196afa0d9141ab9cc4aab6c60db040db"
+    },
+    {
+      "path": "candidate_parameters.txt",
+      "sha256": "94dfb7907f68798a511f2352b13ce54fccdef5754d5479bf1c83b31c39212115"
+    },
+    {
+      "path": "completion.json",
+      "sha256": "355b43d08a0a076ad40b2ad35665b7439758f955329a2d26adb9fc1da96ff4c2"
+    },
+    {
+      "path": "parameters.csv",
+      "sha256": "e5728417be524d6cf366f8affb595f9bc3ac07b2e41b52b3a5a052c5cbc534a0"
+    },
+    {
+      "path": "same_board_estimates.json",
+      "sha256": "556f4db3e8c7f0ea520a79e21c4dca44d279f0c4e5d6cbe8a3eab5f8f31f32fc"
+    },
+    {
+      "path": "used_source_config.json",
+      "sha256": "22581d74b782ab5486491fdb13c21bb388f59561e9fa63c99794c0efde9ee5b2"
+    }
+  ]
+}

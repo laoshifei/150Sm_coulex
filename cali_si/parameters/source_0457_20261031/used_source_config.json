@@ -1,0 +1,156 @@
+{
+  "schema": "sm150_source_calibration_policy_v1",
+  "detector": "Si array and S3 source channels",
+  "degree": 1,
+  "minimum_anchors": 2,
+  "search_energy_keV": [
+    4200,
+    6600
+  ],
+  "search_threshold": 0.025,
+  "search_sigma_bins": 2.0,
+  "maximum_search_peaks": 12,
+  "matching_tolerance_keV": 55.0,
+  "matching_offset_limit_keV": 750.0,
+  "matching_scale_range": [
+    0.7,
+    1.3
+  ],
+  "peak_half_width_keV": 140.0,
+  "maximum_peak_deviance_per_dof": 8.0,
+  "maximum_energy_residual_keV": 30.0,
+  "source_reference": "Pu-239, Am-241, Cm-244 identity inferred from the original nominal lines; LNHB alpha emission energies and fixed relative probabilities; source certificate and energy-loss systematics unverified",
+  "three_alpha_lines": [
+    {
+      "id": "alpha5157",
+      "energy_keV": 5156.59,
+      "anchor": true,
+      "isotope": "Pu-239",
+      "components": [
+        {
+          "energy_keV": 5105.81,
+          "probability_percent": 11.87
+        },
+        {
+          "energy_keV": 5143.82,
+          "probability_percent": 17.14
+        },
+        {
+          "energy_keV": 5156.59,
+          "probability_percent": 70.79
+        }
+      ],
+      "source_url": "https://www.lnhb.fr/nuclides/Pu-239_tables.pdf",
+      "source_printed_page": 8,
+      "source_section": "4 Alpha emissions",
+      "source_revision": "2008-01-25"
+    },
+    {
+      "id": "alpha5486",
+      "energy_keV": 5485.56,
+      "anchor": true,
+      "isotope": "Am-241",
+      "components": [
+        {
+          "energy_keV": 5388.25,
+          "probability_percent": 1.66
+        },
+        {
+          "energy_keV": 5442.86,
+          "probability_percent": 13.23
+        },
+        {
+          "energy_keV": 5485.56,
+          "probability_percent": 84.45
+        },
+        {
+          "energy_keV": 5511.46,
+          "probability_percent": 0.23
+        },
+        {
+          "energy_keV": 5544.11,
+          "probability_percent": 0.38
+        }
+      ],
+      "source_url": "https://www.lnhb.fr/nuclides/Am-241_tables.pdf",
+      "source_printed_page": 7,
+      "source_section": "4 Alpha emissions",
+      "source_revision": "2010-07-07"
+    },
+    {
+      "id": "alpha5805",
+      "energy_keV": 5804.77,
+      "anchor": true,
+      "isotope": "Cm-244",
+      "components": [
+        {
+          "energy_keV": 5762.65,
+          "probability_percent": 23.3
+        },
+        {
+          "energy_keV": 5804.77,
+          "probability_percent": 76.7
+        }
+      ],
+      "source_url": "https://www.lnhb.fr/nuclides/Cm-244_tables.pdf",
+      "source_printed_page": 3,
+      "source_section": "4 Alpha emissions",
+      "source_revision": "2010-05-31"
+    }
+  ],
+  "two_alpha_lines": [
+    {
+      "id": "alpha5486",
+      "energy_keV": 5485.56,
+      "anchor": true,
+      "isotope": "Am-241",
+      "components": [
+        {
+          "energy_keV": 5388.25,
+          "probability_percent": 1.66
+        },
+        {
+          "energy_keV": 5442.86,
+          "probability_percent": 13.23
+        },
+        {
+          "energy_keV": 5485.56,
+          "probability_percent": 84.45
+        },
+        {
+          "energy_keV": 5511.46,
+          "probability_percent": 0.23
+        },
+        {
+          "energy_keV": 5544.11,
+          "probability_percent": 0.38
+        }
+      ],
+      "source_url": "https://www.lnhb.fr/nuclides/Am-241_tables.pdf",
+      "source_printed_page": 7,
+      "source_section": "4 Alpha emissions",
+      "source_revision": "2010-07-07"
+    },
+    {
+      "id": "alpha5805",
+      "energy_keV": 5804.77,
+      "anchor": true,
+      "isotope": "Cm-244",
+      "components": [
+        {
+          "energy_keV": 5762.65,
+          "probability_percent": 23.3
+        },
+        {
+          "energy_keV": 5804.77,
+          "probability_percent": 76.7
+        }
+      ],
+      "source_url": "https://www.lnhb.fr/nuclides/Cm-244_tables.pdf",
+      "source_printed_page": 3,
+      "source_section": "4 Alpha emissions",
+      "source_revision": "2010-05-31"
+    }
+  ],
+  "model_conditions": "Component positions and relative weights fixed; common Gaussian/left-tail response, scale from affine matching; omitted very weak emissions; no detector dead-layer or source self-absorption correction"
+}

@@ -1,0 +1,10 @@
+{
+  "schema": "sm150_calibration_package_v1",
+  "formal_replacement": false,
+  "files": [
+    {
+      "path": "candidate.json",
+      "sha256": "c2bbf85ff433faefa5eee53d6abccc9af188c3138be8fe56b9e15a24bba0f8ad"
+    }
+  ]
+}
