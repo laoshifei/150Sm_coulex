@@ -1,5 +1,39 @@
 # S3 front/back normalization
 
+## Source recalibration and subsequent A/B/q packages (2026-11-02)
+
+`recalibrate_source.cpp` reconstructs paired S3 energies from saved ADC values
+on a supplied new source scale. It verifies the input SHA and the old ADC
+mapping, and derives the exactly equivalent A/B control before refitting.
+`source_refit.py` coordinates this conversion, `joint_calibrate`, A/B checks,
+and the ring-q fitter in `s3_energy_attenuation/`. `package_source_refit.py`
+exports the complete selected result with its three required source tables.
+
+| Package | Scientific content |
+| --- | --- |
+| `parameters/source_recalibrated_20261102/` | Complete 173-run A/B/q on the new source scale; unsupported changes retain the equivalent baseline |
+| `parameters/low_pixel_20261102/` | Same A/B, with selected low-beam ring15-24 q values resolved by matched pixel |
+| `parameters/feature_anchor_20261102/` | Same source scale and A/B, with166 confirmed falling-flank q updates in0641/0659/0674 |
+
+Each package includes the source-calibration text files required by its
+`required_source_calibration` hashes. Use the complete package and those
+tables together. `q_pixel` replaces the matched-ring factor; it is applied
+once to each face, never multiplied by `q_position` again. The latter two
+packages require a consumer that supports `sm150_s3_pixel_energy_v2`.
+
+The numerical A/B/q values of the last package were subsequently copied to
+the local adopted runtime release in `include/parameters/`. Frozen candidate
+metadata retains its preparation-time status. The local `pars/active.json`
+and compatibility selection may be maintained separately from this source
+commit; publishing these packages alone does not activate them on another
+checkout. A/B/q selection also does not certify recovery of radiation-damaged
+spectral shapes.
+
+The drivers require local pair/spectrum files and task manifests; these large
+research inputs and notebooks are not part of the code repository. Reading
+this directory does not require running the drivers. Use `--help` to inspect
+arguments; prepare/refit/evaluate/package commands produce research outputs.
+
 ## Maintained review and final export workflow
 
 The active targeted review, confirmation and complete parameter export now
@@ -91,8 +125,10 @@ to both faces. It is not a drop-in pair of legacy text tables. The package
 manifest preserves its preparation-time status from 2026-10-30.
 
 This package was adopted on 2026-10-31. `build_all/build` now resolves
-the default S3 energy package through `parameters/active.json`, including its
-SHA256. An explicit `--s3-energy-file` overrides that selection;
+the default S3 energy package through `pars/active.json`, with file SHA256
+checks from `pars/manifest.json`. The runtime copy is under `pars/s3_energy/`;
+this directory retains the frozen fitting/export source. The old
+`parameters/active.json` remains a compatibility record. An explicit `--s3-energy-file` overrides that selection;
 `--legacy-s3-energy` replays the old factorized chain. Complete A/B/q processing
 requires raw-input `windows` mode. The source calibration, timing profile and
 coincidence windows are unchanged by this adoption.

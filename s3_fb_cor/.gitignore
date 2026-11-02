@@ -1,4 +1,8 @@
 /calibrate
 /results/
 joint_calibrate
+recalibrate_source
 __pycache__/
+
+# These frozen source tables are required by their versioned A/B/q packages.
+!/parameters/*/source_calibration/cali_si_*.txt

@@ -1,0 +1,6 @@
+{
+  "schema": "sm150_s3_pixel_candidate_pointer_v1",
+  "path": "../../../s3_fb_cor/parameters/low_pixel_20261102/coefficients.json",
+  "sha256": "771927b946ec573bac5e1306257993f9de31764fb1552913c496fd815156b155",
+  "formal_replacement": false
+}

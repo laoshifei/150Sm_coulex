@@ -1,5 +1,35 @@
 # S3 relative energy-scale correction
 
+## New-source ring and pixel q workflow (2026-11-02)
+
+`refit_position.py` selects and confirms per-ring q on both faces after the
+new-source A/B workflow in `s3_fb_cor/`. `conditioned_calibrate --pixel` and
+`pixel_fit.h` fit a common q for each matched ring-sector pixel;
+`refit_pixels.py` schedules explicit task inputs and `pixel_results.py`
+freezes, checks and exports those decisions. Pixel fits normalize to a fixed
+raw-spectrum support, avoiding artificial improvement by moving counts out
+of the comparison window.
+
+`anchor_review.py` reviews local high-energy falling flanks with bin-integrated
+models and a joint prompt/random likelihood. `anchor_results.py` freezes
+proposals, accepts or rejects them with separate data, and packages the result.
+This landmark is not an identified physical endpoint or an absolute-energy
+calibration; widths and low-energy tails are not forced to match.
+
+The `source_recalibrated_20261102`, `low_pixel_20261102` and
+`feature_anchor_20261102` parameter directories preserve successive decisions.
+Their complete numerical packages and required source tables reside in the
+matching directories under `s3_fb_cor/parameters/`. The feature package changes
+166 pixel q values in0641/0659/0674 and inherits all other coefficients.
+
+Native targets use the shared parameter loader in `include/`; without a local
+`pars/active.json`, that loader retains legacy lookup. These tools do not
+install a production selection. Research drivers require external local data
+and task manifests; the flank-review driver retains its explicit archived
+task locations. The supported synthetic checks are
+`conditioned_calibrate --self-test-pixels` and the mathematical `self_test()`
+in `anchor_review.py`; the latter writes a validation record to its `TASK`.
+
 ## Maintained candidate workflow
 
 The active position-factor assembly, candidate comparison and selection code

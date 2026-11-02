@@ -16,6 +16,7 @@
 #include <string>
 #include <sys/stat.h>
 #include <vector>
+#include "sm150_parameter_paths.h"
 namespace sm150 { namespace diagnostic {
 namespace fs=std::filesystem;
 using json=nlohmann::json;
@@ -60,10 +61,12 @@ struct Channel {
 };
 struct Parameters {
   fs::path pars;
+  sm150::ParameterPaths paths;
   std::string group;
   std::map<int,Channel> channels;
   json snapshots=json::object(), records=json::object();
-  std::vector<std::vector<double>> table(const fs::path& p,bool header=true) {
+  std::vector<std::vector<double>> table(const fs::path& requested,bool header=true) {
+    const auto p=paths.resolve(requested);
     const auto s=read_text(p); snapshots[p.string()]={{"sha256",hash(s)},{"text",s}};
     std::istringstream input(s); std::string line; if(header) std::getline(input,line);
     std::vector<std::vector<double>> rows;
@@ -87,7 +90,8 @@ struct Parameters {
     }
     return out;
   }
-  Parameters(const fs::path& project,int run,bool final):pars(project/"pars") {
+  Parameters(const fs::path& project,int run,bool final):pars(project/"pars"),paths(pars) {
+    for(const auto& file:paths.selection_files()) freeze(file);
     if(run>=472 && run<=605) group="high1";
     else if(run>=616 && run<=674) group="low";
     else if(run>=680 && run<=718) group="high2";

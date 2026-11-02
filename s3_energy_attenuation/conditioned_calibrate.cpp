@@ -53,6 +53,7 @@ Cdf combine(const Data& d,int face,int pixel,int split) {
 }
 struct Comparison {
   Cdf reference,current;double ar=0,br=1,ac=0,bc=1,lo=20000,hi=90000;
+  bool fixed_normalization=false;
   std::array<double,3> counts(bool ref,double q=1.)const {
     const auto& c=ref?reference:current;double a=ref?ar:q*ac,b=ref?br:q*bc;
     double x=(lo-a)/b,y=(hi-a)/b;
@@ -62,11 +63,15 @@ struct Comparison {
   double distance_map(double a,double b)const {
     double rx=(lo-ar)/br,ry=(hi-ar)/br,cx=(lo-a)/b,cy=(hi-a)/b;
     if(!(br>0&&b>0&&rx>=0&&ry<=200000&&cx>=0&&cy<=200000))return 1.;
-    double nr=reference.net(rx,ry),nc=current.net(cx,cy);
+    // Pixel fits retain the same raw histogram normalization for every q.
+    // Moving a peak outside the comparison window must not renormalize its tail to one.
+    double nr=fixed_normalization?reference.net(0,bins*width):reference.net(rx,ry);
+    double nc=fixed_normalization?current.net(0,bins*width):current.net(cx,cy);
     if(nr<15||nc<15)return 1.;
     double total=0;int n=0;
     for(double e=lo+1000;e<hi;e+=1000) {
-      double r=reference.net(rx,(e-ar)/br)/nr,c=current.net(cx,(e-a)/b)/nc;
+      double r=reference.net(fixed_normalization?0.:rx,(e-ar)/br)/nr;
+      double c=current.net(fixed_normalization?0.:cx,(e-a)/b)/nc;
       total+=(c-r)*(c-r);++n;
     }
     return std::sqrt(total/std::max(1,n));
@@ -78,23 +83,23 @@ struct Comparison {
   }
 };
 struct Estimate{double q=1,value=1,low=.5,high=2;bool boundary=false;std::vector<double> grid,profile;};
-template<class F> Estimate estimate(F fn) {
+template<class F> Estimate estimate(F fn,double qmin=.5,double qmax=2.,int grid_steps=steps) {
   Estimate v;int best=0;
-  for(int i=0;i<steps;++i) {
-    double q=std::exp(std::log(.5)+i*std::log(4.)/(steps-1));v.grid.push_back(q);v.profile.push_back(fn(q));
+  for(int i=0;i<grid_steps;++i) {
+    double q=std::exp(std::log(qmin)+i*std::log(qmax/qmin)/(grid_steps-1));v.grid.push_back(q);v.profile.push_back(fn(q));
     if(v.profile.back()<v.profile[best])best=i;
   }
-  v.boundary=best==0||best==steps-1;
-  double lo=v.grid[std::max(0,best-1)],hi=v.grid[std::min(steps-1,best+1)],phi=(std::sqrt(5.)-1)/2;
+  v.boundary=best==0||best==grid_steps-1;
+  double lo=v.grid[std::max(0,best-1)],hi=v.grid[std::min(grid_steps-1,best+1)],phi=(std::sqrt(5.)-1)/2;
   double c=hi-phi*(hi-lo),d=lo+phi*(hi-lo),fc=fn(c),fd=fn(d);
   for(int i=0;i<28;++i) {
     if(fc<fd){hi=d;d=c;fd=fc;c=hi-phi*(hi-lo);fc=fn(c);}
     else{lo=c;c=d;fc=fd;d=lo+phi*(hi-lo);fd=fn(d);}
   }
   v.q=.5*(lo+hi);v.value=fn(v.q);std::vector<double> support{v.q};
-  for(int i=0;i<steps;++i)if(v.profile[i]<=v.value+.005)support.push_back(v.grid[i]);
+  for(int i=0;i<grid_steps;++i)if(v.profile[i]<=v.value+.005)support.push_back(v.grid[i]);
   v.low=*std::min_element(support.begin(),support.end());v.high=*std::max_element(support.begin(),support.end());
-  double outer_low=.5,outer_high=2.;
+  double outer_low=qmin,outer_high=qmax;
   for(double q:v.grid){if(q<v.low)outer_low=q;if(q>v.high){outer_high=q;break;}}
   double inside=v.low,outside=outer_low;
   for(int i=0;i<24;++i){double mid=.5*(inside+outside);if(fn(mid)<=v.value+.005)inside=mid;else outside=mid;}v.low=inside;
@@ -111,17 +116,30 @@ double median(std::vector<double> v) {
   std::sort(v.begin(),v.end());size_t n=v.size();return n%2?v[n/2]:.5*(v[n/2-1]+v[n/2]);
 }
 }
+#include "pixel_fit.h"
 int main(int argc,char** argv) {
   try {
     fs::path input,reference,baseline,output;
+    bool pixel_mode=false,self_test=false;
+    int first_ring=15,last_ring=24;
     for(int i=1;i<argc;++i) {
       std::string arg=argv[i];auto value=[&](){require(++i<argc,"Missing argument");return std::string(argv[i]);};
       if(arg=="--input")input=value();else if(arg=="--reference")reference=value();else if(arg=="--baseline")baseline=value();else if(arg=="--output")output=value();
+      else if(arg=="--pixel")pixel_mode=true;
+      else if(arg=="--self-test-pixels")self_test=true;
+      else if(arg=="--first-ring")first_ring=std::stoi(value());
+      else if(arg=="--last-ring")last_ring=std::stoi(value());
       else throw std::runtime_error("Unknown option "+arg);
     }
+    if(self_test){pixel_self_test();return 0;}
     require(!input.empty()&&!reference.empty()&&!baseline.empty()&&!output.empty()&&!fs::exists(output)&&!fs::exists(output.string()+".partial"),"Missing/existing paths");
     auto start=std::chrono::steady_clock::now();Data current=load(input),ref=load(reference);
     std::string run=current.meta.at("run"),ref_run=ref.meta.at("run"),period=current.meta.at("period");require(period==ref.meta.at("period"),"Period mismatch");
+    if(pixel_mode) {
+      require(first_ring>=1&&last_ring<=24&&first_ring<=last_ring,"Invalid pixel ring range");
+      fit_pixels(current,ref,json::parse(read_text(baseline)),input,reference,baseline,output,first_ring,last_ring);
+      return 0;
+    }
     int active=period=="low"?24:8;
     json package=json::parse(read_text(baseline));auto base=package.at("runs").at(run).at("channels"),rb=package.at("runs").at(ref_run).at("channels");
     std::array<double,56> a{},b{},ra{},rbb{},oa{},ob{};
