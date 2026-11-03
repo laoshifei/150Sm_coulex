@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "status": "adopted_user_choice",
+  "adopted_on": "2026-11-03",
+  "scope": "Default subsequent spectrum processing with first 0251 narrowing; historical results retain their actual coefficients.",
+  "alpha_by_group": {
+    "low_si": 1.0,
+    "low_s3": 1.0,
+    "high_si": 1.0,
+    "high_s3": 1.0
+  },
+  "period_mapping": {
+    "p1": "low",
+    "p2": "high"
+  },
+  "detector_mapping": {
+    "spider": "si",
+    "s3": "s3"
+  },
+  "net": "P - sum(alpha_i * N_R_i)",
+  "conditional_variance": "sum(w_P_i**2) + sum(alpha_i**2 * N_R_i)",
+  "variance_assumptions": "Conditional counting variance; fixed per-pair width factors; extra c=1; multiplicity correlations and systematic errors separate",
+  "combined_spectrum": "Sum separately subtracted groups; sum their conditional variances",
+  "input_requirement": "Unsubtracted P/R counts in the same selected energy representation; per-pair alpha=Wp/WR; never subtract R again from a net spectrum.",
+  "preserve": [
+    "zero bins",
+    "negative net bins",
+    "underflow",
+    "overflow",
+    "raw prompt/random counts"
+  ],
+  "coefficient_basis": "Current explicit user instruction: all extra coefficients c=1; preserve each pair alpha=Wp/WR",
+  "historical_results": "Retain the actual alpha used; do not relabel old fits or F3 as using this policy",
+  "previous_configuration_sha256": "569c9d7d0be3988d8e595dba2e8ed636270d7547b62b461d51a7a876a15b3777",
+  "source": "codex/analysis/build_energy_adoption_20261103/results/random_subtraction.json",
+  "source_sha256": "2dfe88835abb6f2532bb97496549015fac80105b01eca1cc193d1c61caefb594",
+  "previous_runtime_configuration_sha256": "6b0c998b222c51bff52107ab7a77fcc51cf17fbc8b6ea0addb4c3f91e832b8c2",
+  "adopted_at": "2026-11-03T15:00:07.344131+08:00"
+}

@@ -16,7 +16,7 @@ double number(const std::string& s) {
 void help() {
   std::cout<<"Usage: build RUN --input C2.root --output walk.root [options]\n"
     "  --project DIR                 project containing energy calibration pars/\n"
-    "  --profile local|active|NAME   local package (default) or installed version\n"
+    "  --profile active|local|NAME   adopted runtime (default), domain source or installed version\n"
     "  --profile-dir DIR            explicit complete package; excludes --profile\n"
     "  --begin N --entries N          diagnostic interval; 0 entries=EOF\n"
     "  --chunk N                     default100000\n"
@@ -72,7 +72,7 @@ int main(int argc,char** argv) {
       else throw std::runtime_error("Unknown option: "+k);
     }
     if(o.project.empty()) for(const auto& p:{std::filesystem::current_path(),std::filesystem::current_path().parent_path(),std::filesystem::canonical("/proc/self/exe").parent_path().parent_path()})
-      if(std::filesystem::exists(p/"pars/time_alignment/active.txt")) {o.project=p;break;}
+      if(std::filesystem::exists(p/"pars/active.json") || std::filesystem::exists(p/"pars/time_alignment/active.txt")) {o.project=p;break;}
     if(o.project.empty()) throw std::runtime_error("Use --project");
     if(!o.profile.empty() && !o.profile_dir.empty()) throw std::runtime_error("Choose --profile or --profile-dir, not both");
     build_ge_time_walk(o);return 0;

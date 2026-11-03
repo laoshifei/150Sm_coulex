@@ -767,6 +767,7 @@ void doppler::Clear()
 }
 
 // Current build processing and parameter scans share Model::evaluate above.
+#include "../include/sm150_parameter_paths.h"
 namespace sm150_doppler {
 namespace {
 using json=nlohmann::json;
@@ -841,18 +842,23 @@ struct PairReader {
   }
 };
 json provenance(const Options &o) {
+  const sm150::ParameterPaths runtime(fs::path(o.project)/"pars");
   json hashes=json::object();
   for(const auto &path:{"angle_info/ge_angle.txt","angle_info/spider_angle.txt","angle_info/s3_ring_angle.txt","angle_info/s3_sector_angle.txt","beta_info/theta_ein_eout_p.txt","beta_info/theta_ein_eout_r.txt"})
-    hashes[path]=sha256(fs::path(o.project)/"pars"/path);
+    hashes[path]=sha256(runtime.legacy(path));
   return {{"angle_and_beta_sha256",hashes},{"executable_sha256",sha256("/proc/self/exe")},
+    {"runtime_parameter_selection",runtime.identity()},
     {"ROOT_version",gROOT->GetVersion()},{"mass_convention","Historical mass expressions retained; not new nuclear-mass calibration"}};
 }
 void finish(TFile &out,const json &manifest) {
   out.cd();TObjString s(manifest.dump().c_str());require(s.Write("sm150_doppler_manifest")>0,"Manifest write failed");out.Close();
 }
 }
-int process_build(const Options &o) {
-  require(!o.input.empty()&&!o.parameters.empty(),"Input and parameters are required");
+int process_build(const Options &requested) {
+  Options o=requested;
+  const sm150::ParameterPaths runtime(fs::path(o.project)/"pars");
+  if(o.parameters.empty())o.parameters=runtime.resource("doppler",fs::path(o.project)/"doppler/parameters/angle_table_baseline.json").string();
+  require(!o.input.empty(),"Input is required");
   require(!fs::exists(o.output),"Output exists; refusing overwrite");
   auto parameters=read_json(o.parameters);Model model(o.project,parameters);
   const auto source_sha=sha256(o.input);
@@ -865,7 +871,7 @@ int process_build(const Options &o) {
   const auto receipt=read_json((fs::path(o.input).parent_path()/("data"+m.at("run").get<std::string>()+"_build_cpp_complete.json")).string());
   bool hash_ok=false;for(const auto &x:receipt.at("outputs"))if(fs::path(x.at("path").get<std::string>()).filename()==fs::path(o.input).filename())hash_ok=x.at("sha256")==source_sha&&x.at("bytes")==input_size;
   require(hash_ok,"Build hash or size disagrees with completion receipt");
-  const fs::path policy_path=fs::path(o.project)/"doppler/parameters/random_subtraction.json";
+  const fs::path policy_path=runtime.resource("random_subtraction",fs::path(o.project)/"doppler/parameters/random_subtraction.json");
   const auto policy=read_json(policy_path.string());
   std::map<std::pair<int,int>,json> gates;for(const auto &g:m.at("windows"))gates.emplace(std::make_pair(g.at("ge").get<int>(),g.at("reference").get<int>()),g);
   TFile out(o.output.c_str(),"NEW","Pair-preserving Doppler correction",404);require(!out.IsZombie(),"Cannot create output");

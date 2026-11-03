@@ -17,7 +17,7 @@ void help() {
   std::cout << "Usage: analysis RUN --input C2.root --output candidate.root [options]\n"
     "  --project DIR              project containing pars (auto-detected)\n"
     "  --mode raw|residual        native timestamps / current complete correction once\n"
-    "  --profile NAME            explicit residual profile; default active.txt\n"
+    "  --profile NAME            explicit residual profile; default pars/active.json\n"
     "  --energy-stage final|base  final calibration / omit S3 front-back affine term\n"
     "  --ge-min/--ge-max KEV      default [40,2000)\n"
     "  --si-min/--si-max KEV      default (15000,100000)\n"

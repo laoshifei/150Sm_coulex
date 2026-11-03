@@ -1,9 +1,9 @@
 {
   "schema": "sm150_s3_active_energy_v1",
-  "parameter_file": "s3_fb_cor/parameters/joint_energy_20261030/coefficients.json",
-  "sha256": "2ec47907e9281fabfe39468f644be3f4111f5ad7a5e4d72c60e3043db3e25f0b",
-  "version": "joint_energy_20261030",
-  "adoption_task": "codex/analysis/s3_energy_adoption_20261031",
+  "parameter_file": "include/parameters/particle_energy_20261102/s3/coefficients.json",
+  "sha256": "17f81dee9fea5460b371042d3262cdf5f20027cbf7d50ab746e245b2737d131b",
+  "version": "particle_energy_20261102",
+  "adoption_task": "codex/maintenance/particle_energy_install_20261102",
   "scope": "raw-input windows mode",
-  "formula": "Er=q*(Ar+Br*E0r); Es=q*(As+Bs*E0s); q from matched ring, once per face"
+  "formula": "Er=q_rs*(Ar+Br*E0r); Es=q_rs*(As+Bs*E0s); matched q_pixel replaces q_position, once per face"
 }

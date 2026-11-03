@@ -1,4 +1,5 @@
 #include "angle_info.h"
+#include "../include/sm150_parameter_paths.h"
 #include <iostream>
 #include <fstream>
 
@@ -377,6 +378,7 @@ double cosine(double tg,double pg,double tr,double pr) {
 }
 }
 Model::Model(const std::string &project,const nlohmann::json &parameters):config(parameters) {
+  const sm150::ParameterPaths runtime(std::filesystem::path(project)/"pars");
   check(config.at("schema_version")==1,"Unsupported Doppler parameter schema");
   for(const auto &family:{"Si","S3"}) {
     auto &x=config.at(family);
@@ -386,7 +388,7 @@ Model::Model(const std::string &project,const nlohmann::json &parameters):config
     check(std::isfinite(blend)&&blend>=0&&blend<=1,"Invalid particle-energy fraction");
   }
   auto open=[&](const std::string &name) {
-    std::ifstream f(project+"/pars/"+name);
+    std::ifstream f(runtime.legacy(name));
     check(bool(f),"Cannot read "+name); return f;
   };
   for(int which=0;which<2;++which) {

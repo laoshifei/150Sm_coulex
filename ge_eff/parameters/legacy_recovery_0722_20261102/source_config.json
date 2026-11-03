@@ -1,0 +1,347 @@
+{
+  "run": "0722",
+  "channels": {
+    "204": {
+      "coefficients": [
+        0.32908394217236037,
+        0.03739791998061218,
+        3.5987665618279635e-10
+      ],
+      "energy_origin": "reconstructed 0722 source calibration from full source peak anchors, 2026-10-30; historical cali_0722.txt missing",
+      "time_offset_ns": 29.97
+    },
+    "205": {
+      "coefficients": [
+        0.4358574648500735,
+        0.34249707048626404,
+        5.7718091316614495e-09
+      ],
+      "energy_origin": "reconstructed 0722 source calibration from full source peak anchors, 2026-10-30; historical cali_0722.txt missing",
+      "time_offset_ns": -15.76
+    },
+    "206": {
+      "coefficients": [
+        0.0860202817083291,
+        0.037970479200048445,
+        -6.321194552847721e-11
+      ],
+      "energy_origin": "reconstructed 0722 source calibration from full source peak anchors, 2026-10-30; historical cali_0722.txt missing",
+      "time_offset_ns": 14.53
+    },
+    "208": {
+      "coefficients": [
+        -0.003365919,
+        0.328541503,
+        2.2e-08
+      ],
+      "energy_origin": "existing source baseline; only unselected channels use this",
+      "time_offset_ns": -7.43
+    },
+    "209": {
+      "coefficients": [
+        0.23957663545627383,
+        0.33918059626848235,
+        -4.342788202528198e-08
+      ],
+      "energy_origin": "reconstructed 0722 source calibration from full source peak anchors, 2026-10-30; historical cali_0722.txt missing",
+      "time_offset_ns": 4.01
+    },
+    "210": {
+      "coefficients": [
+        -0.313147097,
+        0.350768143,
+        -5.4e-08
+      ],
+      "energy_origin": "existing source baseline; only unselected channels use this",
+      "time_offset_ns": -5.3
+    },
+    "211": {
+      "coefficients": [
+        0.16197210112420635,
+        0.3233479587401607,
+        -3.482262287022806e-08
+      ],
+      "energy_origin": "reconstructed 0722 source calibration from full source peak anchors, 2026-10-30; historical cali_0722.txt missing",
+      "time_offset_ns": 41.09
+    },
+    "212": {
+      "coefficients": [
+        0.4909447366682116,
+        0.16127792168111835,
+        2.6276593909834303e-08
+      ],
+      "energy_origin": "reconstructed 0722 source calibration from full source peak anchors, 2026-10-30; historical cali_0722.txt missing",
+      "time_offset_ns": 0.0
+    },
+    "213": {
+      "coefficients": [
+        0.566834943141771,
+        0.15500056527032158,
+        3.589052834708466e-08
+      ],
+      "energy_origin": "reconstructed 0722 source calibration from full source peak anchors, 2026-10-30; historical cali_0722.txt missing",
+      "time_offset_ns": 7.12
+    },
+    "214": {
+      "coefficients": [
+        0.24105704244959725,
+        0.1650792323514304,
+        2.131504758418359e-08
+      ],
+      "energy_origin": "reconstructed 0722 source calibration from full source peak anchors, 2026-10-30; historical cali_0722.txt missing",
+      "time_offset_ns": 14.35
+    },
+    "215": {
+      "coefficients": [
+        0.31178909214020223,
+        0.1656035411005289,
+        -3.503970933110335e-10
+      ],
+      "energy_origin": "reconstructed 0722 source calibration from full source peak anchors, 2026-10-30; historical cali_0722.txt missing",
+      "time_offset_ns": 7.65
+    },
+    "304": {
+      "coefficients": [
+        -0.0004279282331935974,
+        0.363838656185212,
+        2.0848720926186972e-08
+      ],
+      "energy_origin": "reconstructed 0722 source calibration from full source peak anchors, 2026-10-30; historical cali_0722.txt missing",
+      "time_offset_ns": -8.64
+    },
+    "305": {
+      "coefficients": [
+        -0.19935391614274067,
+        0.11143403561467345,
+        6.391818639867916e-09
+      ],
+      "energy_origin": "reconstructed 0722 source calibration from full source peak anchors, 2026-10-30; historical cali_0722.txt missing",
+      "time_offset_ns": 33.74
+    },
+    "306": {
+      "coefficients": [
+        0.2487539661565279,
+        0.33676709820615336,
+        2.2953740961036387e-08
+      ],
+      "energy_origin": "reconstructed 0722 source calibration from full source peak anchors, 2026-10-30; historical cali_0722.txt missing",
+      "time_offset_ns": -8.61
+    },
+    "307": {
+      "coefficients": [
+        -0.67514877,
+        0.39967392,
+        -2.1e-08
+      ],
+      "energy_origin": "existing source baseline; only unselected channels use this",
+      "time_offset_ns": -30.25
+    },
+    "308": {
+      "coefficients": [
+        0.38129021173949695,
+        0.4065655917090773,
+        2.181957959865816e-07
+      ],
+      "energy_origin": "reconstructed 0722 source calibration from full source peak anchors, 2026-10-30; historical cali_0722.txt missing",
+      "time_offset_ns": 12.31
+    },
+    "309": {
+      "coefficients": [
+        0.017706419,
+        0.353144372,
+        1.04e-07
+      ],
+      "energy_origin": "existing source baseline; only unselected channels use this",
+      "time_offset_ns": -17.2
+    },
+    "310": {
+      "coefficients": [
+        1.6517991464353372,
+        0.38073916261160706,
+        3.5938066839189755e-07
+      ],
+      "energy_origin": "reconstructed 0722 source calibration from full source peak anchors, 2026-10-30; historical cali_0722.txt missing",
+      "time_offset_ns": -55.15
+    },
+    "311": {
+      "coefficients": [
+        -1.1755730539250635,
+        0.39501242519321866,
+        -1.6770010642475652e-07
+      ],
+      "energy_origin": "reconstructed 0722 source calibration from full source peak anchors, 2026-10-30; historical cali_0722.txt missing",
+      "time_offset_ns": 22.34
+    },
+    "400": {
+      "coefficients": [
+        -0.338451441,
+        0.363831242,
+        1.22e-07
+      ],
+      "energy_origin": "existing source baseline; only unselected channels use this",
+      "time_offset_ns": 20.27
+    },
+    "401": {
+      "coefficients": [
+        -2.649770872,
+        0.365702311,
+        -4.52e-07
+      ],
+      "energy_origin": "existing source baseline; only unselected channels use this",
+      "time_offset_ns": 14.18
+    },
+    "402": {
+      "coefficients": [
+        -0.612431785,
+        0.357378379,
+        -3.3e-08
+      ],
+      "energy_origin": "existing source baseline; only unselected channels use this",
+      "time_offset_ns": 24.61
+    },
+    "403": {
+      "coefficients": [
+        -0.14746876,
+        0.35902286,
+        1e-09
+      ],
+      "energy_origin": "existing source baseline; only unselected channels use this",
+      "time_offset_ns": 19.83
+    },
+    "404": {
+      "coefficients": [
+        -0.264353306,
+        0.18643096,
+        -1e-08
+      ],
+      "energy_origin": "existing source baseline; only unselected channels use this",
+      "time_offset_ns": 18.07
+    },
+    "405": {
+      "coefficients": [
+        -0.202967862,
+        0.187794142,
+        7e-09
+      ],
+      "energy_origin": "existing source baseline; only unselected channels use this",
+      "time_offset_ns": 20.6
+    },
+    "406": {
+      "coefficients": [
+        -0.045851371,
+        0.184221245,
+        1.6e-08
+      ],
+      "energy_origin": "existing source baseline; only unselected channels use this",
+      "time_offset_ns": 23.9
+    },
+    "407": {
+      "coefficients": [
+        -0.312002245,
+        0.19015058,
+        1e-09
+      ],
+      "energy_origin": "existing source baseline; only unselected channels use this",
+      "time_offset_ns": 15.47
+    },
+    "409": {
+      "coefficients": [
+        -0.240392912,
+        0.192482969,
+        3e-09
+      ],
+      "energy_origin": "existing source baseline; only unselected channels use this",
+      "time_offset_ns": 24.64
+    },
+    "410": {
+      "coefficients": [
+        -2.051430765,
+        0.203835023,
+        -1.66e-07
+      ],
+      "energy_origin": "existing source baseline; only unselected channels use this",
+      "time_offset_ns": 29.37
+    },
+    "411": {
+      "coefficients": [
+        -0.570404418,
+        0.19636155,
+        -4.1e-08
+      ],
+      "energy_origin": "existing source baseline; only unselected channels use this",
+      "time_offset_ns": 8.55
+    },
+    "504": {
+      "coefficients": [
+        -5.754214678,
+        0.398721991,
+        -1.619e-06
+      ],
+      "energy_origin": "existing source baseline; only unselected channels use this",
+      "time_offset_ns": -27.96
+    },
+    "505": {
+      "coefficients": [
+        2.141013954,
+        0.394799423,
+        8.33e-07
+      ],
+      "energy_origin": "existing source baseline; only unselected channels use this",
+      "time_offset_ns": 3.79
+    },
+    "506": {
+      "coefficients": [
+        0.7000137659745178,
+        0.4017370235311823,
+        -9.395736876506332e-08
+      ],
+      "energy_origin": "reconstructed 0722 source calibration from full source peak anchors, 2026-10-30; historical cali_0722.txt missing",
+      "time_offset_ns": -15.71
+    },
+    "507": {
+      "coefficients": [
+        -0.18007474095486486,
+        0.43330875404053876,
+        2.1503912657983925e-08
+      ],
+      "energy_origin": "reconstructed 0722 source calibration from full source peak anchors, 2026-10-30; historical cali_0722.txt missing",
+      "time_offset_ns": 36.3
+    },
+    "508": {
+      "coefficients": [
+        -0.12533342853316753,
+        0.4070555310672007,
+        3.832849384717995e-08
+      ],
+      "energy_origin": "reconstructed 0722 source calibration from full source peak anchors, 2026-10-30; historical cali_0722.txt missing",
+      "time_offset_ns": 36.39
+    },
+    "509": {
+      "coefficients": [
+        -0.332255568504479,
+        0.40418791027710527,
+        2.0622411492105227e-07
+      ],
+      "energy_origin": "reconstructed 0722 source calibration from full source peak anchors, 2026-10-30; historical cali_0722.txt missing",
+      "time_offset_ns": -16.71
+    },
+    "510": {
+      "coefficients": [
+        0.6881020249874155,
+        0.39049466221314194,
+        2.1826284565162998e-07
+      ],
+      "energy_origin": "reconstructed 0722 source calibration from full source peak anchors, 2026-10-30; historical cali_0722.txt missing",
+      "time_offset_ns": 30.16
+    }
+  },
+  "dither_seed": 722,
+  "source_window_ns": 200,
+  "quality": "retain all flags as original sort",
+  "native_time": "failed: int64(8*ts); normal: int64((2*ts-cfds+cfd/16384)*4), then int64(t+legacy_offset)",
+  "time_walk": false,
+  "energy_dither": "TRandom3(722), Uniform(-0.5,0.5) keV; historical seed unknown",
+  "inbeam_gain": false,
+  "grouping": "all Ge, backward/forward 200 ns, original two-hit Clover rule; source-only no particle gate",
+  "not_exact_original": true
+}

@@ -105,7 +105,9 @@ int build::Process() {
     require(!fs::exists(output.string()+".json"),"Existing extraction receipt");
     Parameters pars(project,o.run,true);
     fs::path profile=o.profile_dir;
-    if(profile.empty()) {
+    if(profile.empty() && pars.paths.active()) {
+      profile=pars.paths.timing_directory();
+    } else if(profile.empty()) {
       const auto active=project/"pars/time_alignment/active.txt";pars.freeze(active);
       std::istringstream in(read_text(active));std::string name,extra;
       require(bool(in>>name) && !(in>>extra) && name.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_")==std::string::npos,"Invalid active timing profile");

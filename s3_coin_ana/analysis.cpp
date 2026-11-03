@@ -122,8 +122,9 @@ int analysis::Process() {
     require(input_meta.at("run")==rn(o.run),"Input run mismatch");
   } else require(o.energy_file.empty(),"Legacy input lacks ADC snapshots for candidate energy");
   Geometry geometry;
-  geometry.read(o.project/"pars/angle_info/s3_ring_angle.txt",geometry.theta,180.);
-  geometry.read(o.project/"pars/angle_info/s3_sector_angle.txt",geometry.phi,360.);
+  const sm150::ParameterPaths runtime(o.project/"pars");
+  geometry.read(runtime.legacy("angle_info/s3_ring_angle.txt"),geometry.theta,180.);
+  geometry.read(runtime.legacy("angle_info/s3_sector_angle.txt"),geometry.phi,360.);
   Energy energy(o,input_meta);
   const auto count=o.sample_entries==0?total:std::min<Long64_t>(total,o.sample_entries);
   const int segments=count==total?1:std::min<Long64_t>(o.segments,count);
@@ -244,6 +245,7 @@ int analysis::Process() {
   }
   require(c["input"]==count&&candidates.GetEntries()==c["unique"],"Read/count mismatch");
   require(Stat(o.input).same(source_before),"Input file changed during analysis");
+  runtime.verify_unchanged();
   for(auto it=geometry.snapshots.begin();it!=geometry.snapshots.end();++it)
     require(hash(read_text(it.key()))==it.value().at("sha256"),"Geometry changed during analysis");
   if(energy.enabled)require(hash(read_text(o.energy_file))==energy.snapshot.at("sha256"),"Energy candidate changed");

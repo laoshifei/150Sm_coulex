@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify or install the selected frozen timing package. Never changes active.txt.
+"""Verify or install the selected frozen timing package. Never activates it.
 
 No ROOT, fitting, raw event reading, or third-party Python packages are used.
 Run from any directory: python3 /path/to/ge_time_walk/parameters/manage.py verify
@@ -91,7 +91,7 @@ def main():
         name = selection['runtime_version']
         if not re.fullmatch('[a-z0-9_]+', name):
             raise ValueError('Invalid runtime version name')
-        destination = args.destination or PROJECT / 'pars/time_alignment/versions' / name
+        destination = args.destination or PROJECT / 'pars/timing' / name
         destination = destination.absolute()
         result['status'] = install(source, selection, package, destination)
         result['destination'] = str(destination)

@@ -170,13 +170,19 @@ void build_ge_time_walk(const WalkOptions& input_options) {
     require(n>=1 && n<=10000 && std::abs(n-std::round(n))<1e-8,"Require integral number of bins<=10000");
   require(o.chunk>0 && o.chunk<=o.max_buffer_hits,"Invalid chunk/buffer limit");
   Parameters p(o.project,o.run,true);
-  // ge_time_walk maintains the numerical source; explicit active selection reproduces the previous workflow without implicit mixing.
+  // Default to the adopted runtime copy; --profile local retains the domain source workflow.
   fs::path profile_dir;std::string selection_source,expected_sha;
   if(!o.profile_dir.empty()) {
     require(o.profile.empty(),"Choose --profile or --profile-dir, not both");
     profile_dir=fs::canonical(o.profile_dir);o.profile=profile_dir.filename().string();
     selection_source="explicit_directory";
-  } else if(o.profile.empty() || o.profile=="local") {
+  } else if(o.profile.empty() || o.profile=="active") {
+    profile_dir=p.paths.timing_directory();
+    require(!profile_dir.empty(),"No active timing profile");
+    if(!p.paths.active())p.freeze(p.pars/"time_alignment/active.txt");
+    profile_dir=fs::canonical(profile_dir);o.profile=profile_dir.filename().string();
+    selection_source=p.paths.active()?p.paths.manifest_path().string():"pars/time_alignment/active.txt";
+  } else if(o.profile=="local") {
     const auto selected=o.project/"ge_time_walk/parameters/selected_profile.json";
     p.freeze(selected);const auto choice=json::parse(read_text(selected));
     o.profile=choice.at("profile").get<std::string>();
@@ -185,14 +191,9 @@ void build_ge_time_walk(const WalkOptions& input_options) {
     expected_sha=choice.at("calibration_sha256").get<std::string>();
     selection_source="ge_time_walk/parameters/selected_profile.json";
   } else {
-    if(o.profile=="active") {
-      p.freeze(p.pars/"time_alignment/active.txt");
-      std::istringstream active(read_text(p.pars/"time_alignment/active.txt"));std::string extra;
-      require(bool(active>>o.profile) && !(active>>extra),"Invalid active profile");
-      selection_source="pars/time_alignment/active.txt";
-    } else selection_source="explicit_installed_version";
+    selection_source="explicit_installed_version";
     require(!o.profile.empty() && o.profile.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_")==std::string::npos,"Invalid profile");
-    profile_dir=fs::canonical(p.pars/"time_alignment/versions"/o.profile);
+    profile_dir=fs::canonical(p.paths.legacy(fs::path("time_alignment/versions")/o.profile));
   }
   for(const auto& name:{"calibration.json","metadata.json","storage_format.txt","correction_mode.txt","source_sha256.txt"}) p.freeze(profile_dir/name);
   const auto actual_sha=p.snapshots.at((profile_dir/"calibration.json").string()).at("sha256").get<std::string>();

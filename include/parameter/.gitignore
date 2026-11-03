@@ -1,0 +1,2 @@
+# Publish the adopted text parameters without changing the root ignore policy.
+!*.txt

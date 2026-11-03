@@ -14,6 +14,7 @@
 #include <utility>
 #include <vector>
 #include <nlohmann/json.hpp>
+#include "sm150_parameter_paths.h"
 
 namespace sm150 {
 class TimeAlignment {
@@ -21,6 +22,13 @@ class TimeAlignment {
   TimeAlignment() : active_(false), total_(false), run_(0), s3_shift_(0.) {}
 
   void Load(const std::string& pars, int run) {
+    ParameterPaths paths(pars);
+    if (paths.active()) {
+      const auto directory = paths.timing_directory();
+      LoadProfile(directory.string(), run);
+      paths.verify_unchanged();
+      return;
+    }
     std::ifstream input((pars + "/time_alignment/active.txt").c_str());
     if (!input) { Reset(run); return; }
     std::string profile, extra;

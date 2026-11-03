@@ -2,21 +2,23 @@
 # C++ reads raw data; use explicit run lists and paths, refill slots and wait for every job to finish.
 set -uo pipefail
 if (( $# < 3 || $# > 5 )); then
-  echo 'Usage: batch.sh RUN_LIST INPUT_DIR NEW_OUTPUT_DIR [JOBS=2] [PROFILE=local]' >&2
+  echo 'Usage: batch.sh RUN_LIST INPUT_DIR NEW_OUTPUT_DIR [JOBS=2] [PROFILE=active]' >&2
   exit 2
 fi
 list=$1
 input=$2
 output=$3
 jobs_limit=${4:-2}
-profile=${5:-local}
+profile=${5:-active}
 [[ $jobs_limit =~ ^[1-9][0-9]*$ ]] && (( jobs_limit <= 8 )) || { echo 'JOBS must be1..8' >&2; exit 2; }
 directory=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 project=$(cd -- "$directory/.." && pwd)
 [[ -f $list && -d $input && -x $directory/build && ! -e $output ]] || { echo 'Check list/input/build; output directory must be new' >&2; exit 2; }
-if [[ $profile == active ]]; then read -r profile < "$project/pars/time_alignment/active.txt"; fi
 profile_args=(--profile "$profile")
-if [[ $profile == local ]]; then
+if [[ $profile == active && -f $project/pars/active.json ]]; then
+  profile_dir=$(python3 "$project/pars/manage.py" path timing) || exit 2
+  profile_args=(--profile-dir "$profile_dir")
+elif [[ $profile == local ]]; then
   # Use one fixed directory for the batch; each run still verifies the complete parameter SHA.
   profile_dir=$(python3 "$directory/parameters/manage.py" path) || exit 2
   profile_args=(--profile-dir "$profile_dir")

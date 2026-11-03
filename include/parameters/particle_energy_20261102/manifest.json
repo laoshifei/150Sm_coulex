@@ -1,0 +1,20 @@
+{
+  "schema": "sm150_particle_energy_release_v1",
+  "version": "particle_energy_20261102",
+  "files": {
+    "source_parameters.csv": "fea5d775c85ad1a9c295857944c9e28cdada5ac5615f58d9a0aeb89b5f0d97b1",
+    "adoption.json": "a29e6982c847e4116e9f699ff66319bd21146d32f76ce9cacd454d4ead403a21",
+    "README.md": "6326f1baa6b314ab2ad7ee2e23c3a5b412d14a978ef90f499e56d55c8fd96439",
+    "s3/q_parameters.csv": "191609b85a194b0c37b54c6808c2d4af2854d9cf891970f4a5a18ee44ae68771",
+    "s3/ab_parameters.csv": "3cbe2dd70c7483474ce4f2e88f1c48aa75a4799236e6d20dc0bd1bdd464226d8",
+    "s3/coefficients.json": "17f81dee9fea5460b371042d3262cdf5f20027cbf7d50ab746e245b2737d131b",
+    "source_calibration/cali_si_r457_low_current.txt": "7a33689fa93c75bc36135199fbe6b64e00857a554d0af56e5dea8758ccd383dd",
+    "source_calibration/cali_si_r460.txt": "8e33cff996250e9fff5463796e6471d8ee9e6cdb3cebc6f4904a8c15b7856e3d",
+    "source_calibration/cali_si_r457_high_current.txt": "af4bb5def29d27bfea8b588b5a05cc93b45b909ca4a85ff1f2706ba6c5504c41",
+    "source_calibration/cali_ge.txt": "81229f2a9cc38ecc320167c45587c95a3cfaa1b7d611079d76435ae3ee5a06eb",
+    "source_calibration/cali_si_r457_wave_mapping.txt": "07d63d2e5dea8cd56d796735a1af08a7f103460cc05dac249fa9239ec3a53dc3"
+  },
+  "selection": "pars/active.json",
+  "activation_record": "codex/maintenance/particle_energy_install_20261102/activation.json",
+  "frozen_scientific_source": "s3_fb_cor/parameters/feature_anchor_20261102/coefficients.json"
+}

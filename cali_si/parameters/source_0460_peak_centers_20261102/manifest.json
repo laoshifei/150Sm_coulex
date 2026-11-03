@@ -1,0 +1,13 @@
+{
+  "formal_replacement": false,
+  "partial_candidate_tables": true,
+  "files": {
+    "all_channels.csv": "0c1aa175c5913b5434f028d15b31986a53f01435f62cade33b2c28844be6bb29",
+    "candidate.json": "f09566bb0484ea4ac05984cf5b8f443067d9294b5205510787ad48171c68d92c",
+    "candidate_coefficients.csv": "ff70ce1a14a324d3ea4a81a58f80ff6faa9caeba3c64e3fa299727459e38a365",
+    "peak_positions.csv": "01e0bec05b7107e212f6a76c1938d861096a8003012041d4c4e757418dbbcdbe",
+    "start_comparisons.csv": "eb8f97b086a90aaef43b78d30cbc1a5bfbd24e5828e8b13eafac13d8b0e5bc2c",
+    "window_checked_coefficients.csv": "9e8fa0deeeee4150fd0e869bed0d1c3a113d607c51bce388a76b51985754e5cf",
+    "window_comparisons.csv": "b54d800ee159e43c4d46f829a482662c9a76f626825632662df1502f537ebd32"
+  }
+}

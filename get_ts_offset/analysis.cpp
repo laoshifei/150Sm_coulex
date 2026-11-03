@@ -471,12 +471,15 @@ void analysis::Process() {
   sm150::TimeAlignment timing;
   if(o.mode=="residual") {
     require(o.energy_stage=="final","Residual mode requires final energy, consistent with active timing profile");
-    p.freeze(p.pars/"time_alignment/active.txt");
-    std::istringstream active(p.snapshots.at((p.pars/"time_alignment/active.txt").string()).at("text").get<std::string>());
-    std::string profile; active>>profile;
-    if(!o.profile.empty()) profile=o.profile;
-    require(!profile.empty() && profile.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_")==std::string::npos,"Invalid active profile");
-    fs::path dir=p.pars/"time_alignment/versions"/profile;
+    fs::path dir;
+    if(o.profile.empty()) {
+      dir=p.paths.timing_directory();
+      if(!p.paths.active())p.freeze(p.pars/"time_alignment/active.txt");
+    } else {
+      require(o.profile.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_")==std::string::npos,"Invalid explicit profile");
+      dir=p.paths.legacy(fs::path("time_alignment/versions")/o.profile);
+    }
+    require(!dir.empty(),"No active timing profile");
     for(const auto& item:fs::recursive_directory_iterator(dir)) if(item.is_regular_file()) p.freeze(item.path());
     timing.LoadProfile(dir.string(),o.run);
     require(timing.active() && timing.total(),"Residual mode requires a complete current profile");

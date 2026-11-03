@@ -10,7 +10,7 @@ int main(int argc,char** argv) {
       std::string a=argv[i];
       if(a=="--help" || a=="-h") {
         std::cout<<"./build RUN [--input decoded.root] [--output s3.root] [--project DIR]\n"
-          "  --profile-dir DIR  Complete timing profile; default active.txt\n"
+          "  --profile-dir DIR  Complete timing profile; default pars/active.json\n"
           "  --entries N        Prefix limit for tests; omitted means full input\n"
           "  --sample-entries N Distributed joint-calibration pairs; 0 means all\n"
           "  --gap-ns N         Temporal connected-component gap (default 100)\n"

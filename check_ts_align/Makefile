@@ -1,6 +1,6 @@
 out = build
 
-sourcefile = main.cpp build.h build.cpp set.h ../include/sm150_time_alignment.h
+sourcefile = main.cpp build.h build.cpp set.h ../include/sm150_time_alignment.h ../include/sm150_parameter_paths.h
 
 ROOTCFLAGS  = $(shell root-config --cflags)
 ROOTLIBS    = $(shell root-config --libs) -lSpectrum

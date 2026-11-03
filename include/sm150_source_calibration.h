@@ -167,12 +167,15 @@ inline double left_cdf(double x,double mu,double sigma,double tau) {
 }
 using Components=std::vector<std::pair<double,double>>;
 inline std::array<double,2> bin_model(double l,double r,const double* p,bool tail,double lo,double hi,
-                                    const Components& components={{0.,1.}}) {
+                                    const Components& components={{0.,1.}},bool double_tail=false) {
   const double area=std::exp(p[0]),mu=p[1],sig=std::exp(p[2]);
   const double fraction=tail?p[5]:0.,tau=tail?std::exp(p[6]):1.;
   auto cdf=[&](double x){
     double sum=0;
-    for(const auto& c:components)sum+=c.second*((1-fraction)*normal_cdf((x-mu-c.first)/sig)+fraction*left_cdf(x,mu+c.first,sig,tau));
+    for(const auto& c:components) {
+      if(double_tail)sum+=c.second*((1-fraction)*left_cdf(x,mu+c.first,sig,tau)+fraction*left_cdf(x,mu+c.first,sig,tau+std::exp(p[7])));
+      else sum+=c.second*((1-fraction)*normal_cdf((x-mu-c.first)/sig)+fraction*left_cdf(x,mu+c.first,sig,tau));
+    }
     return sum;
   };
   const double signal=area*std::max(0.,cdf(r)-cdf(l));
@@ -180,12 +183,13 @@ inline std::array<double,2> bin_model(double l,double r,const double* p,bool tai
   return {signal,bg};
 }
 inline json fit_peak(TH1& h,double guess,double halfwidth,bool tail,double physical_shift=-.5,
-                     const Components& components={{0.,1.}}) {
+                     const Components& components={{0.,1.}},const json& policy=json::object(),
+                     const json& start=json::object(),bool pure_tail=false,bool double_tail=false) {
   const double bin=h.GetBinWidth(1);
   int first=std::max(1,h.FindBin(guess-halfwidth-physical_shift));
   int last=std::min(h.GetNbinsX(),h.FindBin(guess+halfwidth-physical_shift));
-  const int n=last-first+1,np=tail?7:5;
-  require(n>np+3,"Insufficient bins for source peak fit");
+  const int n=last-first+1,np=double_tail?8:tail?7:5,nfree=np-(pure_tail?1:0);
+  require(n>nfree+3,"Insufficient bins for source peak fit");
   std::vector<double> edges,counts;
   double total=0,maximum=0;
   for(int i=first;i<=last;++i) {
@@ -200,11 +204,16 @@ inline json fit_peak(TH1& h,double guess,double halfwidth,bool tail,double physi
   std::vector<double> p={std::log(area),guess,std::log(std::max(bin*.7,halfwidth/8)),std::log(background),std::log(background)};
   std::vector<double> lower={std::log(.1),guess-halfwidth*.4,std::log(bin*.2),-18.,-18.};
   std::vector<double> upper={std::log(total*4+100),guess+halfwidth*.4,std::log(halfwidth*.45),std::log(maximum/bin*4+100),std::log(maximum/bin*4+100)};
-  if(tail){p.push_back(.07);p.push_back(std::log(std::max(bin,halfwidth/6)));lower.push_back(0);lower.push_back(std::log(bin*.15));upper.push_back(.6);upper.push_back(std::log(halfwidth));}
+  if(tail){p.push_back(start.value("fraction",.07));p.push_back(std::log(std::max(bin,halfwidth*start.value("tau_fraction",1./6))));lower.push_back(0);lower.push_back(std::log(bin*.15));upper.push_back(policy.value("tail_fraction_max",.6));upper.push_back(std::log(halfwidth));}
+  if(double_tail){p.push_back(std::log(halfwidth*start.value("long_tau_increment_fraction",.3)));lower.push_back(std::log(bin*.15));upper.push_back(std::log(halfwidth));}
+  p[1]+=start.value("center_shift_fraction",0.)*halfwidth;
+  p[2]=std::log(std::max(bin*.7,halfwidth*start.value("sigma_fraction",.125)));
+  for(int i=0;i<np;++i)p[i]=std::clamp(p[i],lower[i]+1e-6*(upper[i]-lower[i]),upper[i]-1e-6*(upper[i]-lower[i]));
+  if(pure_tail)p[5]=1.;
   auto objective=[&](const double* q) {
     double sum=0;
     for(int i=0;i<n;++i) {
-      const auto m=bin_model(edges[i],edges[i+1],q,tail,edges.front(),edges.back(),components);const double v=std::max(m[0]+m[1],1e-200),y=counts[i];
+      const auto m=bin_model(edges[i],edges[i+1],q,tail,edges.front(),edges.back(),components,double_tail);const double v=std::max(m[0]+m[1],1e-200),y=counts[i];
       sum+=2*(v-y+(y>0?y*std::log(y/v):0.));
     }
     return std::max(0.,sum);
@@ -212,10 +221,11 @@ inline json fit_peak(TH1& h,double guess,double halfwidth,bool tail,double physi
   ROOT::Fit::Fitter fitter;
   fitter.Config().SetMinimizer("Minuit2","Migrad");
   fitter.Config().MinimizerOptions().SetPrintLevel(-1);
-  fitter.Config().MinimizerOptions().SetMaxFunctionCalls(6000);
+  fitter.Config().MinimizerOptions().SetMaxFunctionCalls(policy.value("maximum_function_calls",6000));
   fitter.Config().MinimizerOptions().SetTolerance(.001);
   fitter.Config().SetParamsSettings(np,p.data());
   for(int i=0;i<np;++i){fitter.Config().ParSettings(i).SetLimits(lower[i],upper[i]);fitter.Config().ParSettings(i).SetStepSize(i==1?bin*.1:.03);}
+  if(pure_tail)fitter.Config().ParSettings(5).Fix();
   ROOT::Math::Functor functor(objective,np);
   const bool success=fitter.FitFCN(functor,p.data(),n,0);
   const auto& result=fitter.Result();
@@ -223,39 +233,54 @@ inline json fit_peak(TH1& h,double guess,double halfwidth,bool tail,double physi
   json cov=json::array(),bounds=json::array();
   for(int i=0;i<np;++i) {
     json row=json::array();for(int j=0;j<np;++j)row.push_back(result.CovMatrix(i,j));cov.push_back(row);
-    if(std::min(p[i]-lower[i],upper[i]-p[i])<1e-4*(upper[i]-lower[i]))bounds.push_back(i);
+    if(!(pure_tail&&i==5)&&std::min(p[i]-lower[i],upper[i]-p[i])<1e-4*(upper[i]-lower[i]))bounds.push_back(i);
   }
   json model=json::array(),signal=json::array(),bg=json::array(),residual=json::array();
   for(int i=0;i<n;++i) {
-    const auto m=bin_model(edges[i],edges[i+1],p.data(),tail,edges.front(),edges.back(),components);const double sum=std::max(m[0]+m[1],1e-200),y=counts[i];
+    const auto m=bin_model(edges[i],edges[i+1],p.data(),tail,edges.front(),edges.back(),components,double_tail);const double sum=std::max(m[0]+m[1],1e-200),y=counts[i];
     const double d=std::max(0.,2*(sum-y+(y>0?y*std::log(y/sum):0.)));
     model.push_back(sum);signal.push_back(m[0]);bg.push_back(m[1]);residual.push_back((y>=sum?1:-1)*std::sqrt(d));
   }
   const double dev=objective(p.data());bool shape_bound=false;
   for(const auto& i:bounds)if(i==1||i==2||i==0||
-      ((i==5||i==6)&&p[i.get<int>()]>.5*(lower[i.get<int>()]+upper[i.get<int>()])))shape_bound=true;
+      ((i==5||i==6||i==7)&&p[i.get<int>()]>.5*(lower[i.get<int>()]+upper[i.get<int>()]))||(double_tail&&(i==5||i==6||i==7)))shape_bound=true;
   const double center_se=result.ParError(1),area_se=std::exp(p[0])*result.ParError(0);
   const bool usable=success&&result.IsValid()&&result.CovMatrixStatus()>=2&&!shape_bound&&
       std::isfinite(center_se)&&center_se>0&&center_se<std::exp(p[2])&&std::exp(p[0])>5*area_se;
-  return {{"tail_model",tail?"left_tail":"gaussian"},{"success",success&&result.IsValid()},
+  return {{"tail_model",double_tail?"double_left_tail":pure_tail?"pure_left_tail":tail?"left_tail":"gaussian"},{"success",success&&result.IsValid()},
     {"fit_status",result.Status()},{"covariance_status",result.CovMatrixStatus()},{"calls",result.NCalls()},
     {"center",p[1]},{"center_se",center_se},{"sigma",std::exp(p[2])},{"area",std::exp(p[0])},{"area_se",area_se},
     {"parameters",p},{"lower",lower},{"upper",upper},{"covariance",cov},{"bounds_indices",bounds},
     {"center_usable",usable},{"shape_bound",shape_bound},{"components_adc_offset_and_weight",components},
-    {"deviance",dev},{"ndof",n-np},{"deviance_per_dof",dev/(n-np)},
-    {"aicc",dev+2*np+2.*np*(np+1)/(n-np-1)},{"counts",counts},{"edges",edges},
+    {"deviance",dev},{"ndof",n-nfree},{"deviance_per_dof",dev/(n-nfree)},
+    {"aicc",dev+2*nfree+2.*nfree*(nfree+1)/(n-nfree-1)},{"counts",counts},{"edges",edges},
+    {"free_parameters",nfree},{"fixed_parameter_indices",pure_tail?json::array({5}):json::array()},
+    {"initial_parameters",start},{"edm",result.Edm()},
     {"model",model},{"signal",signal},{"background",bg},{"residual",residual},
     {"error_scope","conditional Minuit covariance; no peak-shape or source-energy systematic uncertainty"}};
 }
 inline json choose_peak(TH1& h,double guess,double width,double shift=-.5,
-                        const Components& components={{0.,1.}}) {
+                        const Components& components={{0.,1.}},const json& policy=json::object()) {
   json attempts=json::array();int selected=-1;double score=1e100;
-  for(bool tail:{false,true}) {
-    try {
-      auto fit=fit_peak(h,guess,width,tail,shift,components);
-      if(fit.at("center_usable").get<bool>()&&fit.at("aicc").get<double>()<score){selected=int(attempts.size());score=fit.at("aicc");}
-      attempts.push_back(fit);
-    } catch(const std::exception& e) {attempts.push_back({{"error",e.what()},{"center_usable",false}});}
+  const int models=policy.value("include_double_left_tail",false)?4:policy.value("include_pure_left_tail",false)?3:2;
+  for(int model=0;model<models;++model) {
+    const bool tail=model>0,pure=model==2,dual=model==3;
+    json starts=tail?policy.value("tail_starts",json::array({json::object()})):policy.value("gaussian_starts",json::array({json::object()}));
+    json records=json::array(),best;double bestdev=1e100;bool bestusable=false;
+    for(const auto& start:starts)try {
+      auto fit=fit_peak(h,guess,width,tail,shift,components,policy,start,pure,dual);
+      json record=fit;
+      for(const auto* field:{"counts","edges","model","signal","background","residual"})record.erase(field);
+      records.push_back(record);
+      const bool usable=fit.at("center_usable");const double dev=fit.at("deviance");
+      if(best.is_null()||(usable&&!bestusable)||(usable==bestusable&&dev<bestdev)) {
+        best=std::move(fit);bestdev=dev;bestusable=usable;
+      }
+    } catch(const std::exception& e) {records.push_back({{"error",e.what()},{"initial_parameters",start},{"center_usable",false}});}
+    if(best.is_null())best={{"tail_model",dual?"double_left_tail":pure?"pure_left_tail":tail?"left_tail":"gaussian"},{"center_usable",false}};
+    best["start_records"]=records;
+    if(best.value("center_usable",false)&&best.at("aicc").get<double>()<score){selected=int(attempts.size());score=best.at("aicc");}
+    attempts.push_back(best);
   }
   if(selected<0)return {{"status","peak_fit_unreliable"},{"attempts",attempts}};
   json result=attempts[selected];result["status"]="conditional_peak_fit";result["attempts"]=attempts;result["selected_model"]=selected;
@@ -317,7 +342,7 @@ inline json calibrate_channel(TH1& h,int key,const Coeff& seed,const json& lines
       require(total>0,"Empty source multiplet");for(auto& c:components)c.second/=total;
       line["fixed_component_scale_keV_per_adc"]=scale;
     }
-    const auto fit=choose_peak(h,center,half,-.5,components);
+    const auto fit=choose_peak(h,center,half,-.5,components,cfg.value("response_fit",json::object()));
     for(auto it=fit.begin();it!=fit.end();++it)line[it.key()]=it.value();
     if(line.contains("center")) {
       line["old_residual_keV"]=energy(line["center"],seed)-line.at("energy_keV").get<double>();
@@ -340,7 +365,8 @@ inline json calibrate_channel(TH1& h,int key,const Coeff& seed,const json& lines
   result["peaks"]=all;return result;
 }
 
-inline int run_source(const Options& o,int cid,json (*channel_config)(int,const json&)) {
+inline int run_source(const Options& o,int cid,json (*channel_config)(int,const json&),
+                     json (*channel_fit)(TH1&,int,const Coeff&,const json&,const json&)=calibrate_channel) {
   const auto start=std::chrono::steady_clock::now();const std::string config_text=read_text(o.config);
   const auto cfg=json::parse(config_text);const auto seeds=read_seed(o.seed,cid);Input input(o.input);
   if(!o.legacy){require(!input.metadata.is_null()&&input.metadata.value("schema","")=="sm150_raw2hist_v1","Expected raw2hist metadata");require(input.metadata.at("run").get<std::string>()==diagnostic::rn(o.run),"Source run does not match histogram metadata");}
@@ -359,7 +385,7 @@ inline int run_source(const Options& o,int cid,json (*channel_config)(int,const 
     json r;auto* h=input.histogram(key,"adc_clean",o.legacy);
     if(!h)r={{"key",key},{"status","missing_histogram"},{"candidate_eligible",false},{"seed_coefficients",item.second},{"peaks",json::array()}};
     else {
-      try {auto settings=channel_config(key,cfg);r=calibrate_channel(*h,key,item.second,settings.at("lines"),settings);}
+      try {auto settings=channel_config(key,cfg);r=channel_fit(*h,key,item.second,settings.at("lines"),settings);}
       catch(const std::exception& e){r={{"key",key},{"status","channel_exception"},{"error",e.what()},{"candidate_eligible",false},{"peaks",json::array()},{"seed_coefficients",item.second}};}
     }
     csv<<key<<','<<r.at("status").get<std::string>()<<','<<r.at("candidate_eligible").get<bool>();

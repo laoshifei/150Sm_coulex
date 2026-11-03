@@ -1,0 +1,110 @@
+{
+  "schema": "sm150_ge_efficiency_selection_v1",
+  "recorded_at": "2026-11-02T10:57:04.967791+08:00",
+  "group": "all",
+  "scope": "all_selected_ge_only",
+  "decision": "Use only the all-Ge efficiency for subsequent combined-Ge analysis; separate ring coefficients are not required.",
+  "version": "original_saved_coefficients_retained",
+  "selection_basis": "Retains the user-selected original efficiency; the current request changes the group scope, not the numerical calibration.",
+  "parameter_order": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G"
+  ],
+  "parameters": {
+    "A": 14.8,
+    "B": 4.618,
+    "C": 0.0,
+    "D": 10.8,
+    "E": -0.7352,
+    "F": -0.1101,
+    "G": 15.0
+  },
+  "parameter_vector": [
+    14.8,
+    4.618,
+    0.0,
+    10.8,
+    -0.7352,
+    -0.1101,
+    15.0
+  ],
+  "function": {
+    "name": "Radware",
+    "energy_unit": "keV",
+    "log_base": "natural",
+    "x": "ln(E_gamma_keV/100)",
+    "y": "ln(E_gamma_keV/1000)",
+    "formula": "f(E)=exp(((A+B*x+C*x*x)^(-G)+(D+E*y+F*y*y)^(-G))^(-1/G))",
+    "fixed_parameters": {
+      "C": 0.0,
+      "G": 15.0
+    }
+  },
+  "relative_efficiency": {
+    "formula": "f(E_gamma)/max(f(E_prime), E_prime in [50,2048] keV)",
+    "normalization_energy_domain_keV": [
+      50.0,
+      2048.0
+    ],
+    "corrected_yield": "peak_area/relative_efficiency",
+    "note": "Notebook 0241 uses f(E)/f(334) only for curve-shape comparison; it is not the saved yield-program normalization."
+  },
+  "applicability": {
+    "aggregation": "Combined Ge spectrum with the original detector selection and addback convention.",
+    "original_selection_source": "ge_eff/eff_cali_all_ge.cpp:get_all_ge_h",
+    "ring_sector_selection": {
+      "3": [
+        2,
+        8,
+        9,
+        10
+      ],
+      "4": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "5": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    "highest_source_gamma_keV": 1408.0,
+    "note": "The 50--2048-keV function domain does not establish calibration above the highest source line; detector selection or addback changes require a matching efficiency review."
+  },
+  "uncertainty": {
+    "legacy_residual_rms_percent": 2.84,
+    "note": "Historical residual metric only; this record does not establish a new complete uncertainty budget or adopt additional uncertainty terms."
+  },
+  "sources": [
+    {
+      "path": "fit_yield/exp1/get_yield_eff.cpp",
+      "sha256": "a4d3ddcde0a37a3eebf5ae700106b8d29da0c4900fb1a91abd13b47266f88db1",
+      "parameter_key": "m_ge_eff_pars[\"ge_all\"]"
+    },
+    {
+      "path": "fit_yield/exp2/get_yield_eff.cpp",
+      "sha256": "a74bea491ab55e19a57bc8d7c0ab99ca68a5a62394e02df10d5ba43e39a2a99d",
+      "parameter_key": "m_ge_eff_pars[\"ge_all\"]"
+    }
+  ],
+  "maintenance": {
+    "ring_results": "Retained as historical comparisons; not required for subsequent all-Ge-only use.",
+    "refitted_candidate": "ge_eff/parameters/legacy_recovery_0722_20261102; retained separately, not selected.",
+    "runtime_code_changed": false,
+    "runtime_status": "The existing yield macros still embed the same original all-Ge coefficients; this is the explicit selection record."
+  }
+}

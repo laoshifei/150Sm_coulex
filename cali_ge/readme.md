@@ -7,6 +7,13 @@ calibration roles; `compute_k.cpp` handles the separate 511 keV gain step.
 Shared numerical and input/output code is in
 `include/sm150_source_calibration.h`.
 
+The adopted Ge base polynomial and per-run gain tables reside in
+[`include/parameter`](../include/parameter/README.md).
+`pars/cali_ge.txt` and `pars/run_k/` remain compatible links. The 2026-11-02
+relocation preserved every value; the source and gain candidates below remain
+unadopted. Runtime selection is maintained in `pars/active.json` under
+`ge_source_calibration` and `ge_gain`.
+
 ```bash
 cali_ge/calibrate source --run 377 --input NEW_HIST.root --seed pars/cali_ge.txt --output NEW_SOURCE_DIR
 cali_ge/calibrate gain --run 472 --input INBEAM_HIST.root --seed pars/cali_ge.txt --output NEW_GAIN_DIR

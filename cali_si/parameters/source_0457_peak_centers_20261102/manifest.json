@@ -1,0 +1,14 @@
+{
+  "formal_replacement": false,
+  "partial_candidate_tables": true,
+  "files": {
+    "all_channels.csv": "b553f743a5cb3d76a0f00bea68e29ad3290924791ad3ac5d784e6cb7058b3ad9",
+    "candidate.json": "46c13e03d4d068f419e56aba54141e461699aa0e47cce873f436ea191572bb2e",
+    "candidate_coefficients.csv": "ec5bd020e133186f2ff5a8fde041bbfa528009bbd888d54a3d753abcf1cc87a1",
+    "low_beam_remapped_channels.csv": "9f18ae4a40eca478327cb01c4c8b573c4530254ea475928255d9cfb4b57ef8be",
+    "peak_positions.csv": "24b3e3ef8d240acc01d303818c058b475c92e58882daa367e7110100dfaaddcf",
+    "start_comparisons.csv": "a7e4af2c0368227e7c1fae85c19f8e6789fb6625f7c0c849c781417385161f19",
+    "window_checked_coefficients.csv": "7bcae8f26881fa2ba8cb6f26febeccc623ed9d0241fcb4e1d5802ff2d0d48887",
+    "window_comparisons.csv": "635307d09f4e2f759af54e9f61b32eaca10bd68e098747c12c23deb64bb51f5c"
+  }
+}

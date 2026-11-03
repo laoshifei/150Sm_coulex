@@ -6,7 +6,8 @@
 int main(int argc, char* argv[])
 {
   if(argc==2 && std::string(argv[1])=="--help") {
-    std::cout << "Current build: doppler --project DIR --parameters JSON --input BUILD.root --output NEW.root\n"
+    std::cout << "Current build: doppler --project DIR --input BUILD.root --output NEW.root [--parameters JSON]\n"
+              << "Default parameters: pars/active.json; explicit --parameters retains candidate processing.\n"
               << "Scan cached pairs: doppler --project DIR --scan-parameters JSON --scan-list TXT --output NEW.root\n"
               << "Historical input: doppler RUN WIN JUMP (legacy layout and selection only)\n";
     return 0;

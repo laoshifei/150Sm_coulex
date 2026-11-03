@@ -11,9 +11,12 @@ python3 ge_time_walk/parameters/manage.py verify
 python3 ge_time_walk/parameters/manage.py install
 ```
 
-当前默认复制目标是`pars/time_alignment/versions/joint_zero_20261028/`；复制工具不修改`active.txt`。完整包含173轮的6920条Ge/CFD函数和26296组粒子通道函数，可读摘要分别为包内`ge_parameters.csv`和`particle_parameters.csv`。`inherited_metadata.json`保留候选阶段的原始状态，正式采用信息见同目录`metadata.json`。本地Notebook、研究记录、原始数据和能量刻度`pars/`不随本次Git提交；两个`candidate_*`目录仅为本地研究来源，运行当前包不需要它们。
+现用实体为 [include/parameter/time_alignment.json](../include/parameter/time_alignment.json)，2026-11-03仅迁移位置，数值保持。`pars/timing/joint_zero_20261028/`保留逐文件兼容链接，程序仍经`pars/active.json`读取；默认复制目标仍是该兼容包，内容一致时install只确认已有文件，不重写。新版本安装不自动启用。完整包含173轮的6920条Ge/CFD函数和26296组粒子通道函数，可读摘要分别为维护包内`ge_parameters.csv`和`particle_parameters.csv`。`inherited_metadata.json`保留候选阶段的原始状态，正式采用信息见同目录`metadata.json`。两个`candidate_*`目录仅为本地研究来源，运行当前包不需要它们。
 
-以下保留0200历史说明，旧状态和默认选择只对应原记录日期；当前选择以`parameters/selected_profile.json`及`pars/time_alignment/active.txt`为准。
+以下保留0200历史说明，旧状态和默认选择只对应原记录日期；正式运行选择以`pars/active.json`为准，`parameters/selected_profile.json`仅选择本目录的维护源。
+
+
+2026-11-01 参数集中后，`ge_time_walk/build` 默认读取 [pars/active.json](../pars/active.json) 的完整 timing 包，`--profile active` 同义；`--profile local` 显式使用本目录维护源，`--profile NAME` 和 `--profile-dir DIR` 仍可指定历史/候选。默认批处理同样采用 active。参数数值未改，说明和校验入口见 [pars/README.md](../pars/README.md)。
 
 ---
 

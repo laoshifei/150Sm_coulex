@@ -5,17 +5,33 @@ with raw decoded timestamps. Historical additive profiles remain explicit.
 """
 from pathlib import Path
 import json
+import hashlib
 import numpy as np
 
 class Calibration:
     def __init__(self,profile=None,pars=None):
         pars=Path(pars) if pars is not None else Path(__file__).resolve().parents[1]/'pars'
+        directory=None
+        if profile is None and (pars/'active.json').exists():
+            selection=json.loads((pars/'active.json').read_text())
+            if selection['schema']!='sm150_active_parameters_v1':raise ValueError('Unsupported runtime parameter manifest')
+            catalog_bytes=(pars/selection['catalog']).read_bytes()
+            if hashlib.sha256(catalog_bytes).hexdigest()!=selection['catalog_sha256']:raise ValueError('Parameter catalog SHA256 mismatch')
+            catalog=json.loads(catalog_bytes)
+            relative=Path(selection['paths']['timing']['path'])
+            if relative.is_absolute() or '..' in relative.parts:raise ValueError('Invalid timing path')
+            directory=pars/relative
+            for name in ['calibration.json','metadata.json','correction_mode.txt','storage_format.txt','source_sha256.txt']:
+                data=(directory/name).read_bytes()
+                if hashlib.sha256(data).hexdigest()!=catalog['files'][(relative/name).as_posix()]['sha256']:
+                    raise ValueError('Timing parameter SHA256 mismatch: '+name)
+            profile=directory.name
         if profile is None:
             active=pars/'time_alignment/active.txt'
             profile=active.read_text().strip() if active.exists() else 'legacy'
         self.profile=profile;self.data=None;self.held=set();self.total=False
         if profile=='legacy':return
-        directory=pars/'time_alignment/versions'/profile
+        directory=directory if directory is not None else pars/'time_alignment/versions'/profile
         self.metadata=json.loads((directory/'metadata.json').read_text())
         self.data=json.loads((directory/'calibration.json').read_text())
         # Complete profiles need no historical additive-branch exclusion list.

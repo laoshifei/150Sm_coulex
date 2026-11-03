@@ -1,6 +1,6 @@
 out = ana
 
-sourcefile = main.cpp analysis.h analysis.cpp s3_tree.h s3_tree.cpp set.h ../include/sm150_event_calibration.h
+sourcefile = main.cpp analysis.h analysis.cpp s3_tree.h s3_tree.cpp set.h ../include/sm150_event_calibration.h ../include/sm150_parameter_paths.h
 
 ROOTCFLAGS  = $(shell root-config --cflags)
 ROOTLIBS    = $(shell root-config --libs) -lcrypto

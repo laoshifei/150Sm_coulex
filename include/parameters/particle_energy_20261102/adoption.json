@@ -1,0 +1,38 @@
+{
+  "version": "particle_energy_20261102",
+  "adopted_at": "2026-11-02T20:36:31.348668+08:00",
+  "source_decisions": {
+    "high1": {
+      "new_Si": 69,
+      "retained_Si": 27,
+      "new_S3": 56,
+      "source_run": "0460"
+    },
+    "low": {
+      "new_Si": 74,
+      "retained_Si": 22,
+      "new_S3": 56,
+      "source_run": "0457"
+    },
+    "high2": {
+      "new_Si": 74,
+      "retained_Si": 22,
+      "new_S3": 56,
+      "source_run": "0457"
+    }
+  },
+  "abq_source": {
+    "path": "s3_fb_cor/parameters/feature_anchor_20261102/coefficients.json",
+    "sha256": "9b2e38b4ae156cda1751e3831934f3951033b2b2b52068cb50a8320491e57fb2"
+  },
+  "source_package_sha256": {
+    "cali_si/parameters/source_0460_peak_centers_20261102/candidate.json": "f09566bb0484ea4ac05984cf5b8f443067d9294b5205510787ad48171c68d92c",
+    "cali_si/parameters/source_0457_peak_centers_20261102/candidate.json": "46c13e03d4d068f419e56aba54141e461699aa0e47cce873f436ea191572bb2e"
+  },
+  "authoritative_selection": "pars/active.json",
+  "production_ROOT_rebuilt": false,
+  "scientific_scope": "0244 complete173-run A/B/q on new S3 source scale;0245 low40 outer-ring pixel updates;0246 replaces166 confirmed entries in three low runs. Inherited/unresolved entries remain inherited.",
+  "time_energy_coordinate": "Time corrections retain their frozen ADC-to-energy mapping; this updates stored particle energies, not the timing calibration.",
+  "activated_at": "2026-11-02T20:51:10.696654+08:00",
+  "active_sha256": "dafc764e63db9946d03877cea0e99b2c082a0f4de9e4e37402104918fbecd40b"
+}

@@ -115,18 +115,22 @@ inline std::vector<std::vector<double>> table(const std::string &path,
   return rows;
 }
 struct Parameters {
+  sm150::ParameterPaths paths;
   Maps maps;
   std::vector<double> p = std::vector<double>(16384 * 9, 0.);
   std::vector<int32_t> q = std::vector<int32_t>(16384 * 5, 0);
   std::vector<std::string> files;
   json file_hashes = json::object();
   json records = json::object();
+  fs::path source_calibration_file;
   bool complete_s3_energy = false;
   std::array<double, 24> s3_position_q;
+  std::array<double, 24 * 32> s3_pixel_q;
   json s3_energy = {{"mode", "legacy_pars"}};
   std::string group, run;
-  std::vector<std::vector<double>> read(const std::string &path,
+  std::vector<std::vector<double>> read(const std::string &requested,
                                         bool header = true) {
+    const auto path = paths.resolve(requested).string();
     const auto hash = sha256(path);
     auto rows = table(path, header);
     require(sha256(path) == hash, "Parameter changed while loading: " + path);
@@ -147,8 +151,11 @@ struct Parameters {
     }
     return result;
   }
-  Parameters(const std::string &project, int r, const json &calibration) {
+  Parameters(const std::string &project, int r, const json &calibration)
+      : paths(fs::path(project) / "pars") {
+    for (const auto &file : paths.selection_files()) file_hashes[file.string()] = sha256(file);
     s3_position_q.fill(1.);
+    s3_pixel_q.fill(1.);
     run = run_name(r);
     group = calibration.at("groups").at(run).get<std::string>();
     require(group == "low" || group == "high1" || group == "high2",
@@ -164,6 +171,7 @@ struct Parameters {
     const std::string off_name = group == "low"     ? "ts_offset_r616_r674.txt"
                                  : group == "high1" ? "ts_offset_r472_r605.txt"
                                                     : "ts_offset_r680_r718.txt";
+    source_calibration_file = paths.resolve(pars + cal_name);
     const auto ge = keyed(pars + "cali_ge.txt", 3),
                si = keyed(pars + cal_name, 3),
                offset = keyed(pars + off_name, 1),
@@ -291,8 +299,21 @@ struct Parameters {
   }
   void load_s3_energy(const json &package, const fs::path &path,
                       const std::string &hash) {
-    require(package.at("schema") == "sm150_s3_targeted_review_candidate_v1",
+    const std::string schema = package.at("schema");
+    require(schema == "sm150_s3_targeted_review_candidate_v1" ||
+                schema == "sm150_s3_pixel_energy_v2",
             "Unsupported complete S3 energy schema");
+    // A/B/q is defined on a particular source-energy scale. Refuse a mixed
+    // source/correction release before applying any coefficients to events.
+    if (package.contains("required_source_calibration")) {
+      const auto &source = package.at("required_source_calibration").at(group);
+      require(source_calibration_file.filename() ==
+                  source.at("file").get<std::string>() &&
+                  file_hashes.at(source_calibration_file.string()) ==
+                      source.at("sha256"),
+              "S3 A/B/q requires its paired source calibration: " +
+                  source_calibration_file.string());
+    }
     const auto &model = package.at("runs").at(run);
     require(model.at("period") == group &&
                 model.at("active_rings") == (group == "low" ? 24 : 8),
@@ -307,6 +328,27 @@ struct Parameters {
               "Invalid S3 A/B coefficient");
     for (double value : position)
       require(std::isfinite(value) && value > 0., "Invalid S3 position factor");
+    const bool pixel_mode = model.contains("q_pixel");
+    require(!pixel_mode || schema == "sm150_s3_pixel_energy_v2",
+            "Pixel factors require the explicit v2 energy schema");
+    // A pixel value is the total residual gain. It replaces, rather than
+    // multiplies, the ring-only fallback recorded in q_position.
+    for (size_t r = 0; r < 24; ++r)
+      for (size_t s = 0; s < 32; ++s)
+        s3_pixel_q[r * 32 + s] = position[r];
+    if (pixel_mode) {
+      const auto matrix = model.at("q_pixel").get<std::vector<std::vector<double>>>();
+      require(matrix.size() == 24 && model.at("requires_pixel_context") == true,
+              "Incomplete S3 pixel matrix or missing context declaration");
+      for (size_t r = 0; r < 24; ++r) {
+        require(matrix[r].size() == 32, "Incomplete S3 pixel sector coverage");
+        for (size_t s = 0; s < 32; ++s) {
+          require(std::isfinite(matrix[r][s]) && matrix[r][s] > 0.,
+                  "Invalid S3 pixel factor");
+          s3_pixel_q[r * 32 + s] = matrix[r][s];
+        }
+      }
+    }
     // The redundant channel table is checked by physical index, never by electronics order.
     std::set<int> indices;
     for (const auto &row : model.at("channels")) {
@@ -318,7 +360,7 @@ struct Parameters {
               "S3 channel table disagrees with total coefficients");
     }
     require(indices.size() == 56, "Incomplete S3 channel table");
-    const bool needs_context = std::any_of(position.begin(), position.end(),
+    const bool needs_context = std::any_of(s3_pixel_q.begin(), s3_pixel_q.end(),
                                          [](double x) { return x != 1.; });
     require(model.at("requires_ring_context") == needs_context,
             "S3 ring-context declaration mismatch");
@@ -341,16 +383,28 @@ struct Parameters {
       it.value()["fb_p1"] = b[i];
       it.value()["complete_s3_A_keV"] = a[i];
       it.value()["complete_s3_B"] = b[i];
-      it.value()["position_q"] = "shared matched-ring factor; see s3_energy_calibration";
+      it.value()["position_q"] = pixel_mode
+          ? "shared matched ring-sector factor; see s3_energy_calibration"
+          : "shared matched-ring factor; see s3_energy_calibration";
     }
     complete_s3_energy = true;
-    s3_energy = {{"mode", "complete_A_B_matched_ring_q"},
+    s3_energy = {{"mode", pixel_mode ? "complete_A_B_matched_pixel_q" : "complete_A_B_matched_ring_q"},
                  {"file", path.string()}, {"sha256", hash},
                  {"schema", package.at("schema")}, {"run_model", model},
                  {"E0", "hardware_gain*(c0+c1*ADC+c2*ADC^2), keV; no old attenuation/front-back"},
-                 {"formula", "Er=q[matched_ring]*(Ar+Br*E0r); Es=q[matched_ring]*(As+Bs*E0s)"},
+                 {"formula", pixel_mode
+                     ? "Er=q[matched_ring,matched_sector]*(Ar+Br*E0r); Es=q[matched_ring,matched_sector]*(As+Bs*E0s)"
+                     : "Er=q[matched_ring]*(Ar+Br*E0r); Es=q[matched_ring]*(As+Bs*E0s)"},
                  {"application", "q once to both faces before 25-100MeV and abs(Er-Es)<2500keV cuts"},
                  {"timing", "unchanged: complete particle correction evaluated from raw ADC"}};
+  }
+  double s3_factor(int ring_key, int sector_key) const {
+    require(q.at(ring_key * 5) == 3 && q.at(sector_key * 5) == 4,
+            "S3 pixel lookup requires a ring and a sector");
+    const int r = q.at(ring_key * 5 + 1) - 1;
+    const int s = q.at(sector_key * 5 + 2) - 1;
+    require(r >= 0 && r < 24 && s >= 0 && s < 32, "Invalid S3 pixel coordinates");
+    return s3_pixel_q.at(r * 32 + s);
   }
 };
 } // namespace sm150_native
@@ -998,7 +1052,7 @@ inline int64_t classify(const sm150_windowed::Engine &cache,
     size_t match_ring = 0, match_sector = 0, matches = 0;
     for (size_t r = 0; r < rings.size(); ++r)
       for (size_t s = 0; s < e.sectors.size(); ++s) {
-        const double factor = pars.s3_position_q.at(pars.q[rings[r].key * 5 + 1] - 1);
+        const double factor = pars.s3_factor(rings[r].key, e.sectors[s].key);
         const double er = factor * rings[r].e, es = factor * e.sectors[s].e;
         if (er > 25000. && er < 100000. && es > 25000. && es < 100000. &&
             std::abs(er - es) < 2500. &&
@@ -1010,7 +1064,7 @@ inline int64_t classify(const sm150_windowed::Engine &cache,
       }
     if (matches == 1) {
       Particle r = rings[match_ring];
-      const double factor = pars.s3_position_q.at(pars.q[r.key * 5 + 1] - 1);
+      const double factor = pars.s3_factor(r.key, e.sectors[match_sector].key);
       r.e *= factor;
       e.sectors[match_sector].e *= factor;
       r.view = 1;
@@ -1721,18 +1775,25 @@ int build::Process() {
         fs::canonical(default_path(options.project, default_project));
     int run = options.run;
     std::string rn = run_name(run);
-    fs::path window_file = default_path(
-        options.window_file,
-        project / "codex/analysis/spectrum_ge_equal_height_background_20261022/"
-                  "selected_windows.json");
+    const sm150::ParameterPaths parameter_paths(project / "pars");
+    fs::path window_file = options.window_file;
+    if (window_file.empty())
+      window_file = parameter_paths.resource("coincidence",
+          project / "include/parameter/coincidence_windows.json");
+    // Record the physical include payload rather than its pars compatibility link.
+    window_file = fs::canonical(window_file);
     json input_hashes = json::object();
+    for (const auto &file : parameter_paths.selection_files()) input_hashes[file.string()] = sha256(file);
     json window_json = frozen_json(window_file, input_hashes);
     // The window file retains its selection-time provenance; timing functions default to the current production profile.
     // An explicit --profile-dir can replay a historical version independently of changes to active.
     const std::string window_reference_profile = window_json.at("profile");
     std::string profile, profile_source = "explicit --profile-dir";
     fs::path profile_dir = options.profile_dir;
-    if (profile_dir.empty()) {
+    if (profile_dir.empty() && parameter_paths.active()) {
+      profile_dir = parameter_paths.timing_directory();
+      profile_source = parameter_paths.manifest_path().string();
+    } else if (profile_dir.empty()) {
       const auto active_file = project / "pars/time_alignment/active.txt";
       const auto active_hash = sha256(active_file);
       std::ifstream active_stream(active_file);
@@ -1762,10 +1823,13 @@ int build::Process() {
     std::string energy_selection = options.legacy_s3_energy
         ? "explicit --legacy-s3-energy" : "legacy fallback";
     std::string expected_energy_sha;
-    // Keep the fitted package in its domain directory. Activate it only through
-    // a separately recorded pointer, so historical parameter packages stay frozen.
+    // The central runtime copy retains the domain package as a frozen source.
+    // Explicit candidate paths and historical legacy mode keep their semantics.
     const auto active_energy = project / "s3_fb_cor/parameters/active.json";
-    if (selected_energy.empty() && !options.legacy_s3_energy && fs::exists(active_energy)) {
+    if (selected_energy.empty() && !options.legacy_s3_energy && parameter_paths.active()) {
+      selected_energy = parameter_paths.resource("s3_energy");
+      energy_selection = parameter_paths.manifest_path().string();
+    } else if (selected_energy.empty() && !options.legacy_s3_energy && fs::exists(active_energy)) {
       const auto active = frozen_json(active_energy, input_hashes);
       require(active.at("schema") == "sm150_s3_active_energy_v1",
               "Unknown active S3 energy pointer schema");
@@ -1813,17 +1877,19 @@ int build::Process() {
       inspection["time_alignment_profile_source"] = profile_source;
       inspection["window_reference_profile"] = window_reference_profile;
       inspection["s3_energy_calibration"] = pars.s3_energy;
+      inspection["runtime_parameter_selection"] = parameter_paths.identity();
       std::cout << inspection.dump() << '\n';
       return 0;
     }
     // Step 2: check the strict run list and refuse to overwrite existing outputs.
-    fs::path manifest_file = default_path(
-        options.source_manifest,
-        project /
-            "codex/analysis/spectrum_all_runs_timing_20261015/manifest.json");
+    fs::path manifest_file = options.source_manifest;
+    if (manifest_file.empty())
+      manifest_file = parameter_paths.resource("decoded_sources",
+          project / "codex/analysis/spectrum_all_runs_timing_20261015/manifest.json");
     json source_manifest = frozen_json(manifest_file, input_hashes);
     for (const auto &p :
          {project / "include/sm150_time_alignment.h",
+          project / "include/sm150_parameter_paths.h",
           project / "build_all/main.cpp", project / "build_all/build.h",
           project / "build_all/build.cpp", project / "build_all/Makefile"})
       input_hashes[p.string()] = sha256(p);

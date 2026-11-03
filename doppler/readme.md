@@ -3,17 +3,20 @@
 Use `parameters/angle_table_baseline.json` for the retained baseline: original
 Ge/particle angles, Si exit-energy factor 1.0, and S3 factor 0.5. The beta and
 per-Ge angle trials did not establish a consistent overall improvement that
-warrants replacing this baseline. The executable uses the file explicitly
-supplied through `--parameters`; no trial is activated automatically.
+warrants replacing this baseline. The executable defaults to the adopted baseline selected by `pars/active.json`.
+An explicit `--parameters` still selects a separate file; no trial is activated automatically.
 
 The local-only `parameters/summary_20261029/` directory contains the parameter
 reference and historical five-/seven-Ge trial exports. Those research exports
 are not required by the executable and are not part of this source commit.
 
 Compilation requires ROOT, a C++17 compiler, the nlohmann JSON headers, and
-OpenSSL development libraries. The local `pars/angle_info/` and `pars/beta_info/`
+OpenSSL development libraries. The local `pars/doppler/geometry/` and `pars/doppler/kinematics/`
 tables and the input ROOT's matching `dataNNNN_build_cpp_complete.json` receipt
 must be supplied with the experimental data; they are not bundled here.
+See [the runtime parameter index](../pars/README.md) for the central manifest,
+checksums and compatibility paths. The default random policy is selected from
+`pars/coincidence/`; the numerical policy is unchanged.
 
 Build with `make -C doppler` from the project root. The same executable supports
 the current narrow/wide build schema through explicit options:

@@ -6,6 +6,7 @@
 #include <TObjString.h>
 #include <TTree.h>
 #include <TLeaf.h>
+#include <TRandom3.h>
 #include <chrono>
 #include <iostream>
 #include <memory>
@@ -14,7 +15,15 @@ using namespace sm150::diagnostic;
 struct Hit { double time, energy; int key; bool clean; };
 int main(int argc, char** argv) {
   try {
-    require(argc==4,"Usage: source_spectra INPUT_C1.root ENERGY.json NEW_OUTPUT.root");
+    require(argc==4||argc==6,"Usage: source_spectra INPUT_C1.root ENERGY.json NEW_OUTPUT.root [--adc-dither-seed SEED]");
+    const bool adc_dither=argc==6;
+    unsigned long seed=722;
+    if(adc_dither) {
+      require(std::string(argv[4])=="--adc-dither-seed","Unknown option");
+      seed=std::stoul(argv[5]);
+      require(seed>0&&seed<=std::numeric_limits<unsigned>::max(),"Use a positive 32-bit seed");
+    }
+    TRandom3 dither_rng(static_cast<unsigned>(seed));
     const fs::path input=fs::canonical(argv[1]), calibration=fs::canonical(argv[2]);
     const fs::path output=fs::absolute(argv[3]), receipt=output.string()+".json";
     require(!fs::exists(output) && !fs::exists(receipt),"Refusing existing output");
@@ -69,9 +78,14 @@ int main(int argc, char** argv) {
       const int key=cid*10000+sid*100+ch;auto it=coeff.find(key);if(it==coeff.end())continue;
       ++seen[key];const bool good=!pileup && !outofr && adc!=65535;
       if(good)++clean[key];
-      const auto& p=it->second;const double a=adc,e=p[0]+p[1]*a+p[2]*a*a;
+      const auto& p=it->second;const double center=adc;
+      const double a=center+(adc_dither?dither_rng.Uniform(-.5,.5):0.);
+      const double e=p[0]+p[1]*a+p[2]*a*a;
+      // Keep membership identical to the original source selection. Dithering
+      // distributes an accepted ADC code within its quantization interval.
+      const double selection_energy=p[0]+p[1]*center+p[2]*center*center;
       require(std::isfinite(e),"Nonfinite calibrated source energy");
-      if(key>=212 && key<=215 && e>20)clover.push_back({double(ts)*8.,e,key,good});
+      if(key>=212 && key<=215 && selection_energy>20)clover.push_back({double(ts)*8.,e,key,good});
       if(!good)continue;
       ++accepted[key];hist.at("ge"+std::to_string(key))->Fill(e);
       hist.at("all_singles")->Fill(e);hist.at("ring"+std::to_string(rings.at(key))+"_singles")->Fill(e);
@@ -121,6 +135,9 @@ int main(int argc, char** argv) {
        {"addback_rule","Clover2 only, forward cluster from earliest hit; >20keV per crystal; one crystal or two distinct adjacent crystals; other topologies rejected"},
        {"comparison_limit","Source diagnostic; not exact production grouping, which uses all Ge and in-beam corrected time"},
        {"quality","reject pileup OR outofr OR ADC=65535; normal and failed CFD combined"},
+       {"adc_dither",{{"enabled",adc_dither},{"seed",adc_dither?json(seed):json(nullptr)},
+         {"distribution","ADC + Uniform(-0.5,0.5) codes, then calibration; no post-addback jitter"},
+         {"selection","20-keV cut uses unperturbed calibrated ADC; event membership unchanged"}}},
        {"elapsed_seconds",std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count()}};
     fs::create_directories(output.parent_path());
     std::unique_ptr<TFile> fo(TFile::Open(output.c_str(),"CREATE","Source efficiency diagnostics",404));

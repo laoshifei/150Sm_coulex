@@ -152,5 +152,46 @@
       "source_revision": "2010-05-31"
     }
   ],
-  "model_conditions": "Component positions and relative weights fixed; common Gaussian/left-tail response, scale from affine matching; omitted very weak emissions; no detector dead-layer or source self-absorption correction"
+  "model_conditions": "All source features fitted jointly to raw counts, including upper-feature tails under lower features. Fixed evaluated multiplet weights and separations; per-feature Gaussian/left-exGaussian response, fraction [0,1], nested endpoint reduction; shared nonnegative linear background. Source energy-loss systematics remain unverified.",
+  "response_fit": {
+    "tail_fraction_max": 1.0,
+    "include_pure_left_tail": true,
+    "maximum_function_calls": 12000,
+    "gaussian_starts": [
+      {},
+      {
+        "sigma_fraction": 0.06
+      }
+    ],
+    "tail_starts": [
+      {
+        "fraction": 0.15,
+        "sigma_fraction": 0.1,
+        "tau_fraction": 0.15
+      },
+      {
+        "fraction": 0.65,
+        "sigma_fraction": 0.07,
+        "tau_fraction": 0.25,
+        "center_shift_fraction": 0.05
+      },
+      {
+        "fraction": 0.95,
+        "sigma_fraction": 0.05,
+        "tau_fraction": 0.12,
+        "center_shift_fraction": 0.1
+      },
+      {
+        "fraction": 0.25,
+        "sigma_fraction": 0.05,
+        "tau_fraction": 0.04,
+        "long_tau_increment_fraction": 0.3,
+        "center_shift_fraction": 0.08
+      }
+    ],
+    "include_double_left_tail": true
+  },
+  "joint_alpha_fit": true,
+  "joint_maximum_calls": 18000,
+  "joint_response": "gaussian_left_mixture"
 }

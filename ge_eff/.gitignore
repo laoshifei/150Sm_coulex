@@ -1,2 +1,6 @@
 /source_spectra
+/recover_legacy_spectra
 /__pycache__/
+
+# Input needed to reproduce the documented legacy source extraction.
+!/parameters/legacy_recovery_0722_20261102/fit_range_reconstructed.txt

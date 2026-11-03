@@ -1,0 +1,1 @@
+../../../parameter/run_k/k_0486.txt

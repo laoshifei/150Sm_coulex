@@ -1,6 +1,6 @@
 out = doppler
 
-sourcefile = main.cpp doppler.h doppler.cpp event.h event.cpp angle_info.h angle_info.cpp set.h
+sourcefile = main.cpp doppler.h doppler.cpp event.h event.cpp angle_info.h angle_info.cpp set.h ../include/sm150_parameter_paths.h
 
 ROOTCFLAGS  = $(shell root-config --cflags)
 ROOTLIBS    = $(shell root-config --libs) -lSpectrum -lcrypto

@@ -1,6 +1,6 @@
 # S3 calibration-event extraction
 
-The current C++ entry is `build_s3/build`. It reads decoded C2 events, applies the complete particle time correction from `pars/time_alignment/active.txt`, and creates particle-only S3 calibration pairs. `set.h` is historical and no longer controls this executable.
+The current C++ entry is `build_s3/build`. It reads decoded C2 events, applies the complete particle time correction selected by `pars/active.json`, and creates particle-only S3 calibration pairs. `set.h` is historical and no longer controls this executable. The [runtime parameter index](../pars/README.md) lists adopted files and hashes; explicit `--profile-dir` still selects a separate version.
 
 From the project root:
 
