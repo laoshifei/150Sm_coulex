@@ -1,7 +1,7 @@
 {
   "schema": "sm150_flat_parameter_layout_v1",
   "layout_version": "flat_include_windows_20261103",
-  "numerical_selection": "narrow_windows_20261103",
+  "numerical_selection": "doppler_tabulated_beta_20261103",
   "timing_version": "joint_zero_20261028",
   "selection": "pars/active.json",
   "files": {
@@ -1228,8 +1228,27 @@
       "bytes": 1770,
       "old": "pars/coincidence/narrow_review_20261103/random_subtraction.json",
       "version": "narrow_review_20261103"
+    },
+    "doppler.json": {
+      "sha256": "b34177bccb85a83c2485ca9664811551d0dae3ae44dd2598efab925b8d7c9b22",
+      "bytes": 22089,
+      "source": "doppler/parameters/tabulated_beta_20261103.json",
+      "version": "doppler_tabulated_beta_20261103"
+    },
+    "doppler_beta.csv": {
+      "sha256": "a1aa1522bdba0263981e1c716130e7967040b0888e7bbd7a8735bcaaa7d4e313",
+      "bytes": 5724,
+      "source": "doppler/parameters/tabulated_beta_20261103.csv",
+      "version": "doppler_tabulated_beta_20261103"
+    },
+    "doppler_beta_provenance.json": {
+      "sha256": "8aa2bc4517b811f0cf79eea8cf802178e42b00a5ed701f935642374160c8fa65",
+      "bytes": 1924,
+      "source": "doppler/parameters/tabulated_beta_20261103_provenance.json",
+      "version": "doppler_tabulated_beta_20261103"
     }
   },
   "energy_version": "energy_parameters_20261102",
-  "updated_at": "2026-11-03T15:47:09.183711+08:00"
+  "updated_at": "2026-11-03T18:47:46.942985+08:00",
+  "doppler_version": "doppler_tabulated_beta_20261103"
 }

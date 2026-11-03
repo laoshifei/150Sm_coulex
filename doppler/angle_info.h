@@ -79,15 +79,21 @@ class Model {
 public:
   Model(const std::string &project, const nlohmann::json &parameters);
   Correction evaluate(const Pair &pair);
+  double energy_scale(int group, int reference) const;
+  bool uses_tabulated_beta() const { return tabulated_beta; }
   const nlohmann::json &parameters() const { return config; }
 private:
   struct Knot { double p,r,pi,po,ri,ro; };
   struct Prepared { Correction c; double energy_out,pr_base,pt_base,beam_p,pp_base,blend,scale; };
+  struct RingKinematics { double beta,theta_p,theta_r,expected_particle; bool extrapolated; };
   nlohmann::json config;
+  bool tabulated_beta=false;
+  std::array<std::array<double,2>,3> energy_scales;
+  std::array<std::array<std::map<int,RingKinematics>,2>,3> ring_kinematics;
   std::map<int,std::pair<double,double>> ge_angles,si_angles;
   std::map<int,double> s3_theta,s3_phi;
   std::array<std::vector<Knot>,2> knots;
-  std::map<std::tuple<int,int,int,int,int,int>,Prepared> cache;
+  std::map<std::tuple<int,int,int,int,int,int,int>,Prepared> cache;
   Prepared prepare(const Pair &pair);
 };
 }

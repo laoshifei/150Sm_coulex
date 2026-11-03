@@ -1,0 +1,43 @@
+{
+  "schema": "sm150_precomputed_beta_provenance_v1",
+  "source_parameters": {
+    "schema_version": 2,
+    "label": "high1_s3_065_20261103",
+    "status": "adopted",
+    "Si": {
+      "energy_scale": 1.0,
+      "theta_offset_deg": 0.0,
+      "phi_offset_deg": 0.0,
+      "particle_energy_fraction": 0.0
+    },
+    "S3": {
+      "energy_scale": 0.5,
+      "theta_offset_deg": 0.0,
+      "phi_offset_deg": 0.0,
+      "particle_energy_fraction": 0.0
+    },
+    "ge_theta_offset_deg": 0.0,
+    "ge_phi_offset_deg": 0.0,
+    "per_ge": {},
+    "notes": "Adopted2026-11-03: high1 S3 exit-energy scale0.65; low/high2 S3 remain0.5, all Si remain1.0. Original Ge and particle angles retained. Read the period from build metadata; no additional timing, energy calibration or pair selection.",
+    "energy_scale_by_period": {
+      "high1": {
+        "S3": 0.65
+      }
+    }
+  },
+  "source_parameters_sha256": "47cb813baa56cbda30272d544e1c24c203abbafa3c1a2301976f6cdac14ac03c",
+  "source_path": "doppler/parameters/high1_s3_065_20261103.json",
+  "derivation": "The source C++ Model returns final beta=sqrt(2*T_out*energy_scale/Mr), recoil angle and expected projectile energy. The exported doubles are stored with round-trip precision; runtime applies them directly.",
+  "beta_units": "v/c",
+  "exported_instances": 96,
+  "beta_input_sha256": {
+    "angle_info/s3_ring_angle.txt": "17613979f137f9fdde70d09fb0b59af8d09c1f0430c617f6b80dd360dfe1560f",
+    "angle_info/spider_angle.txt": "008cc9d8cea089ef21a5c679c7983e81a51b3ba87f69f58e66340ea8d817cb8d",
+    "beta_info/theta_ein_eout_p.txt": "859e19513367f6668ef2bd35b0f3f855623b774802de64a08ae5537dab77a466",
+    "beta_info/theta_ein_eout_r.txt": "13dacea4ebf0a78fa2849bf5fe563b939c7bef26fd81fab2e2b4d84166fea5ca"
+  },
+  "exporter": "doppler/export_beta.cpp",
+  "exporter_sha256": "6d6337e167675e50589ccd039dde21828bfffd087cf77b1c1ca7dec0dd126543",
+  "source_used_at_runtime": false
+}

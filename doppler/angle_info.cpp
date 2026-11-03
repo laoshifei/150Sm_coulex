@@ -161,6 +161,14 @@ bool angle_info::InitEinEoutInfo()
 {
   std::cout << "start read Ein Eout info data" << std::endl;
 
+  // The positional interface keeps its frozen historical configuration. The
+  // current build interface below reads precomputed beta values instead.
+  std::ifstream legacy_file("../pars/doppler/angle_table_baseline.json");
+  if(!legacy_file)return false;
+  nlohmann::json legacy_parameters;legacy_file>>legacy_parameters;
+  const double legacy_s3_scale=legacy_parameters.at("S3").at("energy_scale");
+  if(!std::isfinite(legacy_s3_scale)||legacy_s3_scale<=0)return false;
+
   //
   std::ifstream fi_p;
   fi_p.open("../pars/beta_info/theta_ein_eout_p.txt");
@@ -200,7 +208,7 @@ bool angle_info::InitEinEoutInfo()
     std::sprintf(c_theta_p, "%.2f", theta_p);
     std::sprintf(c_theta_r, "%.2f", theta_r);
     if(theta_p<90){
-      map_theta_ein_eout_r[c_theta_r] = std::make_pair(e_in, e_out*0.5);
+      map_theta_ein_eout_r[c_theta_r] = std::make_pair(e_in, e_out*legacy_s3_scale);
     }else{
       map_theta_ein_eout_r[c_theta_r] = std::make_pair(e_in, e_out);
     }
@@ -379,13 +387,43 @@ double cosine(double tg,double pg,double tr,double pr) {
 }
 Model::Model(const std::string &project,const nlohmann::json &parameters):config(parameters) {
   const sm150::ParameterPaths runtime(std::filesystem::path(project)/"pars");
-  check(config.at("schema_version")==1,"Unsupported Doppler parameter schema");
+  const int schema=config.at("schema_version");
+  check(schema>=1&&schema<=3&&config.at("schema_version")==schema,"Unsupported Doppler parameter schema");
+  tabulated_beta=schema==3;
+  check(schema==2||!config.contains("energy_scale_by_period"),"Period energy scales require Doppler schema2");
+  check(tabulated_beta||!config.contains("beta_by_period"),"Direct beta tables require Doppler schema3");
   for(const auto &family:{"Si","S3"}) {
     auto &x=config.at(family);
-    const double scale=x.at("energy_scale"),theta=x.at("theta_offset_deg"),phi=x.at("phi_offset_deg"),blend=x.at("particle_energy_fraction");
-    check(std::isfinite(scale)&&scale>0&&scale<=3,"Invalid recoil energy scale");
+    const double theta=x.at("theta_offset_deg"),phi=x.at("phi_offset_deg"),blend=x.at("particle_energy_fraction");
+    if(tabulated_beta) {
+      check(!x.contains("energy_scale"),"Direct beta must not also apply an energy scale");
+      check(theta==0&&blend==0,"Ring beta tables require nominal particle theta and no event-energy blend");
+    } else {
+      const double scale=x.at("energy_scale");
+      check(std::isfinite(scale)&&scale>0&&scale<=3,"Invalid recoil energy scale");
+    }
     check(std::isfinite(theta)&&std::abs(theta)<=5&&std::isfinite(phi)&&std::abs(phi)<=30,"Geometry scan exceeds allowed range");
     check(std::isfinite(blend)&&blend>=0&&blend<=1,"Invalid particle-energy fraction");
+  }
+  // Schema1 keeps one scale for all periods. Schema2 can override only the
+  // requested family and period; old executables reject it instead of silently
+  // treating a period-dependent configuration as a global baseline.
+  if(!tabulated_beta)for(auto &scales:energy_scales)scales={config.at("Si").at("energy_scale"),config.at("S3").at("energy_scale")};
+  if(config.contains("energy_scale_by_period")) {
+    const auto &overrides=config.at("energy_scale_by_period");
+    check(overrides.is_object(),"Period energy scales must be an object");
+    const std::array<std::string,3> periods={"high1","low","high2"};
+    for(auto it=overrides.begin();it!=overrides.end();++it) {
+      const auto where=std::find(periods.begin(),periods.end(),it.key());
+      check(where!=periods.end()&&it.value().is_object(),"Invalid Doppler period override");
+      const auto group=std::size_t(where-periods.begin());
+      for(auto family=it.value().begin();family!=it.value().end();++family) {
+        check(family.key()=="Si"||family.key()=="S3","Unknown particle family in period energy scales");
+        const double scale=family.value();
+        check(std::isfinite(scale)&&scale>0&&scale<=3,"Invalid period recoil energy scale");
+        energy_scales[group][family.key()=="S3" ? 1:0]=scale;
+      }
+    }
   }
   auto open=[&](const std::string &name) {
     std::ifstream f(runtime.legacy(name));
@@ -405,6 +443,41 @@ Model::Model(const std::string &project,const nlohmann::json &parameters):config
     while(f>>id>>angle) check(out.emplace(id,angle).second,"Duplicate S3 angle entry");
     check(f.eof()&&!out.empty(),"Malformed S3 angle table");
   }
+  if(tabulated_beta) {
+    check(config.at("beta_units")=="v/c","Unexpected beta units");
+    const auto &hashes=config.at("beta_input_sha256");
+    check(hashes.is_object()&&hashes.size()==4,"Incomplete beta input provenance");
+    for(const auto *name:{"angle_info/spider_angle.txt","angle_info/s3_ring_angle.txt", "beta_info/theta_ein_eout_p.txt","beta_info/theta_ein_eout_r.txt"})
+      check(hashes.at(name)==sm150::ParameterPaths::sha256(runtime.legacy(name)),"Beta input SHA256 mismatch: "+std::string(name));
+    std::array<std::map<int,double>,2> polar_angles;
+    polar_angles[1]=s3_theta;
+    for(const auto &item:si_angles) {
+      auto inserted=polar_angles[0].emplace(item.first/100,item.second.first);
+      check(inserted.second||inserted.first->second==item.second.first,"Si ring has sector-dependent polar angles");
+    }
+    const auto &tables=config.at("beta_by_period");
+    check(tables.is_object()&&tables.size()==3,"Require all three beta periods");
+    const std::array<std::string,3> periods={"high1","low","high2"};
+    for(int group=0;group<3;++group) {
+      const auto &period=tables.at(periods[group]);
+      check(period.is_object()&&period.size()==2,"Require both beta families");
+      for(int ref=0;ref<2;++ref) {
+        const auto &rings=period.at(ref ? "S3":"Si");
+        check(rings.is_object()&&rings.size()==polar_angles[ref].size(),"Incomplete ring beta table");
+        for(const auto &ring:polar_angles[ref]) {
+          const auto &entry=rings.at(std::to_string(ring.first));
+          RingKinematics k{entry.at("beta"),entry.at("theta_p_deg"),entry.at("theta_r_deg"),
+            entry.at("expected_particle_MeV"),entry.at("kinematic_extrapolated")};
+          check(std::isfinite(k.beta)&&k.beta>=0&&k.beta<1,"Invalid tabulated beta");
+          check(k.theta_p==ring.second,"Beta table and particle geometry disagree");
+          check(std::isfinite(k.theta_r)&&k.theta_r>=0&&k.theta_r<=180&&
+            std::isfinite(k.expected_particle)&&k.expected_particle>0,"Invalid ring kinematics");
+          ring_kinematics[group][ref].emplace(ring.first,k);
+        }
+      }
+    }
+    return;
+  }
   std::map<int,std::pair<double,double>> projectile;
   auto fp=open("beta_info/theta_ein_eout_p.txt");double p,r,ei,eo;
   while(fp>>p>>ei>>eo) check(projectile.emplace(int(std::lround(p*100)),std::make_pair(ei,eo)).second,"Duplicate projectile angle");
@@ -420,8 +493,15 @@ Model::Model(const std::string &project,const nlohmann::json &parameters):config
     check(table.size()>=2,"Missing kinematic table");
   }
 }
+double Model::energy_scale(int group,int reference) const {
+  check(!tabulated_beta,"Direct beta configuration has no runtime energy scale");
+  check(group>=0&&group<3,"Invalid Doppler data period");
+  check(reference==0||reference==1,"Invalid particle family");
+  return energy_scales.at(group).at(reference);
+}
 Model::Prepared Model::prepare(const Pair &pair) {
   check(pair.reference==0||pair.reference==1,"Invalid particle family");
+  check(pair.group>=0&&pair.group<3,"Invalid Doppler data period");
   const auto &par=config.at(pair.reference ? "S3":"Si");
   auto gamma=ge_angles.at(100*pair.ge_ring+pair.ge_sector);
   auto particle=pair.reference ? std::make_pair(s3_theta.at(pair.ring),s3_phi.at(pair.sector)) : si_angles.at(100*pair.ring+pair.sector);
@@ -434,6 +514,16 @@ Model::Prepared Model::prepare(const Pair &pair) {
     const auto &g=config["per_ge"][std::to_string(pair.ge)];
     gamma.first+=g.value("theta_offset_deg",0.0);gamma.second+=g.value("phi_offset_deg",0.0);
   }
+  Prepared z{};
+  z.c.theta_p=particle.first;z.c.phi_p=particle.second;
+  z.c.phi_r=particle.second+180;z.c.theta_g=gamma.first;z.c.phi_g=gamma.second;
+  if(tabulated_beta) {
+    const auto &k=ring_kinematics.at(pair.group).at(pair.reference).at(pair.ring);
+    z.c.beta=k.beta;z.c.theta_r=k.theta_r;z.c.expected_particle_MeV=k.expected_particle;
+    z.c.extrapolated=k.extrapolated;
+    z.c.cosine=cosine(gamma.first,gamma.second,k.theta_r,z.c.phi_r);
+    return z;
+  }
   const auto &table=knots.at(pair.reference);
   const double x=nominal+par.at("theta_offset_deg").get<double>();
   auto upper=std::upper_bound(table.begin(),table.end(),x,[](double t,const Knot &k){return t<k.p;});
@@ -442,12 +532,9 @@ Model::Prepared Model::prepare(const Pair &pair) {
   auto mix=[&](double u,double v){return u+f*(v-u);};
   const double tr=mix(a.r,b.r),pi=mix(a.pi,b.pi),po=mix(a.po,b.po),ri=mix(a.ri,b.ri),ro=mix(a.ro,b.ro);
   check(pi>0&&po>0&&ri>0&&ro>0,"Invalid interpolated kinematics");
-  Prepared z{};
-  z.c.theta_p=particle.first;z.c.phi_p=particle.second;
-  z.c.theta_r=tr;z.c.phi_r=particle.second+180;
-  z.c.theta_g=gamma.first;z.c.phi_g=gamma.second;z.c.expected_particle_MeV=po;
+  z.c.theta_r=tr;z.c.expected_particle_MeV=po;
   z.c.extrapolated=x<table.front().p||x>table.back().p;
-  z.scale=par.at("energy_scale");z.energy_out=ro;
+  z.scale=energy_scale(pair.group,pair.reference);z.energy_out=ro;
   z.blend=par.at("particle_energy_fraction");
   z.pp_base=std::sqrt(2*mass_p*pi);z.beam_p=std::sqrt(2*mass_p*(pi+ri));
   const double px=z.pp_base*std::sin(particle.first*rad),pz=z.beam_p-z.pp_base*std::cos(particle.first*rad);
@@ -457,7 +544,7 @@ Model::Prepared Model::prepare(const Pair &pair) {
   return z;
 }
 Correction Model::evaluate(const Pair &pair) {
-  const auto key=std::make_tuple(pair.ge,pair.ge_ring,pair.ge_sector,pair.reference,pair.ring,pair.sector);
+  const auto key=std::make_tuple(pair.group,pair.ge,pair.ge_ring,pair.ge_sector,pair.reference,pair.ring,pair.sector);
   auto it=cache.find(key);if(it==cache.end()) it=cache.emplace(key,prepare(pair)).first;
   const auto &z=it->second;Correction c=z.c;
   if(z.blend>0) {

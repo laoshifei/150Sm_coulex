@@ -1,10 +1,33 @@
-# Current build interface (2026-10-28)
+# Current build interface (2026-11-03)
 
-Use `parameters/angle_table_baseline.json` for the retained baseline: original
-Ge/particle angles, Si exit-energy factor 1.0, and S3 factor 0.5. The beta and
-per-Ge angle trials did not establish a consistent overall improvement that
-warrants replacing this baseline. The executable defaults to the adopted baseline selected by `pars/active.json`.
+The executable defaults to the adopted configuration selected by `pars/active.json`.
+Its payload is `include/parameter/doppler.json`, reached through
+`pars/doppler/current.json`. It stores final beta values (`v/c`) for each
+period and particle ring: high1/low/high2, Si rings1-8 and S3 rings1-24.
+The adopted scales have already been included in these values. Current event
+processing reads beta directly and applies no further energy or beta scale.
+`include/parameter/doppler_beta.csv` lists all96 entries.
+
+All original Ge/particle angles are retained. In particular, the Ge214 phi
+trial was not adopted. Source scales and their conversion are recorded in
+`include/parameter/doppler_beta_provenance.json`, which is not loaded for event
+correction. Corrected energies remain identical to the adopted source model.
 An explicit `--parameters` still selects a separate file; no trial is activated automatically.
+`parameters/angle_table_baseline.json` remains the historical all-period
+Si=1.0/S3=0.5 configuration for explicit comparisons.
+
+Schema3 uses `beta_by_period`, with all three periods and both detector
+families explicitly present. Each ring stores beta, particle/recoil polar
+angles and expected projectile energy. The build manifest determines the
+period. The correction cache includes the period, including in mixed-run
+scans. Output metadata records the period and `precomputed_ring_beta` mode.
+No scale can be supplied together with this table. Particle polar-angle scans
+and event-energy blends require a separately generated compatible model;
+they cannot reuse a fixed ring-beta table. Input geometry/kinematics hashes
+are checked to prevent mixing beta values with changed source tables.
+
+Schemas1/2 remain available for explicit historical comparisons. Older
+executables reject schema3 instead of silently applying a second scale.
 
 The local-only `parameters/summary_20261029/` directory contains the parameter
 reference and historical five-/seven-Ge trial exports. Those research exports
@@ -23,7 +46,6 @@ the current narrow/wide build schema through explicit options:
 
 ```bash
 ./doppler/doppler --project "$PWD" \
-  --parameters doppler/parameters/angle_table_baseline.json \
   --input rootfile/data0617_build_wide.root \
   --output /tmp/data0617_doppler_wide.root
 ```
@@ -36,21 +58,24 @@ Input SHA256 and pair counts are checked against the build receipt.
 `e_raw` is calibrated laboratory gamma energy; `e_dc_r` is the recoil-corrected
 energy, both in keV. `particle_MeV`, detector indices, source identities, CFD flags,
 `dt_ns`, `alpha`, and `random_side` are retained. `alpha` is the individual
-prompt/random window-width ratio. The adopted spectrum policy is loaded from
-`doppler/parameters/random_subtraction.json`: high-beam Si has
-an additional factor 1.09; the other groups have factor 1. The signed `weight` is
+prompt/random window-width ratio. The adopted spectrum policy is selected by
+the `random_subtraction` entry in `pars/active.json`. As of 2026-11-03, its
+payload is `include/parameter/random_subtraction.json`, with additional factor
+1 for all four intensity/particle groups. The signed `weight` is
 1 for prompt and `-alpha * extra_factor` for random. Weighted variances use the
 sum of squared weights. Never subtract the raw random spectrum with a universal
 coefficient or apply the extra factor twice.
 
-This tracked policy is an identical runtime copy of the project's local
-`codex/resources/spectrum_processing/random_subtraction.json` policy. Keep the
-two consistent if the adopted coefficients change. The executable only needs
-the tracked copy; the entire policy and its SHA256 are embedded in each output.
+The older tracked `doppler/parameters/random_subtraction.json` remains an
+explicit legacy fallback, including the former high-beam Si factor 1.09. It is
+not the current default while the central selection above is present. Do not
+mix results from these two policies. The actual loaded policy and its SHA256
+are embedded in each output.
 
-The baseline preserves historical recoil exit-energy factors (Si: 1, S3: 0.5)
-and the historical mass convention. It changes pair retention, not the baseline
-physics. `exclusive_max_energy` records an optional historical-style selection
+The historical mass convention is retained. Changing only the Doppler factor
+does not require rebuilding the accepted Ge-particle pairs; existing Doppler
+outputs retain their own saved parameters until explicitly reprocessed.
+`exclusive_max_energy` records an optional historical-style selection
 diagnostic. It is not applied to the main spectra.
 
 `angle_info.cpp` owns the common correction model. Angle offsets also update the
@@ -59,6 +84,16 @@ interpolated recoil angle and exit energy; endpoint extrapolation is flagged.
 which is an experimental sensitivity candidate, not a validated new particle
 calibration. Parameters and all input table hashes are embedded in the output.
 
+`make -C doppler test` compares stored beta with its frozen source model,
+covering all particle rings/sectors and interleaved periods. It also checks
+unchanged geometry and rejection of duplicate scales or incomplete tables.
+It uses local parameter files and does not read ROOT event data.
+
+`make -C doppler export_beta` builds the parameter exporter. Its interface is
+`doppler/export_beta PROJECT SOURCE_JSON NEW_JSON`; it refuses to overwrite an
+existing output. It uses the same correction model and saves beta with
+round-trip double precision. It does not read events or activate the export.
+
 For parameter scans of already extracted pair files, see
 [`doppler_optimize/readme.md`](../doppler_optimize/readme.md). Pilot results and
 their adoption limits are recorded locally in
@@ -66,6 +101,8 @@ their adoption limits are recorded locally in
 
 The positional `RUN WIN JUMP` command and documentation below describe the
 historical file format and selection. They do not process the current build files.
+That interface reads its historical energy factor from
+`pars/doppler/angle_table_baseline.json`, rather than a number embedded in C++.
 
 
 # doppler

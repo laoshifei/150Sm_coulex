@@ -1,0 +1,719 @@
+{
+  "S3": {
+    "particle_energy_fraction": 0.0,
+    "phi_offset_deg": 0.0,
+    "theta_offset_deg": 0.0
+  },
+  "Si": {
+    "particle_energy_fraction": 0.0,
+    "phi_offset_deg": 0.0,
+    "theta_offset_deg": 0.0
+  },
+  "beta_by_period": {
+    "high1": {
+      "S3": {
+        "1": {
+          "beta": 0.011141108117422902,
+          "expected_particle_MeV": 32.2822,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 75.2,
+          "theta_r_deg": 46.43
+        },
+        "10": {
+          "beta": 0.010407831700615095,
+          "expected_particle_MeV": 44.0886,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 70.2,
+          "theta_r_deg": 49.1
+        },
+        "11": {
+          "beta": 0.0102889069869145,
+          "expected_particle_MeV": 45.5968,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 69.4,
+          "theta_r_deg": 49.53
+        },
+        "12": {
+          "beta": 0.010169511826102236,
+          "expected_particle_MeV": 47.0268,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 68.6,
+          "theta_r_deg": 49.96
+        },
+        "13": {
+          "beta": 0.010049676013276969,
+          "expected_particle_MeV": 48.386,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 67.8,
+          "theta_r_deg": 50.39
+        },
+        "14": {
+          "beta": 0.009899176630174806,
+          "expected_particle_MeV": 49.9956,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 66.8,
+          "theta_r_deg": 50.93
+        },
+        "15": {
+          "beta": 0.00974784181719792,
+          "expected_particle_MeV": 51.5161,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 65.8,
+          "theta_r_deg": 51.48
+        },
+        "16": {
+          "beta": 0.009580385521534588,
+          "expected_particle_MeV": 53.0972,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 64.7,
+          "theta_r_deg": 52.08
+        },
+        "17": {
+          "beta": 0.00938101823128145,
+          "expected_particle_MeV": 54.8566,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 63.4,
+          "theta_r_deg": 52.79
+        },
+        "18": {
+          "beta": 0.009179849607519639,
+          "expected_particle_MeV": 56.5119,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 62.1,
+          "theta_r_deg": 53.5
+        },
+        "19": {
+          "beta": 0.00894522845608852,
+          "expected_particle_MeV": 58.3089,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 60.6,
+          "theta_r_deg": 54.33
+        },
+        "2": {
+          "beta": 0.011068546052437738,
+          "expected_particle_MeV": 33.6927,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 74.7,
+          "theta_r_deg": 46.7
+        },
+        "20": {
+          "beta": 0.008691448984329431,
+          "expected_particle_MeV": 60.1091,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 59.0,
+          "theta_r_deg": 55.22
+        },
+        "21": {
+          "beta": 0.008417100857414504,
+          "expected_particle_MeV": 61.9068,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 57.3,
+          "theta_r_deg": 56.17
+        },
+        "22": {
+          "beta": 0.008086618295152736,
+          "expected_particle_MeV": 63.8897,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 55.3,
+          "theta_r_deg": 57.29
+        },
+        "23": {
+          "beta": 0.007710681389944092,
+          "expected_particle_MeV": 65.9274,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 53.1,
+          "theta_r_deg": 58.53
+        },
+        "24": {
+          "beta": 0.0072805445319062525,
+          "expected_particle_MeV": 68.001,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 50.7,
+          "theta_r_deg": 59.89
+        },
+        "3": {
+          "beta": 0.011010390089586451,
+          "expected_particle_MeV": 34.7782,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 74.3,
+          "theta_r_deg": 46.91
+        },
+        "4": {
+          "beta": 0.010937516991662956,
+          "expected_particle_MeV": 36.0842,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 73.8,
+          "theta_r_deg": 47.18
+        },
+        "5": {
+          "beta": 0.010864456594443654,
+          "expected_particle_MeV": 37.3365,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 73.3,
+          "theta_r_deg": 47.44
+        },
+        "6": {
+          "beta": 0.010791248456490416,
+          "expected_particle_MeV": 38.5384,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 72.8,
+          "theta_r_deg": 47.71
+        },
+        "7": {
+          "beta": 0.010703166177468682,
+          "expected_particle_MeV": 39.9184,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 72.2,
+          "theta_r_deg": 48.03
+        },
+        "8": {
+          "beta": 0.010614837908826277,
+          "expected_particle_MeV": 41.2353,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 71.6,
+          "theta_r_deg": 48.35
+        },
+        "9": {
+          "beta": 0.010511488251526025,
+          "expected_particle_MeV": 42.6982,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 70.9,
+          "theta_r_deg": 48.72
+        }
+      },
+      "Si": {
+        "1": {
+          "beta": 0.023341707234756377,
+          "expected_particle_MeV": 31.7188,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 167.38501,
+          "theta_r_deg": 4.97
+        },
+        "2": {
+          "beta": 0.02311624288563297,
+          "expected_particle_MeV": 32.0068,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 158.90832,
+          "theta_r_deg": 8.34
+        },
+        "3": {
+          "beta": 0.022746232537202614,
+          "expected_particle_MeV": 32.4037,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 149.89351,
+          "theta_r_deg": 11.98
+        },
+        "4": {
+          "beta": 0.022196290927948482,
+          "expected_particle_MeV": 32.7891,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 140.2893,
+          "theta_r_deg": 15.93
+        },
+        "5": {
+          "beta": 0.021467244599765848,
+          "expected_particle_MeV": 32.8201,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 130.58978,
+          "theta_r_deg": 20.03
+        },
+        "6": {
+          "beta": 0.020596976558457058,
+          "expected_particle_MeV": 31.8279,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 121.31745,
+          "theta_r_deg": 24.08
+        },
+        "7": {
+          "beta": 0.019650689860853034,
+          "expected_particle_MeV": 28.6039,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 112.87293,
+          "theta_r_deg": 27.88
+        },
+        "8": {
+          "beta": 0.018687851275743288,
+          "expected_particle_MeV": 20.5667,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 105.38323,
+          "theta_r_deg": 31.36
+        }
+      }
+    },
+    "high2": {
+      "S3": {
+        "1": {
+          "beta": 0.009771398218352394,
+          "expected_particle_MeV": 32.2822,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 75.2,
+          "theta_r_deg": 46.43
+        },
+        "10": {
+          "beta": 0.009128272256622385,
+          "expected_particle_MeV": 44.0886,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 70.2,
+          "theta_r_deg": 49.1
+        },
+        "11": {
+          "beta": 0.009023968382777485,
+          "expected_particle_MeV": 45.5968,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 69.4,
+          "theta_r_deg": 49.53
+        },
+        "12": {
+          "beta": 0.008919251899520636,
+          "expected_particle_MeV": 47.0268,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 68.6,
+          "theta_r_deg": 49.96
+        },
+        "13": {
+          "beta": 0.00881414893888206,
+          "expected_particle_MeV": 48.386,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 67.8,
+          "theta_r_deg": 50.39
+        },
+        "14": {
+          "beta": 0.008682152248031547,
+          "expected_particle_MeV": 49.9956,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 66.8,
+          "theta_r_deg": 50.93
+        },
+        "15": {
+          "beta": 0.00854942283670984,
+          "expected_particle_MeV": 51.5161,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 65.8,
+          "theta_r_deg": 51.48
+        },
+        "16": {
+          "beta": 0.008402553949714866,
+          "expected_particle_MeV": 53.0972,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 64.7,
+          "theta_r_deg": 52.08
+        },
+        "17": {
+          "beta": 0.008227697269010839,
+          "expected_particle_MeV": 54.8566,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 63.4,
+          "theta_r_deg": 52.79
+        },
+        "18": {
+          "beta": 0.008051260714307583,
+          "expected_particle_MeV": 56.5119,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 62.1,
+          "theta_r_deg": 53.5
+        },
+        "19": {
+          "beta": 0.007845484351945873,
+          "expected_particle_MeV": 58.3089,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 60.6,
+          "theta_r_deg": 54.33
+        },
+        "2": {
+          "beta": 0.00970775707735968,
+          "expected_particle_MeV": 33.6927,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 74.7,
+          "theta_r_deg": 46.7
+        },
+        "20": {
+          "beta": 0.007622905031104062,
+          "expected_particle_MeV": 60.1091,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 59.0,
+          "theta_r_deg": 55.22
+        },
+        "21": {
+          "beta": 0.007382285806311462,
+          "expected_particle_MeV": 61.9068,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 57.3,
+          "theta_r_deg": 56.17
+        },
+        "22": {
+          "beta": 0.007092433424838644,
+          "expected_particle_MeV": 63.8897,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 55.3,
+          "theta_r_deg": 57.29
+        },
+        "23": {
+          "beta": 0.0067627149473719365,
+          "expected_particle_MeV": 65.9274,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 53.1,
+          "theta_r_deg": 58.53
+        },
+        "24": {
+          "beta": 0.00638545996663032,
+          "expected_particle_MeV": 68.001,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 50.7,
+          "theta_r_deg": 59.89
+        },
+        "3": {
+          "beta": 0.009656750923770437,
+          "expected_particle_MeV": 34.7782,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 74.3,
+          "theta_r_deg": 46.91
+        },
+        "4": {
+          "beta": 0.009592836988844888,
+          "expected_particle_MeV": 36.0842,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 73.8,
+          "theta_r_deg": 47.18
+        },
+        "5": {
+          "beta": 0.009528758781569942,
+          "expected_particle_MeV": 37.3365,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 73.3,
+          "theta_r_deg": 47.44
+        },
+        "6": {
+          "beta": 0.009464550997099521,
+          "expected_particle_MeV": 38.5384,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 72.8,
+          "theta_r_deg": 47.71
+        },
+        "7": {
+          "beta": 0.00938729772792467,
+          "expected_particle_MeV": 39.9184,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 72.2,
+          "theta_r_deg": 48.03
+        },
+        "8": {
+          "beta": 0.009309828711580342,
+          "expected_particle_MeV": 41.2353,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 71.6,
+          "theta_r_deg": 48.35
+        },
+        "9": {
+          "beta": 0.009219185065852524,
+          "expected_particle_MeV": 42.6982,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 70.9,
+          "theta_r_deg": 48.72
+        }
+      },
+      "Si": {
+        "1": {
+          "beta": 0.023341707234756377,
+          "expected_particle_MeV": 31.7188,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 167.38501,
+          "theta_r_deg": 4.97
+        },
+        "2": {
+          "beta": 0.02311624288563297,
+          "expected_particle_MeV": 32.0068,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 158.90832,
+          "theta_r_deg": 8.34
+        },
+        "3": {
+          "beta": 0.022746232537202614,
+          "expected_particle_MeV": 32.4037,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 149.89351,
+          "theta_r_deg": 11.98
+        },
+        "4": {
+          "beta": 0.022196290927948482,
+          "expected_particle_MeV": 32.7891,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 140.2893,
+          "theta_r_deg": 15.93
+        },
+        "5": {
+          "beta": 0.021467244599765848,
+          "expected_particle_MeV": 32.8201,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 130.58978,
+          "theta_r_deg": 20.03
+        },
+        "6": {
+          "beta": 0.020596976558457058,
+          "expected_particle_MeV": 31.8279,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 121.31745,
+          "theta_r_deg": 24.08
+        },
+        "7": {
+          "beta": 0.019650689860853034,
+          "expected_particle_MeV": 28.6039,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 112.87293,
+          "theta_r_deg": 27.88
+        },
+        "8": {
+          "beta": 0.018687851275743288,
+          "expected_particle_MeV": 20.5667,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 105.38323,
+          "theta_r_deg": 31.36
+        }
+      }
+    },
+    "low": {
+      "S3": {
+        "1": {
+          "beta": 0.009771398218352394,
+          "expected_particle_MeV": 32.2822,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 75.2,
+          "theta_r_deg": 46.43
+        },
+        "10": {
+          "beta": 0.009128272256622385,
+          "expected_particle_MeV": 44.0886,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 70.2,
+          "theta_r_deg": 49.1
+        },
+        "11": {
+          "beta": 0.009023968382777485,
+          "expected_particle_MeV": 45.5968,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 69.4,
+          "theta_r_deg": 49.53
+        },
+        "12": {
+          "beta": 0.008919251899520636,
+          "expected_particle_MeV": 47.0268,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 68.6,
+          "theta_r_deg": 49.96
+        },
+        "13": {
+          "beta": 0.00881414893888206,
+          "expected_particle_MeV": 48.386,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 67.8,
+          "theta_r_deg": 50.39
+        },
+        "14": {
+          "beta": 0.008682152248031547,
+          "expected_particle_MeV": 49.9956,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 66.8,
+          "theta_r_deg": 50.93
+        },
+        "15": {
+          "beta": 0.00854942283670984,
+          "expected_particle_MeV": 51.5161,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 65.8,
+          "theta_r_deg": 51.48
+        },
+        "16": {
+          "beta": 0.008402553949714866,
+          "expected_particle_MeV": 53.0972,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 64.7,
+          "theta_r_deg": 52.08
+        },
+        "17": {
+          "beta": 0.008227697269010839,
+          "expected_particle_MeV": 54.8566,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 63.4,
+          "theta_r_deg": 52.79
+        },
+        "18": {
+          "beta": 0.008051260714307583,
+          "expected_particle_MeV": 56.5119,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 62.1,
+          "theta_r_deg": 53.5
+        },
+        "19": {
+          "beta": 0.007845484351945873,
+          "expected_particle_MeV": 58.3089,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 60.6,
+          "theta_r_deg": 54.33
+        },
+        "2": {
+          "beta": 0.00970775707735968,
+          "expected_particle_MeV": 33.6927,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 74.7,
+          "theta_r_deg": 46.7
+        },
+        "20": {
+          "beta": 0.007622905031104062,
+          "expected_particle_MeV": 60.1091,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 59.0,
+          "theta_r_deg": 55.22
+        },
+        "21": {
+          "beta": 0.007382285806311462,
+          "expected_particle_MeV": 61.9068,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 57.3,
+          "theta_r_deg": 56.17
+        },
+        "22": {
+          "beta": 0.007092433424838644,
+          "expected_particle_MeV": 63.8897,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 55.3,
+          "theta_r_deg": 57.29
+        },
+        "23": {
+          "beta": 0.0067627149473719365,
+          "expected_particle_MeV": 65.9274,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 53.1,
+          "theta_r_deg": 58.53
+        },
+        "24": {
+          "beta": 0.00638545996663032,
+          "expected_particle_MeV": 68.001,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 50.7,
+          "theta_r_deg": 59.89
+        },
+        "3": {
+          "beta": 0.009656750923770437,
+          "expected_particle_MeV": 34.7782,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 74.3,
+          "theta_r_deg": 46.91
+        },
+        "4": {
+          "beta": 0.009592836988844888,
+          "expected_particle_MeV": 36.0842,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 73.8,
+          "theta_r_deg": 47.18
+        },
+        "5": {
+          "beta": 0.009528758781569942,
+          "expected_particle_MeV": 37.3365,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 73.3,
+          "theta_r_deg": 47.44
+        },
+        "6": {
+          "beta": 0.009464550997099521,
+          "expected_particle_MeV": 38.5384,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 72.8,
+          "theta_r_deg": 47.71
+        },
+        "7": {
+          "beta": 0.00938729772792467,
+          "expected_particle_MeV": 39.9184,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 72.2,
+          "theta_r_deg": 48.03
+        },
+        "8": {
+          "beta": 0.009309828711580342,
+          "expected_particle_MeV": 41.2353,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 71.6,
+          "theta_r_deg": 48.35
+        },
+        "9": {
+          "beta": 0.009219185065852524,
+          "expected_particle_MeV": 42.6982,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 70.9,
+          "theta_r_deg": 48.72
+        }
+      },
+      "Si": {
+        "1": {
+          "beta": 0.023341707234756377,
+          "expected_particle_MeV": 31.7188,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 167.38501,
+          "theta_r_deg": 4.97
+        },
+        "2": {
+          "beta": 0.02311624288563297,
+          "expected_particle_MeV": 32.0068,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 158.90832,
+          "theta_r_deg": 8.34
+        },
+        "3": {
+          "beta": 0.022746232537202614,
+          "expected_particle_MeV": 32.4037,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 149.89351,
+          "theta_r_deg": 11.98
+        },
+        "4": {
+          "beta": 0.022196290927948482,
+          "expected_particle_MeV": 32.7891,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 140.2893,
+          "theta_r_deg": 15.93
+        },
+        "5": {
+          "beta": 0.021467244599765848,
+          "expected_particle_MeV": 32.8201,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 130.58978,
+          "theta_r_deg": 20.03
+        },
+        "6": {
+          "beta": 0.020596976558457058,
+          "expected_particle_MeV": 31.8279,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 121.31745,
+          "theta_r_deg": 24.08
+        },
+        "7": {
+          "beta": 0.019650689860853034,
+          "expected_particle_MeV": 28.6039,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 112.87293,
+          "theta_r_deg": 27.88
+        },
+        "8": {
+          "beta": 0.018687851275743288,
+          "expected_particle_MeV": 20.5667,
+          "kinematic_extrapolated": false,
+          "theta_p_deg": 105.38323,
+          "theta_r_deg": 31.36
+        }
+      }
+    }
+  },
+  "beta_input_sha256": {
+    "angle_info/s3_ring_angle.txt": "17613979f137f9fdde70d09fb0b59af8d09c1f0430c617f6b80dd360dfe1560f",
+    "angle_info/spider_angle.txt": "008cc9d8cea089ef21a5c679c7983e81a51b3ba87f69f58e66340ea8d817cb8d",
+    "beta_info/theta_ein_eout_p.txt": "859e19513367f6668ef2bd35b0f3f855623b774802de64a08ae5537dab77a466",
+    "beta_info/theta_ein_eout_r.txt": "13dacea4ebf0a78fa2849bf5fe563b939c7bef26fd81fab2e2b4d84166fea5ca"
+  },
+  "beta_units": "v/c",
+  "ge_phi_offset_deg": 0.0,
+  "ge_theta_offset_deg": 0.0,
+  "label": "tabulated_beta",
+  "notes": "Final ring beta values exported from the adopted model. Apply directly without an energy or beta multiplier. Original Ge and particle angles are retained.",
+  "per_ge": {},
+  "schema_version": 3,
+  "source_parameters_sha256": "47cb813baa56cbda30272d544e1c24c203abbafa3c1a2301976f6cdac14ac03c",
+  "status": "adopted"
+}

@@ -933,6 +933,10 @@ int process_build(const Options &requested) {
   out.cd();require(tree.Write()>0,"Pair tree write failed");hist.write(out);
   json manifest=provenance(o);
   manifest.update({{"schema_version",1},{"mode","current_build_pairs"},{"source",fs::absolute(o.input).string()},{"source_sha256",source_sha},{"build_manifest",m},{"parameters",parameters},{"parameters_sha256",sha256(o.parameters)},{"counts",counts},{"pair_entries",tree.GetEntries()},{"random_policy",policy},{"random_policy_sha256",sha256(policy_path)},{"exclusive_max_energy_definition","Exclusive Si/S3 record; highest-energy Si only. A selection diagnostic, not a complete legacy replay."}});
+  manifest["doppler_period"]=period(group);
+  manifest["beta_mode"]=model.uses_tabulated_beta() ? "precomputed_ring_beta":"legacy_energy_scale";
+  if(!model.uses_tabulated_beta())
+    manifest["effective_energy_scales"]={{"Si",model.energy_scale(group,0)},{"S3",model.energy_scale(group,1)}};
   finish(out,manifest);std::cout<<json({{"output",o.output},{"counts",counts}}).dump()<<"\n";return 0;
 }
 int scan_pairs(const Options &o) {

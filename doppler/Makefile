@@ -11,6 +11,17 @@ GXX = g++
 
 all:$(out)
 
+export_beta: export_beta.cpp angle_info.cpp angle_info.h ../include/sm150_parameter_paths.h
+	$(GXX) $(CFLAGS) $(ROOTCFLAGS) -o $@ export_beta.cpp angle_info.cpp $(ROOTLIBS)
+
+.PHONY: all test clean
+
+test: tests/beta_parameters
+	./tests/beta_parameters .. ../include/parameter/doppler_beta_provenance.json ../include/parameter/doppler.json
+
+tests/beta_parameters: tests/beta_parameters.cpp angle_info.cpp angle_info.h ../include/sm150_parameter_paths.h
+	$(GXX) $(CFLAGS) $(ROOTCFLAGS) -I. -o $@ tests/beta_parameters.cpp angle_info.cpp $(ROOTLIBS)
+
 $(out): $(sourcefile)
 	$(GXX) $(CFLAGS) $(ROOTCFLAGS) -o $@ $(filter %.cpp ,$(sourcefile)) $(ROOTLIBS)
 
